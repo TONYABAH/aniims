@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Water and Drinks",
+    "code": "wrd",
+    "division": true
+  },
+  {
+    "name": "Pharmaceuticals",
+    "code": "pharm",
+    "division": true
+  },
+  {
+    "name": "Food",
+    "code": "food",
+    "division": true
+  },
+  {
+    "name": "Cosmetics",
+    "code": "cos",
+    "division": true
+  },
+  {
+    "name": "Chemicals and Medical Devices",
+    "code": "chem",
+    "division": true
+  },
+  {
+    "name": "Federal task Force",
+    "code": "ftf",
+    "division": true
+  },
+  {
+    "name": "Liaison Office to Director",
+    "code": "lod",
+    "division": false
+  }
+]

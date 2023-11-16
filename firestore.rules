@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+     function isSignedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+    // Check if document is exists
+    //function documentIdExists(collection, docId) {
+    //return exists(/databases/$(database)/documents/$(collection)/$(docId));
+    // }
+    // Check if userId exists in the document
+
+    //function belongsToUnit(unit) {
+      //return isSignedIn() && unit in request.auth.token.units;
+    	//return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.Units[unit];
+    //}
+    //function isOneOfTheseRoles(roles) {
+      //return isSignedIn() && request.auth.token.roles.hasAny(roles)
+    	//return request.resource.data.roles.keys().hasAny(roles) == false;
+    //}
+    //function isHead(){
+      //return isOneOfTheseRoles(["HOD", "HOU", "Director"])
+    //}
+    //function shouldRead(){
+      //return (isDirector() || userCreated() ||  userDocument() || isHead() || isAdmin())
+    //}
+    function assignedToUser(collection, docId) {
+      return  isSignedIn() && resource.data.To != undefined && (resource.data.To == request.auth.email || resource.data.To == request.auth.token.accessid);
+    }
+    function userCreated() {
+        return isSignedIn() && (resource.data.keys().hasAny(["CreatedBy"]) && resource.data.CreatedBy == request.auth.uid && resource.data.Status=="Created");
+    }
+    function userDocument() {
+        return isSignedIn() && resource.data.keys().hasAny(["To"]) == true && (resource.data.To == request.auth.uid  || resource.data.To == request.auth.token.accessid);
+    }
+    function hasRoleOf(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    	//return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.Roles[role];
+    }
+    function isAdmin(){
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isDirector(){
+      return hasRoleOf("Director")
+    }
+
+    function shouldWrite(){
+       return userDocument() || (userCreated() && resource.data.Status == "Created");
+    }
+    function canDelete(){
+      return (userCreated() && resource.data.Status == "Created") || isAdmin();
+    }
+
+    match /Users/{id} {
+      allow create: if false;
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /Units/{id} {
+      allow create: if false;
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /SMS/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    match /{collection}/{id}/History/{d} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+    }
+    match /{collection}/{id}/Minutes/{d} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+    }
+     match /Companies/{d} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+    }
+    match /Complaints/{d} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+    }
+    match /Destructions/{d} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+    }
+    match /{collection}/{id} {
+      function isDoc(){
+        return collection in ["Mails", "Files","Complaints","Surveillances","Raids","Cases","Samples","Destructions","Payments"]
+      }
+      allow create: if isSignedIn();
+      allow get: if isAdmin() ||  (isSignedIn() && request.auth.token.level > 2); //userCreated() || userDocument() || canReadUnitDocument() || isDirector() || isAdmin();
+      allow list: if isAdmin() || (isSignedIn() && request.auth.token.level > 2); //userCreated() || userDocument() || canReadUnitDocument() || isDirector() || isAdmin();
+      allow update: if isSignedIn();
+      allow delete: if canDelete();
+    }
+  }
+}

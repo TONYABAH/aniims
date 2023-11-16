@@ -1,0 +1,72 @@
+{
+  "name": "aniims",
+  "version": "0.0.1",
+  "description": "Advanced NAFDAC Investigation Information System",
+  "productName": "Aniims",
+  "author": "Army",
+  "private": true,
+  "homepage": "https://github.com/TONYABAH/aniims",
+  "scripts": {
+    "lint": "eslint --ext .js,.vue ./",
+    "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "quasar dev",
+    "build": "quasar build -m spa",
+    "start": "firebase emulators:start --import=./emulators --export-on-exit"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.0.0",
+    "@vueuse/core": "^9.11.1",
+    "@vueuse/rxjs": "^9.11.1",
+    "axios": "^1.2.2",
+    "billboard.js": "^3.9.4",
+    "chart.js": "^4.4.0",
+    "child-process-promise": "^2.2.1",
+    "firebase": "^9.17.2",
+    "firebase-functions": "^4.2.1",
+    "firesql": "^2.0.2",
+    "i": "^0.3.7",
+    "install": "^0.13.0",
+    "jspreadsheet-ce": "^4.11.5",
+    "nodemailer": "^6.9.1",
+    "pinia": "^2.0.11",
+    "quasar": "^2.6.0",
+    "rxfire": "^6.0.5",
+    "rxjs": "^7.8.1",
+    "vue": "^3.0.0",
+    "vue-chartkick": "^1.1.0",
+    "vue-router": "^4.0.0",
+    "vuefire": "^3.1.0"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^1.0.0",
+    "autoprefixer": "^10.4.2",
+    "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^9.0.0",
+    "postcss": "^8.4.14",
+    "prettier": "^2.5.1"
+  },
+  "engines": {
+    "node": "^18 || ^16 || ^14.19",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  },
+  "main": ".eslintrc.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TONYABAH/aniims.git"
+  },
+  "keywords": [
+    "nafdac",
+    "investigation",
+    "enforcement",
+    "information",
+    "management",
+    "system"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TONYABAH/aniims/issues"
+  }
+}

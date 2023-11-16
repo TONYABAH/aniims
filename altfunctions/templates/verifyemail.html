@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .header {
+        background-color: brown;
+        color: white;
+      }
+      .footer {
+        background-color: darkgreen;
+        color: white;
+        font-size: 12px;
+      }
+      p {
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h3>ANIIMS&trade; Investigation and Enforcement, NAFDAC</h3>
+      <h6><b>Welcome, {{name}}, please verify your email</b></h6>
+    </div>
+    <p>
+      You have signed up to ANIIMS portal. Your account is pending because
+      your email has not been verified.
+    </p>
+    <p>
+      Please confirm your email by clicking on the link below or copy and paste
+      in browser address.
+    </p>
+    <p>{{link}}</p>
+    <div class="footer">Copyright&copy;NAFDAC Investigation & Enforcement</div>
+  </body>
+</html>
