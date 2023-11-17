@@ -10,7 +10,7 @@
     :elevated="!$q.dark.isActive"
     style="letter-spacing: 1.2px; overflow: hidden"
     class="text-grey-2"
-    :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal'"
+    :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal-7'"
   >
     <q-item>
       <q-item-section class="text-grey-5">

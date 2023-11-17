@@ -1,7 +1,7 @@
 {
   "name": "aniims",
   "version": "0.0.1",
-  "description": "Advanced NAFDAC Investigation Information System",
+  "description": "Advanced Nafdac Investigation Information Management System",
   "productName": "Aniims",
   "author": "Army",
   "private": true,
@@ -12,23 +12,19 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "build": "quasar build -m spa",
-    "start": "firebase emulators:start --import=./emulators --export-on-exit"
+    "start": "firebase emulators:start"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "@vueuse/core": "^9.11.1",
     "@vueuse/rxjs": "^9.11.1",
     "axios": "^1.2.2",
-    "billboard.js": "^3.9.4",
     "chart.js": "^4.4.0",
-    "child-process-promise": "^2.2.1",
     "firebase": "^9.17.2",
     "firebase-functions": "^4.2.1",
     "firesql": "^2.0.2",
     "i": "^0.3.7",
-    "install": "^0.13.0",
     "jspreadsheet-ce": "^4.11.5",
-    "nodemailer": "^6.9.1",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
     "rxfire": "^6.0.5",

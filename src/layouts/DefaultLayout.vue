@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh Lpr Fff" style="overflow: hidden">
+  <q-layout view="lHh Lpr Fff" style="overflow: hidden">
     <default-header />
     <DefaultDrawer />
     <q-page-container style="overflow: auto">

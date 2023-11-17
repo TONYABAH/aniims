@@ -5,9 +5,9 @@
     class="my-card q-pb-xl bg"
     :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-'"
   >
-    <q-toolbar
+    <q-bar
       class="q-pb-sm bg-transparent"
-      :class="$q.dark.isActive ? 'bg-blue-grey-8' : 'bg-teal'"
+      :class="$q.dark.isActive ? 'bg-blue-grey-8' : 'bg-teal-7'"
     >
       <q-tabs
         v-model="tab"
@@ -79,7 +79,7 @@
           style="border-radius: 4px 4px 0 0"
         />
       </q-tabs>
-    </q-toolbar>
+    </q-bar>
     <q-tab-panels
       style="height: calc(100vh - 128px)"
       :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
@@ -339,39 +339,92 @@
       </q-tab-panel>
 
       <q-tab-panel name="dashboard" style="overflow: auto" class="">
-        <div class="row q-col-gutter-md">
+        <div class="row q-col-gutter-md" ref="chartref">
           <div
             class="col col-xs-12 col-sm-6 col-md-4 col-lg-3"
             v-for="x of DASHBOARD_CARDS"
             :key="x"
           >
             <q-card
-              class="my-card full-width full-height"
-              :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'shadow-22'"
+              class="my-card"
+              :class="$q.dark.isActive ? 'bg-grey-10' : 'shadow-22'"
             >
-              <q-card-section class="text-h6 text-teal">
-                {{ x.name }}
+              <q-bar class="bg-transparent">
+                <q-toolbar-title> </q-toolbar-title>
+                <q-btn flat dense icon="fullscreen" @click="zoomChart" />
+              </q-bar>
+              <q-card-section class="chart" v-if="tab === 'dashboard'">
+                <line-chart
+                  :download="true"
+                  :data="[
+                    {
+                      name: 'Food',
+                      data: {
+                        '2017-01-01': 3,
+                        '2017-01-02': 4,
+                        '2017-01-03': 7,
+                        '2017-01-04': 10,
+                        '2017-01-05': 3,
+                        '2017-01-06': 4,
+                      },
+                    },
+                    {
+                      name: 'Water',
+                      data: {
+                        '2017-01-01': 13,
+                        '2017-01-02': 9,
+                        '2017-01-03': 4,
+                        '2017-01-04': 10,
+                        '2017-01-05': 5,
+                        '2017-01-06': 4,
+                      },
+                    },
+                  ]"
+                ></line-chart>
               </q-card-section>
-              <q-card-section> Lorem ipsum dolor sit amet </q-card-section>
-              <q-card-actions align="center">
-                <q-btn flat label="Action 1" />
-                <q-btn flat label="Action 2" />
-              </q-card-actions>
             </q-card>
           </div>
           <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
             <q-card
-              class="my-card full-width full-height"
-              :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'shadow-22'"
+              class="my-card full-width"
+              :class="$q.dark.isActive ? 'bg-grey-10' : 'shadow-22'"
             >
-              <q-card-section class="text-h6 text-teal">
-                Analytics
+              <q-bar class="bg-transparent">
+                <q-toolbar-title> </q-toolbar-title>
+                <q-btn flat dense icon="fullscreen" @click="zoomChart" />
+              </q-bar>
+              <q-card-section>
+                <area-chart
+                  :data="[
+                    {
+                      name: 'Food',
+                      data: {
+                        '2017-01-01': 2,
+                        '2017-01-02': 5,
+                        '2017-01-03': 7,
+                        '2017-01-04': 15,
+                        '2017-01-05': 12,
+                        '2017-01-06': 5,
+                        '2017-01-07': 2,
+                        '2017-01-08': 0,
+                      },
+                    },
+                    {
+                      name: 'Water',
+                      data: {
+                        '2017-01-01': 8,
+                        '2017-01-02': 7,
+                        '2017-01-03': 7,
+                        '2017-01-04': 5,
+                        '2017-01-05': 12,
+                        '2017-01-06': 15,
+                        '2017-01-07': 12,
+                        '2017-01-08': 10,
+                      },
+                    },
+                  ]"
+                ></area-chart>
               </q-card-section>
-              <q-card-section> Lorem ipsum dolor sit amet </q-card-section>
-              <q-card-actions align="center">
-                <q-btn flat label="Action 1" />
-                <q-btn flat label="Action 2" />
-              </q-card-actions>
             </q-card>
           </div>
         </div>
@@ -409,6 +462,16 @@
     :set-model="setDialogModel"
     title=""
   />
+  <q-dialog full-width v-model="zoom" persistent="">
+    <q-card class="full-width">
+      <q-toolbar class="bg-transparent">
+        <q-toolbar-title> </q-toolbar-title>
+        <q-btn flat dense icon="close" color="negative" @click="cancelZoom" />
+      </q-toolbar>
+      <q-card-section ref="zoomContainer"> </q-card-section>
+      <q-card-section> </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -436,11 +499,22 @@ import {
 } from "../composables/remote";
 import TableView from "./TableView.vue";
 
-import { onMounted, ref, computed, inject, provide, watch } from "vue";
+import {
+  onMounted,
+  onUpdated,
+  ref,
+  computed,
+  inject,
+  provide,
+  watch,
+  watchEffect,
+} from "vue";
 import AssignDialog from "./AssignDialog.vue";
 import SubmitDialog from "./SubmitDialog.vue";
 import CircularProgress from "./CircularProgress.vue";
-
+//import { LineChart } from "chart.js";
+//import ApexCharts from "apexcharts";
+//import VueApexCharts from "vue3-apexcharts";
 const $q = useQuasar();
 const store = useDefaultStore();
 const tab = ref("search");
@@ -458,7 +532,10 @@ const docTitle = ref("");
 const fileSource = ref("");
 const dialogModel = ref(false);
 const fileViewerDialogModel = ref(false);
-
+const chartref = ref(null);
+const zoomEl = ref(null);
+const zoom = ref(false);
+const zoomContainer = ref(null);
 const props = defineProps({
   reset: Function,
   validate: Function,
@@ -474,17 +551,59 @@ const document_columns = [
 const DASHBOARD_CARDS = [
   {
     name: "Created",
-    id: "created",
+    options: {
+      chart: {
+        id: "created",
+      },
+      xaxis: {
+        categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999],
+      },
+    },
+    series: [
+      {
+        name: "sales",
+        data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+      },
+    ],
+    type: "area",
   },
   {
     name: "Assigned",
-    id: "assigned",
+    options: {
+      chart: {
+        id: "assigned",
+      },
+      xaxis: {
+        categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998],
+      },
+    },
+    series: [
+      {
+        name: "series-1",
+        data: [30, 40, 35, 50, 49, 60, 70, 91],
+      },
+    ],
+    type: "line",
+  },
+  {
+    name: "Assigned",
+    options: {},
+    series: [44, 55, 41, 17, 15],
+    type: "pie",
   },
   {
     name: "Treated",
-    id: "treated",
+    options: {},
+    series: [44, 55, 41, 17, 15],
+    type: "donut",
   },
 ];
+const donut = {
+  name: "Treated",
+  options: {},
+  series: [44, 55, 41, 17, 15],
+  type: "donut",
+};
 const showAssignDialog = computed(() => {
   return (
     store.user?.claims?.role === "Director" ||
@@ -495,10 +614,9 @@ const loading = computed({
   get: () => store.loading,
   set: (v) => (store.loading = v),
 });
-const pendingEdit = computed(
+/*const pendingEdit = computed(
   () => Object.values(currentDocument.value).length > 0
-);
-
+);*/
 const currentDocument = computed({
   get: () => store.currentDocument || {},
   set: (v) => {
@@ -697,6 +815,27 @@ async function loadHash(hash) {
   await loadDocument(docId);
   tab.value = "details";
 }
+function cancelZoom(e) {
+  const el = zoomContainer.value;
+  const card = zoomEl.value;
+  const next = card.firstElementChild.nextElementSibling;
+  //const copy = e.target.parentElement.parentElement.parentElement.parentElement;
+  zoom.value = false;
+  //console.log(el, next);
+  setTimeout(() => {
+    card.insertBefore(el.$el, next);
+  }, 10);
+}
+function zoomChart(e) {
+  zoom.value = true;
+  const card = e.target.parentElement.parentElement.parentElement.parentElement;
+  zoomEl.value = card;
+  setTimeout(() => {
+    const el = zoomContainer.value.$el;
+    const copy = card.firstElementChild.nextSibling;
+    el.appendChild(copy.firstElementChild);
+  }, 100);
+}
 // do a `console.log(route)` to see route attributes (fullPath, hash, params, path...)
 watch(
   () => route.hash,
@@ -734,19 +873,19 @@ watch(
     }
   }
 );
+
 onMounted(async () => {
   resetValues();
   store.currentCollection = collectionName;
   store.searchResults = useCollection(currentDataSource);
-  searchRef.value.searchNow();
+  searchRef.value?.searchNow();
   editForm.value = props.getDocument()?.id ? false : true;
 });
-
+//this.gradient = this.$refs.canvas.getContext("2d").createLinearGradient(0, 0, 0, 450);
+//console.log(this.gradient);
 provide("searchText", searchText);
 provide("whereFilters", whereFilters);
 provide("comment", comment);
-//provide("comments", store.comments);
-//provide("history", store.history);
 provide("on-load", onLoad);
 </script>
 <style scoped>

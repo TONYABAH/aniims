@@ -1,6 +1,6 @@
-# Invest (enf)
+# ANIIMS
 
-NAFDAC Investigation and Enforcement Processing App
+NAFDAC Investigation Information Management System
 
 ## Install the dependencies
 ```bash

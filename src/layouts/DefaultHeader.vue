@@ -4,12 +4,12 @@
       <q-btn
         flat
         dense
-        icon="apps"
+        icon="menu"
         aria-label="Menu"
         @click="toggleLeftDrawer"
       />
-      <q-btn flat dense icon="home" to="/" />
-      <q-toolbar-title> {{ pkg.productName }} </q-toolbar-title>
+      <q-btn flat dense to="/" :label="pkg.productName" />
+      <q-toolbar-title></q-toolbar-title>
       <q-btn
         flat
         no-caps=""
