@@ -11,7 +11,6 @@ import {
   getDocs,
   collection,
   doc,
-  addDoc,
   query,
   where,
   orderBy,
@@ -19,20 +18,24 @@ import {
   runTransaction,
   arrayRemove,
   arrayUnion,
-  /*setDoc,
-  deleteDoc,
   getCountFromServer,
-  startAt,
   serverTimestamp,
   Timestamp,
+  /*
+  setDoc,
+  addDoc,
+  deleteDoc,
+  startAt,
+
   deleteField,
   updateDoc,
   getFirestore,
   onSnapshot,*/
 } from "firebase/firestore";
-import { updateDocument, createDocument } from "./functions";
+//import { updateDocument, createDocument } from "./functions";
 import { addSearch, generateId } from "./searchProvider";
 import { useDefaultStore } from "src/stores/store";
+import { timestamp } from "rxjs";
 
 const db = firestore;
 const storage = getStorage(app);
@@ -107,6 +110,7 @@ export async function logSMS(to, coll, docId, transaction) {
   const _ref = doc(db, "SMS", generateId());
   return transaction.set(_ref, data);
 }
+
 export async function addHistory(
   operation,
   collectionName,
@@ -114,19 +118,24 @@ export async function addHistory(
   data,
   transaction
 ) {
-  const user = store.user;
+  //const user = store.user;
   const d = {
     op: operation,
-    time: Date.now(),
+    time: serverTimestamp(),
+    //time: timestamp(),
+    date: Date.now(),
     coll: collectionName,
     doc: docId,
-    user: user.displayName,
-    uid: user.uid,
+    user: store.user.displayName,
+    uid: store.user.uid,
     ...data,
   };
-  const _ref = doc(db, collectionName, docId, "History", generateId());
-
-  return transaction.set(_ref, d);
+  const { op, time, coll, uid, user } = d;
+  const historyRef = doc(db, collectionName, docId, "History", generateId());
+  const logRef = doc(db, "applogs", generateId());
+  return transaction
+    .set(historyRef, d)
+    .set(logRef, { op, time, coll, docId, uid, user, ...data });
 }
 
 export const addComment = async (
@@ -137,17 +146,6 @@ export const addComment = async (
   unit
 ) => {
   const user = store.user;
-  /*const From = {
-    uid: user.uid,
-    email: user.email,
-    name: user.displayName,
-  };
-
-  const To = {
-    email: to.Email,
-    name: to.Name,
-    uid: to.uid,
-  };*/
   const commentsData = {
     from: user.displayName,
     to: user.displayName,
@@ -173,10 +171,15 @@ export const addComment = async (
       "Minuted",
       collectionName,
       documentId,
-      { from: user.displayName + " ", to: to.Name, unit: unit },
+      {
+        from: user.displayName || user.email,
+        to: to.Name,
+        toid: to.uid,
+        unit: unit,
+      },
       t
     );
-    logSMS(to, collectionName, documentId, t);
+    // logSMS(to, collectionName, documentId, t);
     // Atomically remove a region from the "regions" array field.
     //.update({regions: FieldValue.arrayRemove("east_coast"),});
     // Atomically add a new region to the "regions" array field.
@@ -203,48 +206,47 @@ export const create = async (data, collectionName, searchFields = []) => {
   });
 
   data.meta.search = addSearch(_fields);
-
-  return await createDocument({
+  // Server side creation
+  /*return await createDocument({
     payload: data,
     collection: collectionName,
     documentId: generateId(),
     historyId: generateId(),
     user: store.user.displayName,
-  });
-};
-/*let payload = {
-    id: generateId(),
-    historyId: generateId(),
-    ...data,
-  };
+  });*/
+
   // We set the id manually here to ensure ordering
-  //const docRef = doc(db, collectionName, id);
+  let id = generateId();
+  const docRef = doc(db, collectionName, id);
   await runTransaction(db, async (t) => {
-    t.set(docRef, payload);
+    t.set(docRef, data);
     addHistory("Created", collectionName, id, {}, t);
   });
+  return id;
+};
+
 export const save = async (id, data, collectionName) => {
   const docRef = doc(db, collectionName, id);
   await runTransaction(db, async (t) => {
     t.set(docRef, data); //.update(docRef, metadata);
     addHistory("Saved", collectionName, id, {}, t);
   });
-};*/
+};
 
 export const update = async (id, data, collectionName) => {
-  //This has a bug on the server side
-  await updateDocument({
+  // Server side creation
+  /*await updateDocument({
     payload: data,
     collection: collectionName,
     documentId: id,
     historyId: generateId(),
     user: store.user.displayName,
-  });
-  /*await runTransaction(db, async (t) => {
+  });*/
+  await runTransaction(db, async (t) => {
     const docRef = doc(db, collectionName, id);
     t.update(docRef, data); //.update(docRef, metadata);
-    if (history) addHistory("Updated", collectionName, id, {}, t);
-  });*/
+    addHistory("Updated", collectionName, id, {}, t);
+  });
 };
 
 export const remove = async (id, collectionName) => {
@@ -263,12 +265,6 @@ export function getStorageFolder(type) {
   } else if (type.match(/^image\//)) {
     folder = "images/";
   }
-  /*if (type === "video/mp4") {
-    folder = "video/";
-  } else if (type === "application/pdf") {
-    folder = "documents/";
-  }*/
-  //console.log(type);
   return folder;
 }
 export const onAddAttachment = async (collectionName, documentId, data) => {
@@ -426,24 +422,6 @@ export function uploadFile(f, uploadTask, progress, callback) {
       // Upload completed successfully, now we can get the download URL
       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
         callback(null, downloadURL, id);
-        /*const user = getAuth().currentUser;
-        const coll = store.currentCollection,
-          docId = store.currentDocument.id;
-        const data = {
-          op: "Uploaded " + f.name,
-          time: Date.now(),
-          user: {
-            name: user.displayName,
-            uid: user.uid,
-            email: user.email,
-          },
-          coll,
-          docId,
-          downloadURL,
-        };
-        const _ref = collection(db, coll, docId, "History");
-        //const _ref = collection(db, "History");
-        return addDoc(_ref, data);*/
       });
     }
   );
@@ -501,31 +479,3 @@ export async function generateCaseId() {
   }
   return caseId ? caseId + 1 : 1;
 }
-/*export async function onReturnDocument(comment) {
-  if (store.currentDocument?.From) {
-    const target = store.staffList.find(
-      (s) => s.uid === store.currentDocument?.From
-    );
-    const { Email, uid, Name } = target;
-
-    await update(
-      store.currentDocument.id,
-      {
-        To: uid,
-        From: store.user.uid,
-        Time: Date.now(),
-        Status: "Returned",
-      },
-      store.currentCollection
-    );
-    await onSubmitComment(
-      comment,
-      { email: Email, uid, name: Name },
-      "Returned",
-      store.currentDocument.Unit
-    );
-  } else {
-    throw { message: "No document loaded" };
-  }
-}*/
-//const dbRef = collection(db, "cities");

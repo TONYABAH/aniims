@@ -24,7 +24,13 @@
               >Case raids for {{ store.user.displayName }}</q-item-section
             >
             <q-item-section side>
-              <q-btn unelevated size="sm" color="primary" label="toggle" @click="onClick" />
+              <q-btn
+                unelevated
+                size="sm"
+                color="primary"
+                label="toggle"
+                @click="onClick"
+              />
             </q-item-section>
           </q-item>
 
@@ -87,27 +93,27 @@
 <script setup>
 import { useDefaultStore } from "src/stores/store";
 import { computed, ref, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
-import TableView from "./TableView.vue";
+//import { useRouter } from "vue-router";
+/*import TableView from "./TableView.vue";
 import { useCollection, useDocument } from "vuefire";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { firestore } from "../composables/firebase";
-import SurveillanceForm from "./SurveillanceForm.vue";
-import RaidForm from "./RaidForm.vue";
+import SurveillanceForm from "./SurveillanceForm.vue";*/
+import RaidForm from "src/components/forms/RaidForm.vue";
 // https://github.com/naver/billboard.js/wiki/CHANGELOG-v2#modularization-by-its-functionality
-import { bb, area, bar, zoom, line, spline } from "billboard.js";
+//import { bb, area, bar, zoom, line, spline } from "billboard.js";
 // 2) import css if your dev-env supports. If don't, include them via <link>
-import "billboard.js/dist/billboard.css";
+//import "billboard.js/dist/billboard.css";
 // or theme style. Find more themes from 'theme' folder
-import "billboard.js/dist/theme/dark.css";
+//import "billboard.js/dist/theme/dark.css";
 //import VueChartkick from "vue-chartkick";
 //import "chartkick/chart.js";
 
-const router = useRouter();
+//const router = useRouter();
 const store = useDefaultStore();
-const form = ref(null);
-const surveillanceDialog = ref(false);
-const raidDialog = ref(false);
+//const form = ref(null);
+//const surveillanceDialog = ref(false);
+//const raidDialog = ref(false);
 const showRaidPanel = ref(true);
 const showRaidDialog = ref(false);
 

@@ -1,6 +1,6 @@
 <template>
-  <q-header class="bg-teal">
-    <q-bar class="bg-transparent">
+  <q-header class="bg-teal-7">
+    <q-toolbar class="bg-transparent">
       <q-btn
         flat
         dense
@@ -15,7 +15,9 @@
         no-caps=""
         color="white"
         icon-right="person"
-        :label="$q.screen.lt.sm ? '' : store.user?.displayName"
+        :label="
+          $q.screen.lt.sm ? '' : store.user?.displayName || store.user?.email
+        "
       >
         <q-menu dark square="" class="q-pa-sm bg-blue-grey-9 shadow-0">
           <q-list dense style="min-width: 220px">
@@ -58,7 +60,7 @@
         @click="$q.fullscreen.toggle()"
         :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
       ></q-btn>
-    </q-bar>
+    </q-toolbar>
   </q-header>
 </template>
 

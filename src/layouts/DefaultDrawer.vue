@@ -4,34 +4,46 @@
     v-model="leftDrawerOpen"
     show-if-above=""
     :mini="miniMode"
-    :mini-width="$q.screen.lt.md ? 60 : 70"
-    :overlay="$q.screen.lt.sm && leftDrawerOpen"
+    :mini-width="$q.screen.lt.md ? 100 : 100"
     :behavior="$q.screen.gt.xs ? 'desktop' : 'mobile'"
-    :elevated="!$q.dark.isActive"
+    :elevated="false"
+    :width="180"
     style="letter-spacing: 1.2px; overflow: hidden"
     class="text-grey-2"
-    :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal-7'"
+    :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal'"
   >
     <q-item>
       <q-item-section class="text-grey-5">
-        {{ pkg.productName }} v {{ pkg.version }}
+        {{ pkg.productName }}
       </q-item-section>
 
-      <q-item-section avatar="" top>
+      <q-item-section avatar="">
         <q-btn
           flat
-          dense
-          rounded
           color=""
           :icon="miniMode && $q.screen.gt.xs ? 'arrow_right' : 'arrow_left'"
           :class="miniMode ? 'q-mr-md' : 'q-ml-md'"
+          class="full-width"
           @click="$q.screen.gt.xs ? toggleLeftMini() : toggleLeftDrawer()"
         />
       </q-item-section>
     </q-item>
+    <q-tabs
+      v-model="store.tabModel"
+      class="text-white"
+      vertical=""
+      indicator-color="amber"
+      shrink=""
+      active-bg-color="amber-8"
+    >
+      <q-tab name="search" icon="search" label="Search" />
+      <q-tab name="editor" icon="edit" label="Editor" />
+      <q-tab name="dashboard" icon="dashboard" label="Analyse" />
+      <q-tab icon="home" label="Home" @click="goHome" />
+    </q-tabs>
     <q-scroll-area class="fits">
       <q-list>
-        <q-item
+        <!--<q-item
           v-for="link in sidelinks"
           clickable
           v-ripple
@@ -52,6 +64,36 @@
           <q-item-section class="text-uppercase">
             <q-item-label>{{ link.title }}</q-item-label>
           </q-item-section>
+        </q-item>-->
+        <q-item
+          clickable
+          v-ripple
+          active-class="bg-teal-4"
+          class="q-mb-s"
+          @click="() => (store.dashboard = true)"
+        >
+          <q-item-section thumbnail="" class="text-white q-pl-md">
+            <q-icon name="dashboard" />
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label class="text-">Dashboard</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item
+          clickable
+          v-ripple
+          active-class="bg-teal-4"
+          class="q-mb-s"
+          @click="() => (store.dashboard = false)"
+        >
+          <q-item-section thumbnail="" class="text-white q-pl-md">
+            <q-icon name="edit" />
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label class="text-">Editor</q-item-label>
+          </q-item-section>
         </q-item>
         <q-item
           clickable
@@ -65,7 +107,7 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-uppercase">Logout</q-item-label>
+            <q-item-label class="text-">Logout</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -126,6 +168,9 @@ async function logout() {
     store.user = {};
     router.push({ name: "Login" });
   });
+}
+function goHome() {
+  router.push("/");
 }
 </script>
 <style>

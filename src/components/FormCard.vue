@@ -1,454 +1,373 @@
 <template>
-  <q-card
-    flat
-    square
-    class="my-card q-pb-xl bg"
-    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-'"
+  <q-tab-panels
+    v-model="store.tabModel"
+    animated
+    vertical=""
+    style="height: calc(100vh - 34px)"
+    class="q-pb-xl"
   >
-    <q-bar
-      class="q-pb-sm bg-transparent"
-      :class="$q.dark.isActive ? 'bg-blue-grey-8' : 'bg-teal-7'"
-    >
-      <q-tabs
-        v-model="tab"
-        narrow-indicator=""
-        indicator-color=""
-        inline-label=""
-        dense
-        align="left"
-        no-caps=""
-        mobile-arrows=""
-        outside-arrows=""
-        shrink=""
-        active-bg-color=""
-        :class="$q.dark.isActive ? 'text-teal-1' : 'text-white'"
+    <q-tab-panel name="editor">
+      <q-card
+        square
+        class="my-card q-pb-xl bg"
+        :class="$q.dark.isActive ? 'bg-blue-grey' : 'bg-teal-1'"
       >
-        <q-tab
-          name="search"
-          icon="search"
-          title="Search"
-          :label="$q.screen.lt.sm ? '' : 'Search'"
-          style="border-radius: 4px 4px 0 0"
-        />
-        <q-tab
-          name="details"
-          icon="edit"
-          title="Edit"
-          :label="$q.screen.lt.sm ? '' : 'Details'"
-          style="border-radius: 4px 4px 0 0"
-          v-if="isDocumentSaved"
-        />
-        <!--<q-tab
-          name="form"
-          icon="edit"
-          title="Edit"
-          :label="$q.screen.lt.sm ? '' : 'Form'"
-          style="border-radius: 4px 4px 0 0"
-          v-if="isDocumentSaved"
-        />-->
-
-        <q-tab
-          name="attachments"
-          icon="attachment"
-          title="attachments"
-          :label="$q.screen.lt.sm ? '' : 'Attach'"
-          style="border-radius: 4px 4px 0 0"
-          v-if="isDocumentSaved"
-        />
-        <q-tab
-          name="analytics"
-          icon="analytics"
-          title="Analytics"
-          :label="$q.screen.lt.sm ? '' : 'Timeline'"
-          style="border-radius: 4px 4px 0 0"
-          v-if="isDocumentSaved"
-        />
-        <q-tab
-          name="comments"
-          icon="comment"
-          title="Comment"
-          :label="$q.screen.lt.sm ? '' : 'Minutes'"
-          style="border-radius: 4px 4px 0 0"
-          v-if="isDocumentSaved"
-        />
-        <q-tab
-          name="dashboard"
-          icon="dashboard"
-          title="dashboard"
-          :label="$q.screen.lt.sm ? '' : 'dashboard'"
-          style="border-radius: 4px 4px 0 0"
-        />
-      </q-tabs>
-    </q-bar>
-    <q-tab-panels
-      style="height: calc(100vh - 128px)"
-      :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
-      :keep-alive="true"
-      ref="tabPanelsRef"
-      v-model="tab"
-      animated
-    >
-      <q-tab-panel name="search" style="overflow: auto">
-        <q-card flat :class="$q.dark.isActive ? 'bg-blue-grey-10' : ''">
-          <q-toolbar>
-            <q-icon :name="iconName" size="sm" class="q-mr-md" />
-            <q-toolbar-title>
-              {{ store.currentCollection }}
-            </q-toolbar-title>
-          </q-toolbar>
-          <q-card-section>
-            <search-panel ref="searchRef"></search-panel>
-            <search-list
-              :activeClass="
-                $q.dark.isActive
-                  ? 'text-yellow bg-grey-8'
-                  : 'text-teal bg-grey-2'
-              "
-            />
-            <q-btn
-              color="teal"
-              icon="add"
-              no-caps
-              unelevated=""
-              @click="showDialog(null, true)"
-            >
-              Add New Item
-            </q-btn>
-          </q-card-section>
-        </q-card>
-      </q-tab-panel>
-
-      <q-tab-panel name="details" style="overflow: auto">
-        <q-card
-          flat
-          class="my-card"
-          :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
+        <q-toolbar
+          class="q-pb-sm bg-transparent"
+          :class="$q.dark.isActive ? 'bg-blue-grey-8' : 'bg-teal-1'"
         >
-          <q-toolbar>
-            <q-icon :name="iconName" size="sm" class="q-mr-md" />
-            <span class="text-h6">
-              {{ store.currentCollection }} /
-              {{ currentDocument?.Title || currentDocument?.Name }}
-            </span>
+          <q-tabs
+            v-model="tab"
+            narrow-indicator=""
+            indicator-color=""
+            inline-label=""
+            dense
+            align="left"
+            no-caps=""
+            mobile-arrows=""
+            outside-arrows=""
+            shrink=""
+            active-bg-color=""
+            :class="$q.dark.isActive ? 'text-teal-1' : ''"
+          >
+            <q-btn dense flat icon="house" to="/" />
+            <q-tab
+              name="edit"
+              icon="edit"
+              title="Edit"
+              :label="$q.screen.lt.sm ? '' : 'Edit'"
+              style="border-radius: 4px 4px 0 0"
+            />
 
-            <q-toolbar-title></q-toolbar-title>
-            <q-btn flat icon="close" style="float: right" @click="close" />
-          </q-toolbar>
-          <q-card-section>
-            <slot>Form slot</slot>
-          </q-card-section>
-          <q-toolbar align="center" class="bottom-bar q-pb-md">
-            <!--<q-btn
+            <q-tab
+              name="attachments"
+              icon="attachment"
+              title="attachments"
+              :label="$q.screen.lt.sm ? '' : 'Attach'"
+              style="border-radius: 4px 4px 0 0"
+              v-if="isDocumentSaved"
+            />
+            <q-tab
+              name="timeline"
+              icon="timer"
+              title="Timeline"
+              :label="$q.screen.lt.sm ? '' : 'Timeline'"
+              style="border-radius: 4px 4px 0 0"
+              v-if="isDocumentSaved"
+            />
+            <q-tab
+              name="minutes"
+              icon="comment"
+              title="Minute"
+              :label="$q.screen.lt.sm ? '' : 'Minutes'"
+              style="border-radius: 4px 4px 0 0"
+              v-if="isDocumentSaved"
+            />
+          </q-tabs>
+        </q-toolbar>
+        <q-tab-panels
+          :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-1'"
+          :keep-alive="true"
+          ref="tabPanelsRef"
+          v-model="tab"
+          animated
+        >
+          <!--<q-tab-panel name="search" style="overflow: auto">
+            <q-card flat :class="$q.dark.isActive ? 'bg-blue-grey-10' : ''">
+              <q-toolbar>
+                <q-icon :name="iconName" size="sm" class="q-mr-md" />
+                <q-toolbar-title>
+                  {{ store.currentCollection }}
+                </q-toolbar-title>
+              </q-toolbar>
+              <q-card-section>
+                <search-panel ref="searchRef"></search-panel>
+                <search-list
+                  :activeClass="
+                    $q.dark.isActive
+                      ? 'text-yellow bg-grey-8'
+                      : 'text-teal bg-grey-2'
+                  "
+                />
+                <q-btn
+                  color="teal"
+                  icon="add"
+                  no-caps
+                  unelevated=""
+                  @click="showDialog(null, true)"
+                >
+                  Add New Item
+                </q-btn>
+              </q-card-section>
+            </q-card>
+          </q-tab-panel>-->
+
+          <q-tab-panel name="edit" style="overflow: auto">
+            <q-card
+              flat
+              class="my-card"
+              :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
+            >
+              <q-toolbar>
+                <q-icon :name="iconName" size="sm" class="q-mr-md" />
+                <span class="text-h6">
+                  {{ store.currentCollection }}
+                </span>
+
+                <q-toolbar-title></q-toolbar-title>
+                <q-btn flat icon="close" style="float: right" @click="close" />
+              </q-toolbar>
+              <q-card-section>
+                <slot>Form slot</slot>
+              </q-card-section>
+              <q-toolbar align="center" class="bottom-bar q-pb-md">
+                <!--<q-btn
               flat
               icon="edit"
               label="Edit"
               @click="showDialog(true)"
               v-if="!editForm"
             />-->
-            <q-toolbar-title></q-toolbar-title>
-            <q-btn
-              unelevated=""
-              icon="check"
-              label="Submit"
-              color="teal"
-              glossy
-              @click="onSave"
-              class="q-mr-xs"
-              v-if="editForm && !store.currentDocument?.id"
-            />
-            <q-btn
-              unelevated
-              icon="undo"
-              label="Reset"
-              color="red"
-              glossy
-              @click="cancelEdit"
-              class="q-mr-xs"
-              v-if="editForm"
-            />
-            <q-btn
-              unelevated
-              icon-right="close"
-              label="Close"
-              color="purple"
-              glossy
-              @click="close"
-            />
-          </q-toolbar>
-        </q-card>
-      </q-tab-panel>
+                <q-toolbar-title></q-toolbar-title>
+                <q-btn
+                  unelevated=""
+                  icon="check"
+                  label="Submit"
+                  color="teal"
+                  glossy
+                  @click="onSave"
+                  class="q-mr-xs"
+                  v-if="editForm && !store.currentDocument?.id"
+                />
+                <q-btn
+                  unelevated
+                  icon="undo"
+                  label="Reset"
+                  color="red"
+                  glossy
+                  @click="cancelEdit"
+                  class="q-mr-xs"
+                  v-if="editForm"
+                />
+                <q-btn
+                  unelevated
+                  icon-right="close"
+                  label="Close"
+                  color="purple"
+                  glossy
+                  @click="close"
+                />
+              </q-toolbar>
+            </q-card>
+          </q-tab-panel>
 
-      <q-tab-panel name="attachments" style="overflow: auto">
-        <q-card
-          flat
-          class="my-card"
-          :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
-        >
-          <q-toolbar>
-            <q-icon name="attachment" size="sm" class="q-mr-md" />
-            <span class="text-h6">
-              {{ store.currentCollection }} / Attachments</span
+          <q-tab-panel name="attachments" style="overflow: auto">
+            <q-card
+              flat
+              class="my-card"
+              :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
             >
-          </q-toolbar>
-          <q-card-section>
-            <q-list bordered>
-              <q-item>
-                <q-item-section>
-                  <label>Attachments</label>
-                  <TableView
-                    :editable="false"
-                    :deletable="true"
-                    :data="store.currentDocument?.Attachments"
-                    :columns="document_columns"
-                    :onAddItem="addAttachment"
-                    :onRemoveItem="deleteAttachment"
-                    :onEditItem="onEditDocument"
-                    :onViewItem="onViewDocument"
-                    v-if="store.currentDocument?.id"
-                  />
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-        </q-card>
-      </q-tab-panel>
+              <q-toolbar>
+                <q-icon name="attachment" size="sm" class="q-mr-md" />
+                <span class="text-h6">
+                  {{ store.currentCollection }} / Attachments</span
+                >
+              </q-toolbar>
+              <q-card-section>
+                <q-list bordered>
+                  <q-item>
+                    <q-item-section>
+                      <label>Attachments</label>
+                      <TableView
+                        :editable="false"
+                        :deletable="true"
+                        :data="store.currentDocument?.Attachments"
+                        :columns="document_columns"
+                        :onAddItem="addAttachment"
+                        :onRemoveItem="deleteAttachment"
+                        :onEditItem="onEditDocument"
+                        :onViewItem="onViewDocument"
+                        v-if="store.currentDocument?.id"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+            </q-card>
+          </q-tab-panel>
 
-      <q-tab-panel name="analytics" style="overflow: auto">
-        <q-card
-          flat
-          class="my-card"
-          :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
-        >
-          <q-toolbar>
-            <q-icon name="history" size="sm" class="q-mr-md" />
-            <span class="text-h6">
-              {{ store.currentCollection }} / History</span
+          <q-tab-panel name="timeline" style="overflow: auto">
+            <q-card
+              flat
+              class="my-card"
+              :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
             >
-          </q-toolbar>
-          <q-card-section>
-            <q-timeline
-              color="secondary"
-              :layout="$q.screen.gt.xs ? 'loose' : 'dense'"
-            >
-              <q-timeline-entry heading class="text-teal text-h6"
-                >History</q-timeline-entry
-              >
-              <q-timeline-entry
-                v-for="(h, i) of store.history"
-                :key="i"
-                :title="h.op"
-                :subtitle="new Date(h.time).toLocaleString()"
-              >
-                <div>By: {{ h.user }}</div>
-                <div v-if="h.op === 'Minuted'">To: {{ h.to }}</div>
-              </q-timeline-entry>
-            </q-timeline>
-          </q-card-section>
-        </q-card>
-      </q-tab-panel>
+              <q-toolbar>
+                <q-icon name="history" size="sm" class="q-mr-md" />
+                <span class="text-h6">
+                  {{ store.currentCollection }} / History</span
+                >
+              </q-toolbar>
+              <q-card-section>
+                <q-timeline
+                  color="secondary"
+                  :layout="$q.screen.gt.xs ? 'loose' : 'dense'"
+                >
+                  <q-timeline-entry heading class="text-teal text-h6"
+                    >History</q-timeline-entry
+                  >
+                  <q-timeline-entry
+                    v-for="(h, i) of store.history"
+                    :key="i"
+                    :title="h.op"
+                    :subtitle="new Date(h.time).toLocaleString()"
+                  >
+                    <div>By: {{ h.user }}</div>
+                    <div v-if="h.op === 'Minuted'">To: {{ h.to }}</div>
+                  </q-timeline-entry>
+                </q-timeline>
+              </q-card-section>
+            </q-card>
+          </q-tab-panel>
 
-      <q-tab-panel name="comments" style="overflow: auto" v-if="commentable">
-        <q-card
-          flat
-          class="my-card"
-          :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
-        >
-          <q-toolbar>
-            <q-icon name="comment" size="sm" class="q-mr-md" />
-            <span class="text-h6">
-              {{ store.currentCollection }} / Comments</span
+          <q-tab-panel name="minutes" style="overflow: auto" v-if="commentable">
+            <q-card
+              flat
+              class="my-card"
+              :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-'"
             >
-          </q-toolbar>
-          <q-card-section>
-            <CommentsPanel
-              :comments="store.comments"
-              :handleComment="handleComment"
-            />
-            <q-separator spaced inset vertical dark />
-            <q-form autofocus="" class="text-teal">
-              <label for="" class="">Write minutes</label>
-              <textarea
-                v-model="comment"
-                autofocus
-                rows="5"
-                class="full-width q-px-sm"
-                :class="$q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-white'"
-              ></textarea>
-              <q-bar class="bg-transparent">
-                <q-toolbar-title> </q-toolbar-title>
+              <q-toolbar>
+                <q-icon name="comment" size="sm" class="q-mr-md" />
+                <span class="text-h6">
+                  {{ store.currentCollection }} / minutes</span
+                >
+              </q-toolbar>
+              <q-card-section>
+                <MinutesPanel
+                  :minutes="store.minutes"
+                  :handleComment="handleComment"
+                />
+                <q-separator spaced inset vertical dark />
+                <q-form autofocus="" class="text-teal">
+                  <label for="" class="">Write minutes</label>
+                  <textarea
+                    v-model="comment"
+                    autofocus
+                    rows="5"
+                    class="full-width q-px-sm"
+                    :class="
+                      $q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-white'
+                    "
+                  ></textarea>
+                  <q-bar class="bg-transparent">
+                    <q-toolbar-title> </q-toolbar-title>
+                    <q-btn
+                      icon="check"
+                      class="q-mx-xs"
+                      size="md"
+                      label="Send"
+                      unelevated=""
+                      :disable="!comment"
+                      icon-right="arrow_right"
+                      color="teal"
+                    >
+                      <q-menu persistent="">
+                        <SubmitDialog />
+                      </q-menu>
+                    </q-btn>
+                    <q-btn
+                      :disable="!comment"
+                      icon="person"
+                      class="q-mx-xs"
+                      size="md"
+                      label="Assign"
+                      unelevated=""
+                      icon-right="arrow_right"
+                      color="purple"
+                    >
+                      <q-menu persistent="">
+                        <AssignDialog />
+                      </q-menu>
+                    </q-btn>
+                  </q-bar>
+                </q-form>
+              </q-card-section>
+              <q-bar align="center" class="bg-transparent">
                 <q-btn
                   icon="check"
                   class="q-mx-xs"
                   size="md"
-                  label="Send"
+                  label="Submit"
                   unelevated=""
                   :disable="!comment"
-                  icon-right="arrow_right"
-                  color="teal"
+                  v-if="!store.currentDocument?.id"
                 >
                   <q-menu persistent="">
                     <SubmitDialog />
                   </q-menu>
                 </q-btn>
                 <q-btn
+                  v-if="showAssignDialog"
                   :disable="!comment"
                   icon="person"
                   class="q-mx-xs"
                   size="md"
                   label="Assign"
                   unelevated=""
-                  icon-right="arrow_right"
-                  color="purple"
                 >
                   <q-menu persistent="">
                     <AssignDialog />
                   </q-menu>
                 </q-btn>
               </q-bar>
-            </q-form>
-          </q-card-section>
-          <q-bar align="center" class="bg-transparent">
-            <q-btn
-              icon="check"
-              class="q-mx-xs"
-              size="md"
-              label="Submit"
-              unelevated=""
-              :disable="!comment"
-              v-if="!store.currentDocument?.id"
-            >
-              <q-menu persistent="">
-                <SubmitDialog />
-              </q-menu>
-            </q-btn>
-            <q-btn
-              v-if="showAssignDialog"
-              :disable="!comment"
-              icon="person"
-              class="q-mx-xs"
-              size="md"
-              label="Assign"
-              unelevated=""
-            >
-              <q-menu persistent="">
-                <AssignDialog />
-              </q-menu>
-            </q-btn>
-          </q-bar>
-        </q-card>
-      </q-tab-panel>
-
-      <q-tab-panel name="dashboard" style="overflow: auto" class="">
-        <div class="row q-col-gutter-md" ref="chartref">
-          <div
-            class="col col-xs-12 col-sm-6 col-md-4 col-lg-3"
-            v-for="x of DASHBOARD_CARDS"
-            :key="x"
+            </q-card>
+          </q-tab-panel>
+        </q-tab-panels>
+        <CircularProgress />
+      </q-card>
+    </q-tab-panel>
+    <q-tab-panel name="dashboard">
+      <q-card flat class="my-card">
+        <q-toolbar>
+          <q-icon name="dashboard" size="sm" class="q-mr-md" />
+          <q-toolbar-title>
+            {{ store.currentCollection }} / dashboard
+          </q-toolbar-title>
+        </q-toolbar>
+        <q-card-section>
+          <DashboardViewer />
+        </q-card-section>
+      </q-card>
+    </q-tab-panel>
+    <q-tab-panel name="search" style="overflow: auto">
+      <q-card flat :class="$q.dark.isActive ? 'bg-blue-grey-10' : ''">
+        <q-toolbar>
+          <q-icon name="search" size="sm" class="q-mr-md" />
+          <q-toolbar-title>
+            {{ store.currentCollection }}
+          </q-toolbar-title>
+        </q-toolbar>
+        <q-card-section>
+          <search-panel ref="searchRef"></search-panel>
+          <search-list
+            :activeClass="
+              $q.dark.isActive ? 'text-yellow bg-grey-8' : 'text-teal bg-grey-2'
+            "
+          />
+          <q-btn
+            color="teal"
+            icon="add"
+            no-caps
+            unelevated=""
+            @click="showDialog(null, true)"
           >
-            <q-card
-              class="my-card"
-              :class="$q.dark.isActive ? 'bg-grey-10' : 'shadow-22'"
-            >
-              <q-bar class="bg-transparent">
-                <q-toolbar-title> </q-toolbar-title>
-                <q-btn flat dense icon="fullscreen" @click="zoomChart" />
-              </q-bar>
-              <q-card-section class="chart" v-if="tab === 'dashboard'">
-                <line-chart
-                  :download="true"
-                  :data="[
-                    {
-                      name: 'Food',
-                      data: {
-                        '2017-01-01': 3,
-                        '2017-01-02': 4,
-                        '2017-01-03': 7,
-                        '2017-01-04': 10,
-                        '2017-01-05': 3,
-                        '2017-01-06': 4,
-                      },
-                    },
-                    {
-                      name: 'Water',
-                      data: {
-                        '2017-01-01': 13,
-                        '2017-01-02': 9,
-                        '2017-01-03': 4,
-                        '2017-01-04': 10,
-                        '2017-01-05': 5,
-                        '2017-01-06': 4,
-                      },
-                    },
-                  ]"
-                ></line-chart>
-              </q-card-section>
-            </q-card>
-          </div>
-          <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
-            <q-card
-              class="my-card full-width"
-              :class="$q.dark.isActive ? 'bg-grey-10' : 'shadow-22'"
-            >
-              <q-bar class="bg-transparent">
-                <q-toolbar-title> </q-toolbar-title>
-                <q-btn flat dense icon="fullscreen" @click="zoomChart" />
-              </q-bar>
-              <q-card-section>
-                <area-chart
-                  :data="[
-                    {
-                      name: 'Food',
-                      data: {
-                        '2017-01-01': 2,
-                        '2017-01-02': 5,
-                        '2017-01-03': 7,
-                        '2017-01-04': 15,
-                        '2017-01-05': 12,
-                        '2017-01-06': 5,
-                        '2017-01-07': 2,
-                        '2017-01-08': 0,
-                      },
-                    },
-                    {
-                      name: 'Water',
-                      data: {
-                        '2017-01-01': 8,
-                        '2017-01-02': 7,
-                        '2017-01-03': 7,
-                        '2017-01-04': 5,
-                        '2017-01-05': 12,
-                        '2017-01-06': 15,
-                        '2017-01-07': 12,
-                        '2017-01-08': 10,
-                      },
-                    },
-                  ]"
-                ></area-chart>
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-        <!--<div class="row q-col-gutter-md">
-          <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
-            <q-card
-              class="my-card full-width full-height"
-              :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'shadow-22'"
-            >
-              <q-card-section class="text-h6 text-teal">
-                Analytics
-              </q-card-section>
-              <q-card-section> Lorem ipsum dolor sit amet </q-card-section>
-              <q-card-actions align="center">
-                <q-btn flat label="Action 1" />
-                <q-btn flat label="Action 2" />
-              </q-card-actions>
-            </q-card>
-          </div>
-        </div>-->
-      </q-tab-panel>
-    </q-tab-panels>
-    <CircularProgress />
-  </q-card>
+            Add New Item
+          </q-btn>
+        </q-card-section>
+      </q-card>
+    </q-tab-panel>
+  </q-tab-panels>
+
   <FileViewerDialog
     :docTitle="docTitle"
     :fileSource="fileSource"
@@ -463,9 +382,9 @@
     title=""
   />
   <q-dialog full-width v-model="zoom" persistent="">
-    <q-card class="full-width">
+    <q-card class="full-">
       <q-toolbar class="bg-transparent">
-        <q-toolbar-title> </q-toolbar-title>
+        <q-toolbar-title> {{ zoomTitle }}</q-toolbar-title>
         <q-btn flat dense icon="close" color="negative" @click="cancelZoom" />
       </q-toolbar>
       <q-card-section ref="zoomContainer"> </q-card-section>
@@ -475,49 +394,41 @@
 </template>
 
 <script setup>
-import CommentsPanel from "src/components/CommentsPanel.vue";
+import { useQuasar, Notify, Dialog } from "quasar";
+import { onMounted, ref, computed, inject, provide, watch } from "vue";
+import { useRoute } from "vue-router";
+import { useCollection, useDocument } from "vuefire";
+import { collection, query, orderBy, doc } from "firebase/firestore";
+import { getStorage, ref as reference, getDownloadURL } from "firebase/storage";
+import DashboardViewer from "src/components/dashboard/DashboardViewer.vue";
+import MinutesPanel from "src/components/CommentsPanel.vue";
 import { useDefaultStore } from "src/stores/store";
 import SearchPanel from "src/components/SearchPanel.vue";
-import { doc } from "firebase/firestore";
-import { useRoute } from "vue-router";
-import { useQuasar, Notify, Dialog } from "quasar";
-import * as remote from "../composables/remote";
-import { useCollection, useDocument } from "vuefire";
-import { collection, query, orderBy } from "firebase/firestore";
-import { firestore } from "../composables/firebase";
-//import { advancedSearch, loadDocuments } from "src/composables/searchProvider";
+import { firestore } from "src/composables/firebase";
 import { useDebounce } from "src/composables/use-debounce";
 import { getUser } from "src/composables/functions";
-import SearchList from "./SearchList.vue";
-import FileViewerDialog from "./FileViewerDialog.vue";
-import UploadDialog from "./UploadDialog.vue";
-import { getStorage, ref as reference, getDownloadURL } from "firebase/storage";
 import {
   onAddAttachment,
   onDeleteAttachment,
   getStorageFolder,
-} from "../composables/remote";
-import TableView from "./TableView.vue";
+  update,
+  create,
+} from "src/composables/remote";
 
-import {
-  onMounted,
-  onUpdated,
-  ref,
-  computed,
-  inject,
-  provide,
-  watch,
-  watchEffect,
-} from "vue";
+import SearchList from "./SearchList.vue";
+import FileViewerDialog from "./FileViewerDialog.vue";
+import UploadDialog from "./UploadDialog.vue";
+import TableView from "./TableView.vue";
 import AssignDialog from "./AssignDialog.vue";
 import SubmitDialog from "./SubmitDialog.vue";
 import CircularProgress from "./CircularProgress.vue";
+
 //import { LineChart } from "chart.js";
 //import ApexCharts from "apexcharts";
 //import VueApexCharts from "vue3-apexcharts";
 const $q = useQuasar();
 const store = useDefaultStore();
-const tab = ref("search");
+const tab = ref("edit");
 const tabPanelsRef = ref(null);
 const searchRef = ref(null);
 const searchText = ref("");
@@ -536,6 +447,8 @@ const chartref = ref(null);
 const zoomEl = ref(null);
 const zoom = ref(false);
 const zoomContainer = ref(null);
+const zoomTitle = ref("");
+
 const props = defineProps({
   reset: Function,
   validate: Function,
@@ -548,7 +461,7 @@ const currentDataSource = computed(() => store.query);
 const document_columns = [
   { name: "Title", field: "Title", label: "Title", align: "left" },
 ];
-const DASHBOARD_CARDS = [
+const analytics_CARDS = [
   {
     name: "Created",
     options: {
@@ -624,13 +537,14 @@ const currentDocument = computed({
   },
 });
 const commentable = computed(() => {
+  //console.log(currentDocument.value);
   return (
     //currentDocument.value?.id ||
     currentDocument.value?.id &&
     (store.user?.claims?.admin ||
-      store.user?.uid === currentDocument.value?.To ||
-      (currentDocument.value?.Status === "Created" &&
-        store.user?.uid === currentDocument.value?.CreatedBy))
+      store.user?.uid === currentDocument.value?.meta?.To ||
+      (currentDocument.value?.meta?.Status === "Created" &&
+        store.user?.uid === currentDocument.value?.meta?.CreatedBy))
   );
 });
 const isDocumentSaved = computed(() => {
@@ -654,15 +568,15 @@ async function onSave() {
       //throw { message: "Please fill form fields correctly" };
       let data = props.getDocument();
       if (store.currentDocument?.id) {
-        let dt = await remote.update(
+        let dt = await update(
           currentDocument.value.id,
           data,
           //currentDocument.value,
           collectionName
         );
       } else {
-        let response = await remote.create(data, collectionName, searchFields);
-        if (store.currentDocument) store.currentDocument.id = response.data;
+        let response = await create(data, collectionName, searchFields);
+        if (store.currentDocument) store.currentDocument.id = response;
         store.currentDocument = {};
       }
       //pendingEdit.value = false;
@@ -678,13 +592,13 @@ async function onSave() {
       editForm.value = false;
       tabPanelsRef.value.previous();
     } catch (error) {
-      //console.error(error);
+      console.error(error);
       Dialog.create({
+        title: "Error",
         timeout: 2000,
-        textColor: "white",
         message: error.message,
         icon: "error",
-        iconColor: "white",
+        iconColor: "warning",
         color: "red",
       });
       /*Notify.create({
@@ -703,18 +617,19 @@ async function onSave() {
 function resetValues() {
   currentDocument.value = {};
   store.searchResults = [];
-  store.comments = [];
+  store.minutes = [];
 }
 function cancelEdit() {
   props.setCurrentDoc(Object.assign({}, store.currentDocument));
   props.reset();
   loading.value = false;
   currentDocument.value = {};
+  //tab.value = "edit";
 }
 
 function close() {
   cancelEdit();
-  tabPanelsRef.value.previous();
+  //tabPanelsRef.value.previous();
   editForm.value = false;
   loading.value = false;
   currentDocument.value = {};
@@ -730,7 +645,8 @@ function showDialog(edit, move) {
   }
   if (move) {
     //tabPanelsRef.value.next();
-    tab.value = "details";
+    tab.value = "edit";
+    store.tabModel = "editor";
   }
 }
 const loadDocument = useDebounce(async (docId) => {
@@ -742,7 +658,8 @@ const loadDocument = useDebounce(async (docId) => {
   store.currentDocument = useDocument(docSource);
   //store.currentDocumentId = docId;
   loading.value = false;
-  //tabPanelsRef.value?.next();
+  //tabPanelsRef.value="edit";
+  store.tabModel = "editor";
 }, 500);
 function addAttachment() {
   dialogModel.value = true;
@@ -813,7 +730,7 @@ function onDocumentUploaded(doc) {
 async function loadHash(hash) {
   const docId = hash.substring(1);
   await loadDocument(docId);
-  tab.value = "details";
+  tab.value = "edit";
 }
 function cancelZoom(e) {
   const el = zoomContainer.value;
@@ -822,8 +739,9 @@ function cancelZoom(e) {
   //const copy = e.target.parentElement.parentElement.parentElement.parentElement;
   zoom.value = false;
   //console.log(el, next);
+  //document.replaceChild()
   setTimeout(() => {
-    card.insertBefore(el.$el, next);
+    card.replaceChild(el.$el, next);
   }, 10);
 }
 function zoomChart(e) {
@@ -833,6 +751,7 @@ function zoomChart(e) {
   setTimeout(() => {
     const el = zoomContainer.value.$el;
     const copy = card.firstElementChild.nextSibling;
+    zoomTitle.value = card.firstElementChild.firstElementChild.textContent;
     el.appendChild(copy.firstElementChild);
   }, 100);
 }
@@ -864,7 +783,7 @@ watch(
         orderBy("time", "asc")
       );
       store.history = useCollection(histSource);
-      store.comments = useCollection(
+      store.minutes = useCollection(
         query(
           collection(firestore, collectionName, doc.id, "Minutes"),
           orderBy("time", "asc")
@@ -880,6 +799,8 @@ onMounted(async () => {
   store.searchResults = useCollection(currentDataSource);
   searchRef.value?.searchNow();
   editForm.value = props.getDocument()?.id ? false : true;
+  store.tabModel = "search";
+  tab.value = "edit";
 });
 //this.gradient = this.$refs.canvas.getContext("2d").createLinearGradient(0, 0, 0, 450);
 //console.log(this.gradient);

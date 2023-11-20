@@ -184,7 +184,8 @@ function sendMessage(data, callback) {
   const https = require("https");
   const { to, from, body } = data;
   if (!isPhoneNumber(to)) {
-    throw new Error("Inalid phone number.");
+    callback("Inalid phone number.");
+    return;
   }
   //const uri = "https://www.bulksmsnigeria.com/api/v1/sms/create?";
   const query = `from=${from}&to=${to}&body=${body}&api_token=${API_TOKEN}`;
@@ -208,7 +209,29 @@ function sendMessage(data, callback) {
       callback(err, null);
     });
 }
-
+async function sendCustomEmail(
+  receiverEmail,
+  title,
+  recipientName,
+  message,
+  html,
+  link,
+  buttonText
+) {
+  const sendEmail = require("./emailservice.js").sendEmail;
+  const options = {
+    title,
+    recipientName,
+    message,
+    message2: html,
+    link,
+    button: buttonText,
+  };
+  const info = await sendEmail(receiverEmail, options);
+  //logger.info("Message sent: %s", receiverEmail, info);
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+  return info;
+}
 exports.resetpassword = onCall(async (request) => {
   if (!request.data?.email)
     throw new HttpsError("bad-request", "Email required");
@@ -640,7 +663,7 @@ exports.beforeusersignin = beforeUserSignedIn(async (event) => {
   }
 });
 
-exports.sendsms = onDocumentCreated("SMS/{sid}", async (event) => {
+/*exports.sendsms = onDocumentCreated("SMS/{sid}", async (event) => {
   const snapshot = event.data;
   if (!snapshot) {
     //console.log("No data associated with the event");
@@ -648,11 +671,6 @@ exports.sendsms = onDocumentCreated("SMS/{sid}", async (event) => {
   }
   const data = snapshot.data();
   if (!isPhoneNumber(data.phone)) return;
-  /*throw new HttpsError(
-      "bad-request",
-      "Phone number not in correct format.",
-      "Phone number should be a number."
-    );*/
   const to = formatPhoneNumber(data.phone);
   const from = SENDER_ID;
   const documentId = data.docId;
@@ -662,7 +680,43 @@ exports.sendsms = onDocumentCreated("SMS/{sid}", async (event) => {
     //if (err) console.log(err);
     //if (info) return info;
   });
-});
+});*/
+exports.oncomment = onDocumentCreated(
+  "{collectionId}/{docId}/Minutes/{minuteId}",
+  async (event) => {
+    const snapshot = event.data;
+    console.log(event);
+    if (!snapshot) {
+      //console.log("No data associated with the event");
+      return;
+    }
+    const data = snapshot.data();
+    const user = await getAuth().getUser(data.toid);
+    if (!user) return;
+    let to = formatPhoneNumber(user?.phoneNumber);
+    let receiverEmail = user.email;
+    const from = SENDER_ID;
+    const documentId = event.params.docId;
+    const coll = event.params.collectionId;
+    const link = `${BASE_URL}/${coll}/#${documentId}/`;
+    const body = `A document for your attention: ${link}`;
+    sendMessage({ to, from, body }, (err, info) => {
+      // for production comment || info
+      if (err || info) {
+        sendCustomEmail(
+          receiverEmail,
+          "Document waiting",
+          snapshot.to,
+          body,
+          body,
+          link,
+          "Open document"
+        ).catch((e) => {});
+      }
+      //if (info) return info;
+    });
+  }
+);
 
 exports.sendcomplaintnotification = onDocumentCreated(
   "Complaints/{sid}",

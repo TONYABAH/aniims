@@ -49,10 +49,10 @@
 </template>
 
 <script setup>
-import { useDefaultStore } from "src/stores/store";
+//import { useDefaultStore } from "src/stores/store";
 import { computed, ref, inject } from "vue";
 import LocationForm from "./LocationForm.vue";
-const store = useDefaultStore();
+//const store = useDefaultStore();
 const props = defineProps({
   popupModel: { type: Boolean, default: false },
   onChangeModel: Function,

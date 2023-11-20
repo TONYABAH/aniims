@@ -80,7 +80,7 @@ const createdAt = function (item) {
 function selectItem(item, i) {
   link.value = i;
   //console.log(item);
-  window.location.hash = "#" + item.id;
+  //window.location.hash = "#" + item.id;
   onLoad(item, i);
 }
 
