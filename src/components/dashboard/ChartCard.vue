@@ -2,7 +2,7 @@
   <q-card
     :flat="$q.dark.isActive || $q.screen.lt.sm"
     class="my-card"
-    :class="$q.dark.isActive ? 'bg-grey-10' : 'shadow-16'"
+    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-22'"
   >
     <q-bar class="bg-transparent">
       <q-toolbar-title></q-toolbar-title>

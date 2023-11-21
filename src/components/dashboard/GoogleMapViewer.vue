@@ -1,6 +1,6 @@
 <template>
   <ChartCard>
-    <div id="map_div"></div>
+    <div :id="id"></div>
   </ChartCard>
 </template>
 
@@ -8,6 +8,7 @@
 import { onMounted } from "vue";
 import ChartCard from "./ChartCard.vue";
 
+const id = "map__" + Math.random().toString(32).substring(2);
 const props = defineProps({
   name: String,
   title: String,
@@ -23,18 +24,14 @@ google.charts.setOnLoadCallback(drawMap);
 function drawMap() {
   var data = google.visualization.arrayToDataTable([
     ["Address", "Location"],
-    ["Apapa, Lagos, Nigeria", "Apapa"],
     ...props.data,
   ]);
   var options = {
-    //sizeAxis: { minValue: 0, maxValue: 100 },
-    //colorAxis: { colors: ["#e7711c", "#4374e0"] }, // orange to blue
     showTooltip: true,
     showInfoWindow: true,
     useMapTypeControl: true,
     region: "NG",
     displayMode: "markers",
-    //center: { lat: 8.397, lng: 15.644 },
     //zoom: 1,
     icons: {
       default: {
