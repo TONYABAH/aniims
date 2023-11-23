@@ -197,19 +197,11 @@ const onValidateAddress = async (address) => {
 };
 watch(
   () => location.value.State,
-  (val) => {
+  () => {
     if (location.value.City) location.value.City = null;
   }
 );
-watch(
-  () => location.value.City,
-  async (val) => {
-    if (val) {
-      //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
-      //onValidateAddress(address);
-    }
-  }
-);
+
 defineExpose({
   validate,
   reset,
