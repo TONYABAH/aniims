@@ -28,9 +28,12 @@
       type="text"
       :readonly="readOnly"
       outlined
+      multiline
     >
       <q-btn
-        color="primary"
+        unelevated
+        glossy
+        color="teal"
         icon="map"
         label="Validate"
         @click="onValidateAddress(location.Address)"
@@ -131,8 +134,9 @@ const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
-    const { Addr, Lat, Lng, Comp } = await geo.getLocation(address);
-    console.log(Comp);
+    const { addr, lat, lng, comp, country, state, city } =
+      await geo.getLocation(address);
+    //console.log(Comp);
     Dialog.create({
       title: "Accept Address?",
       message: "Select Location components to use",
@@ -149,31 +153,23 @@ const onValidateAddress = async (address) => {
         model: ["address", "location"],
         // inline: true
         items: [
-          { label: Addr, value: "address", color: "secondary" },
-          { label: Lat + " " + Lng, value: "location", color: "secondary" },
+          { label: addr, value: "address", color: "secondary" },
+          { label: lat + " " + lng, value: "location", color: "secondary" },
           // { label: Lng, value: "longitude", color: "secondary" },
         ],
       },
     })
       .onOk((data) => {
         if (data.includes("location")) {
-          location.value.Lat = Lat ? Lat : "";
-          location.value.Lng = Lng ? Lng : "";
+          location.value.Lat = lat;
+          location.value.Lng = lng;
         }
-        if (data.includes("address"))
-          location.value.Address = Addr ? Addr : location.value.Address;
-
-        const country = Comp.find((c) => c.types?.includes("country"));
+        if (data.includes("address")) {
+          location.value.Address = addr;
+        }
+        //const country = Comp.find((c) => c.types?.includes("country"));
         if (country) location.value.Country = country.long_name;
-
-        const state = Comp.find((c) =>
-          c.types?.includes("administrative_area_level_1")
-        );
         if (state) location.value.State = state.long_name;
-
-        const city = Comp.find((c) =>
-          c.types?.includes("administrative_area_level_2")
-        );
         if (city) {
           setTimeout(() => (location.value.City = city.long_name), 100);
         }
