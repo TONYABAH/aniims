@@ -323,7 +323,7 @@
             </q-card>
           </q-tab-panel>
         </q-tab-panels>
-        <CircularProgress />
+        <CircularProgress :loading="store.loading" />
       </q-card>
     </q-tab-panel>
     <q-tab-panel name="dashboard">
@@ -334,9 +334,7 @@
             {{ store.currentCollection }} / dashboard
           </q-toolbar-title>
         </q-toolbar>
-        <q-card-section>
-          <DashboardViewer />
-        </q-card-section>
+        <DashboardViewer />
       </q-card>
     </q-tab-panel>
     <q-tab-panel name="search" style="overflow: auto">

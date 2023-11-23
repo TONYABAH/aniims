@@ -23,7 +23,7 @@ google.charts.setOnLoadCallback(drawMap);
 
 function drawMap() {
   var data = google.visualization.arrayToDataTable([
-    ["Address", "Location"],
+    //["Address", "Location"],
     ...props.data,
   ]);
   var options = {
@@ -42,7 +42,7 @@ function drawMap() {
       },
     },
   };
-  var map = new google.visualization.Map(document.getElementById("map_div"));
+  var map = new google.visualization.Map(document.getElementById(id));
 
   map.draw(data, options);
 }

@@ -1,7 +1,7 @@
 <template>
   <q-circular-progress
     indeterminate
-    :size="size"
+    :size="size + 'px'"
     :thickness="thickness"
     color="lime"
     center-color="grey-8"
@@ -9,7 +9,7 @@
     class="q-ma-md"
     style="position: absolute"
     :style="style"
-    v-if="store.loading"
+    v-if="loading"
   />
 </template>
 <script setup>
@@ -20,12 +20,16 @@ const store = useDefaultStore();
 const $q = useQuasar();
 const props = defineProps({
   size: {
-    type: String,
-    default: "190px",
+    type: Number,
+    default: 148,
   },
   thickness: {
     type: Number,
     default: 0.3,
+  },
+  loading: {
+    type: Boolean,
+    default: () => false,
   },
 });
 const style = computed(() => {

@@ -1,70 +1,70 @@
 <template>
-  <q-card flat class="my-card">
-    <div>
-      <div class="row q-col-gutter-md">
-        <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-          <LineChartViewer
-            :data="lineChartData"
-            name="LineChart"
-            title="Line chart"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-          <PieChartViewer
-            :data="pieChartData"
-            name="PieChart"
-            title="Pie chart"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-12 col-md-4 col-lg-3">
-          <PieChartViewer
-            :donut="true"
-            :data="pieChartData"
-            name="DonutChart"
-            title="Donut chart"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
-          <PieChart3DhartViewer
-            :data="pieChartData"
-            name="PieChart"
-            title="Pie chart"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-          <LineChartViewer
-            :area="true"
-            :data="lineChartData"
-            name="AreaChart"
-            title="Area chart"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-          <LineChartViewer
-            :area="true"
-            :data="lineChartData"
-            name="Chart"
-            title="Area chart"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
-          <BarChartViewer
-            :data="chartdata"
-            name="BarChart"
-            title="Bar chart"
-            :vertical="true"
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
-          <GoogleMapViewer
+  <div>
+    <div class="row q-col-gutter-sm">
+      <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        <!--<AnalogClock class="q-pl-xl" />-->
+        <LocationForm />
+      </div>
+    </div>
+    <div class="row q-col-gutter-sm">
+      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <LineChartViewer
+          :data="lineChartData"
+          name="LineChart"
+          title="Line chart"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <PieChartViewer
+          :data="pieChartData"
+          name="PieChart"
+          title="Pie chart"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-12 col-md-4 col-lg-3">
+        <PieChartViewer
+          :donut="true"
+          :data="pieChartData"
+          name="DonutChart"
+          title="Donut chart"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
+        <GoogleGeoViewer :options="geoChartOptions" :data="geoData" />
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <LineChartViewer
+          :area="true"
+          :data="lineChartData"
+          name="AreaChart"
+          title="Area chart"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <LineChartViewer
+          :area="true"
+          :data="lineChartData"
+          name="Chart"
+          title="Area chart"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
+        <BarChartViewer
+          :data="chartdata"
+          name="BarChart"
+          title="Bar chart"
+          :vertical="true"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <!--<GoogleMapViewer
             :data="geoData"
             name="GoogleMap"
             title="Google Map"
-          />
-        </div>
+          />-->
       </div>
     </div>
-  </q-card>
+  </div>
 </template>
 
 <script setup>
@@ -73,19 +73,66 @@ import PieChartViewer from "./PieChartViewer.vue";
 import ScatterChartViewer from "./ScatterChartViewer.vue";
 import BarChartViewer from "./BarChartViewer.vue";
 import PieChart3DhartViewer from "./PieChart3DViewer.vue";
-import GoogleMapViewer from "./GoogleMapViewer.vue";
+//import GoogleMapViewer from "./GoogleMapViewer.vue";
+import GoogleGeoViewer from "./GoogleGeoViewer.vue";
+import AnalogClock from "../AnalogClock.vue";
 //import StreetViewer from "./StreetViewer.vue";
-
+import { onMounted } from "vue";
+import LocationForm from "../forms/LocationForm.vue";
+const geoChartOptions = {
+  chart: {
+    title: "Company Performance",
+    subtitle: "Sales, Expenses, and Profit: 2014-2017",
+  },
+  region: "NG",
+  displayMode: "text",
+  //colorAxis: { colors: ["#00853f", "black", "#e31b23"] },
+  backgroundColor: "#81d4fa",
+  datalessRegionColor: "#efefef",
+  defaultColor: "#f5f5f5",
+  showTooltip: true,
+  showInfoWindow: true,
+  useMapTypeControl: true,
+  icons: {
+    default: {
+      normal:
+        "https://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Push-Pin-1-Chartreuse-icon.png",
+      selected:
+        "https://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Push-Pin-1-Right-Chartreuse-icon.png",
+    },
+  },
+  maps: {
+    styledMap: {
+      name: "Styled",
+      styles: [
+        { featureType: "poi.attraction", stylers: [{ color: "#fce8b2" }] },
+        {
+          featureType: "road.highway",
+          stylers: [{ hue: "#0277bd" }, { saturation: -50 }],
+        },
+        {
+          featureType: "road.highway",
+          elementType: "labels.icon",
+          stylers: [{ hue: "#000" }, { saturation: 100 }, { lightness: 50 }],
+        },
+        {
+          featureType: "landscape",
+          stylers: [{ hue: "#259b24" }, { saturation: 10 }, { lightness: -22 }],
+        },
+      ],
+    },
+  },
+};
 const geoData = [
   ["Shomolu, Lagos, Nigeria", "Shomolu"],
   ["Ketu, Lagos, Nigeria", "Ketu"],
   ["Ilaje, Lagos, Nigeria", "Ilaje"],
   ["Ladilak", "Ladilak"],
   ["Palmgrove, Lagos, Nigeria", "Palmgrove"],
-  ["Ikeja", "Ikeja"],
+  ["Ikeja, Lagos", "Ikeja"],
   ["36 Adeshina Street, Ladilak, Bariga, Lagos", "Adeshina"],
-  ["Kaduna, Kaduna", "Kaduna"],
-  ["Asaba, Delta", "Asaba"],
+  //["Kaduna, Kaduna", "Kaduna"],
+  //["Asaba, Delta", "Asaba"],
 ];
 const pieChartData = [
   ["Food", 44],
@@ -145,4 +192,10 @@ const chartdata = [
     },
   },
 ];
+function logData() {
+  console.log(new Date());
+  window.requestAnimationFrame(logData);
+}
+//window.requestAnimationFrame(logData);
+onMounted(() => {});
 </script>
