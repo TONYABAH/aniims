@@ -28,7 +28,14 @@
       type="text"
       :readonly="readOnly"
       outlined
-    />
+    >
+      <q-btn
+        color="primary"
+        icon="map"
+        label="Validate"
+        @click="onValidateAddress(location.Address)"
+      />
+    </q-input>
     <q-separator spaced inset vertical dark />
     <label>Location State</label>
     <q-select
@@ -78,7 +85,7 @@ import {
 //import GoogleMapViewer from "../dashboard/GoogleMapViewer.vue";
 import GoogleGeoViewer from "../dashboard/GoogleGeoViewer.vue";
 import { useGeolocation } from "src/composables/use-geocation";
-import { Dialog } from "quasar";
+import { Dialog, Notify } from "quasar";
 import CircularProgress from "src/components/CircularProgress.vue";
 
 const geo = useGeolocation();
@@ -119,93 +126,87 @@ const validate = async () => await form.value?.validate(true);
 function reset() {
   form.value?.resetValidation();
 }
-const getGeoLocation = async (address, callback) => {
-  const { Geocoder } = await google.maps.importLibrary("geocoding");
-  var geocoder = new Geocoder();
-  var address = "10 - 15 Mobil Road, Apapa, Lagos Nigeria"; //document.getElementById("address").value;
-  return geocoder.geocode(
-    { address: address },
-    function (results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-        //console.log(results[0].geometry.location.lng());
-        /*return Promise.resolve({
-          Lat: results[0].geometry.location.lat(),
-          Lng: results[0].geometry.location.lng(),
-          Loc: results[0].geometry.location,
-        });*/
-        if (callback) callback(null, results[0].geometry.location);
-      } else {
-        console.log(
-          "Geocode was not successful for the following reason: " + status
+
+const onValidateAddress = async (address) => {
+  loading.value = true;
+  //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+  try {
+    const { Addr, Lat, Lng, Comp } = await geo.getLocation(address);
+    console.log(Comp);
+    Dialog.create({
+      title: "Accept Address?",
+      message: "Select Location components to use",
+      ok: {
+        push: true,
+      },
+      cancel: {
+        push: true,
+        color: "negative",
+      },
+      persistent: true,
+      options: {
+        type: "checkbox",
+        model: ["address", "location"],
+        // inline: true
+        items: [
+          { label: Addr, value: "address", color: "secondary" },
+          { label: Lat + " " + Lng, value: "location", color: "secondary" },
+          // { label: Lng, value: "longitude", color: "secondary" },
+        ],
+      },
+    })
+      .onOk((data) => {
+        if (data.includes("location")) {
+          location.value.Lat = Lat ? Lat : "";
+          location.value.Lng = Lng ? Lng : "";
+        }
+        if (data.includes("address"))
+          location.value.Address = Addr ? Addr : location.value.Address;
+
+        const country = Comp.find((c) => c.types?.includes("country"));
+        if (country) location.value.Country = country.long_name;
+
+        const state = Comp.find((c) =>
+          c.types?.includes("administrative_area_level_1")
         );
-        if (callback) callback(status);
-        //return Promise.reject(status);
-      }
-    },
-    1000
-  );
+        if (state) location.value.State = state.long_name;
+
+        const city = Comp.find((c) =>
+          c.types?.includes("administrative_area_level_2")
+        );
+        if (city) {
+          setTimeout(() => (location.value.City = city.long_name), 100);
+        }
+      })
+      .onCancel(() => {
+        // console.log('Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      });
+  } catch (e) {
+    //console.log(e);
+    Notify.create({
+      title: "Error",
+      message: e.message || e,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
 };
 watch(
   () => location.value.State,
   (val) => {
-    location.value.City = null;
+    if (location.value.City) location.value.City = null;
   }
 );
 watch(
   () => location.value.City,
   async (val) => {
     if (val) {
-      loading.value = true;
-      const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
-      try {
-        const { Addr, Lat, Lng } = await geo.getLocation(address);
-        Dialog.create({
-          title: "Accept Address?",
-          message: "Select Location components to use",
-          ok: {
-            push: true,
-          },
-          cancel: {
-            push: true,
-            color: "negative",
-          },
-          persistent: true,
-          options: {
-            type: "checkbox",
-            model: ["address", "location"],
-            // inline: true
-            items: [
-              { label: Addr, value: "address", color: "secondary" },
-              { label: Lat + " " + Lng, value: "location", color: "secondary" },
-              // { label: Lng, value: "longitude", color: "secondary" },
-            ],
-          },
-        })
-          .onOk((data) => {
-            if (data.includes("location")) {
-              location.value.Lat = Lat ? Lat : "";
-              location.value.Lng = Lng ? Lng : "";
-            }
-            if (data.includes("address"))
-              location.value.Address = Addr ? Addr : location.value.Address;
-          })
-          .onCancel(() => {
-            // console.log('Cancel')
-          })
-          .onDismiss(() => {
-            // console.log('I am triggered on both OK and Cancel')
-          });
-        //console.log(JSON.stringify(data));
-        //Lat: results[0].geometry.location.lat(),
-        //Lng: results[0].geometry.location.lng(),
-        //Loc: results[0].geometry.location,
-        //location.value.Lat = loc.lat();
-        //location.value.Lng = loc.lng();
-      } catch (e) {
-        console.log(e);
-      } finally {
-        loading.value = false;
-      }
+      //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+      //onValidateAddress(address);
     }
   }
 );
@@ -213,6 +214,5 @@ defineExpose({
   validate,
   reset,
   location,
-  getGeoLocation,
 });
 </script>
