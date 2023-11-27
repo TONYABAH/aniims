@@ -536,8 +536,8 @@ const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
-    let _address = destruction.value.Name
-      ? destruction.value.Name + ", " + address
+    let _address = destruction.value.CoyName
+      ? destruction.value.CoyName + ", " + address
       : address;
     const { addr, lat, lng, comp, country, state, city } =
       await geo.getLocation(_address);

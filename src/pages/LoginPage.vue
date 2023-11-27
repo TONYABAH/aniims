@@ -4,7 +4,7 @@
     :class="$q.screen.gt.xs ? 'row' : ''"
     style="padding: 0px"
   >
-    <div class="col col-sm-6 col-md-5 col-lg-4 col-xl-3 q-px-xs">
+    <div class="col col-sm-6 col-md-5 col-lg-4 col-xl-3 q-pa-xs">
       <q-card
         :flat="$q.screen.lt.sm"
         square=""
@@ -12,7 +12,7 @@
         :style="$q.screen.lt.sm ? 'width: calc(100vw + 10px);' : ''"
         style="height: calc(100vh - 0px);margin-left:-10px;padding:0; border 2px solid red"
       >
-        <q-card-section align="center" class="bg-blue-8 text-grey-1">
+        <q-card-section align="center" class="bg-teal text-grey-1">
           <q-avatar size="76px" font-size="76px" icon="lock" />
         </q-card-section>
         <q-card-section align="center">
@@ -91,7 +91,7 @@
             no-caps
             glossy
             unelevated
-            color="primary"
+            color="secondary"
             @click="submit"
             label="Login"
             class="text-white q-ml-xs"

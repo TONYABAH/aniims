@@ -95,11 +95,11 @@
       <q-input
         v-model="complaint.Phone"
         type="text"
-        hide-bottom-space=""
         outlined
         square
         :rules="[(val) => !!val || 'Address is required']"
         lazy-rules="ondemand"
+        hide-bottom-space=""
       />
       <q-separator spaced inset vertical dark />
       <label>Contact email</label>
@@ -156,7 +156,27 @@
       <q-input outlined square v-model="complaint.CoyName" type="text" />
       <q-separator spaced inset vertical dark />
       <label>Company address</label>
-      <q-input outlined square v-model="complaint.CoyAddress" type="text" />
+      <q-input outlined square v-model="complaint.CoyAddress" type="text">
+        <q-btn
+          unelevated
+          glossy
+          color="teal"
+          :label="$q.screen.gt.xs ? 'Validate' : ''"
+          @click="onValidateAddress(complaint.CoyAddress)"
+          v-if="complaint.CoyAddress"
+        />
+        <template v-slot:prepend>
+          <q-btn
+            dense
+            unelevated
+            glossy
+            color="teal"
+            icon="map"
+            @click="onPreviewMap"
+            v-if="complaint.Lat && complaint.Lng"
+          />
+        </template>
+      </q-input>
       <q-separator spaced inset vertical dark />
       <label>Company email</label>
       <q-input outlined square v-model="complaint.CoyEmail" type="text" />
@@ -218,7 +238,11 @@
       </q-card-section>
       <q-card-section>
         <q-scroll-area style="width: 400px; height: 280px">
-          <LocationForm :data="location" :setLocation="setLocation" />
+          <LocationForm
+            ref="locationFormRef"
+            :data="location"
+            :setLocation="setLocation"
+          />
         </q-scroll-area>
       </q-card-section>
       <q-card-actions align="right">
@@ -240,6 +264,11 @@
     :model="uploadDialogModel"
     :set-model="(v) => (uploadDialogModel = v)"
   />
+  <q-dialog v-model="previewMap" class="full-width">
+    <q-card flat class="full-width">
+      <GoogleGeoViewer :data="geoData.data" />
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -253,8 +282,13 @@ import FileViewerDialog from "src/components/FileViewerDialog.vue";
 import UploadDialog from "src/components/UploadDialog.vue";
 import { onAddAttachment, onDeleteAttachment } from "../composables/remote";
 import Clipboard from "src/utils/clipboard.js";
-
+import { useGeolocation } from "src/composables/use-geocation";
+//import CircularProgress from "src/components/CircularProgress.vue";
+import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
 //const $q = useQuasar();
+
+const geo = useGeolocation();
+const locationFormRef = ref(null);
 const uploadDialogModel = ref(false);
 const fileViewerDialogModel = ref(false);
 const document_columns = [
@@ -277,6 +311,9 @@ const props = defineProps({
   data: Object,
   setData: Function,
 });
+const loading = ref(false);
+const previewMap = ref(false);
+const geoData = ref({});
 const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn");
 const docTitle = ref("");
@@ -343,6 +380,7 @@ function copyToClipboard(val) {
   }, 1000);
 }
 async function addLocation(loc) {
+  if (!(await locationFormRef.value?.validate())) return;
   const data = Object.assign({}, location.value);
   if (complaint.value?.id) {
     await onAddDocument("Complaints", complaint.value.id, "Locations", data);
@@ -452,7 +490,82 @@ async function onViewAttachment(d) {
   docTitle.value = d.Title;
   fileViewerDialogModel.value = true;
 }
-
+const onPreviewMap = () => {
+  const data = {
+    name: complaint.value.CoyAddress,
+    data: [
+      ["lat", "lng"],
+      [complaint.value?.Lat, complaint.value?.Lng],
+    ],
+  };
+  geoData.value = data;
+  previewMap.value = true;
+};
+const onValidateAddress = async (address) => {
+  loading.value = true;
+  //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+  try {
+    let _address = complaint.value.CoyName
+      ? complaint.value.CoyName + ", " + address
+      : address;
+    const { addr, lat, lng, comp, country, state, city } =
+      await geo.getLocation(_address);
+    //console.log(Comp);
+    dialog
+      .create({
+        title: "Accept Address?",
+        message: "Select Location components to use",
+        ok: {
+          push: true,
+        },
+        cancel: {
+          push: true,
+          color: "negative",
+        },
+        persistent: true,
+        options: {
+          type: "checkbox",
+          model: ["address", "location"],
+          // inline: true
+          items: [
+            { label: addr, value: "address", color: "secondary" },
+            { label: lat + " " + lng, value: "location", color: "secondary" },
+            // { label: Lng, value: "longitude", color: "secondary" },
+          ],
+        },
+      })
+      .onOk((data) => {
+        if (data.includes("location")) {
+          complaint.value.Lat = lat;
+          complaint.value.Lng = lng;
+        }
+        if (data.includes("address")) {
+          complaint.value.CoyAddress = addr;
+        }
+        //const country = Comp.find((c) => c.types?.includes("country"));
+        if (country) complaint.value.Country = country.long_name;
+        if (state) complaint.value.State = state.long_name;
+        if (city) {
+          setTimeout(() => (complaint.value.City = city.long_name), 100);
+        }
+      })
+      .onCancel(() => {
+        // console.log('Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      });
+  } catch (e) {
+    //console.log(e);
+    Notify.create({
+      title: "Error",
+      message: e.message || e,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
 /*watch(
   complaint,
   (val) => {

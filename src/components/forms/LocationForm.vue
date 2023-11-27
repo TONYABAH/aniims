@@ -19,21 +19,24 @@
       v-model="location.Name"
       type="text"
       outlined=""
+      :rules="[(val) => !!val || 'Address is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      name="locationName"
     />
     <q-separator spaced inset vertical dark />
     <label>Location street address</label>
-    <q-input
-      v-model="location.Address"
-      type="text"
-      outlined
-      multiline
-    >
+    <q-input v-model="location.Address" type="text" outlined multiline>
       <q-btn
         unelevated
         glossy
         color="teal"
         icon="map"
         :label="$q.screen.gt.xs ? 'Validate' : ''"
+        :rules="[(val) => !!val || 'Address is required']"
+        lazy-rules="ondemand"
+        hide-bottom-space=""
+        name="locationAddress"
         @click="onValidateAddress(location.Address)"
         v-if="location.Address"
       />
@@ -45,6 +48,9 @@
       :options="states"
       options-dense=""
       outlined=""
+      :rules="[(val) => !!val || 'Address is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
     />
     <q-separator spaced inset vertical dark />
     <label>Location City</label>
@@ -53,6 +59,9 @@
       :options="cities"
       options-dense=""
       outlined=""
+      :rules="[(val) => !!val || 'Address is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
     />
     <div class="row">
       <div class="col col-xs-12 col-sm-6 col-md-6 q-pr-xs">
@@ -130,10 +139,24 @@ function reset() {
 }
 
 const onValidateAddress = async (address) => {
+  if (!location.value.Name || !location.value.Address) {
+    Notify.create({
+      title: "Validation error",
+      message:
+        "Please fill <strong>Name</strong> and <strong>Address</strong> of the place",
+      html: true,
+      color: "red",
+      icon: "error",
+      position: "bottom",
+    });
+    return false;
+  }
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
-     let _address = location.value.Name?location.value.Name + ", " + address:address
+    let _address = location.value.Name
+      ? location.value.Name + ", " + address
+      : address;
     const { addr, lat, lng, comp, country, state, city } =
       await geo.getLocation(_address);
     //console.log(Comp);
