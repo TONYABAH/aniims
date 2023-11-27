@@ -5,12 +5,14 @@
       :name="name"
       :data="data"
       :title="title"
+       :download="true"
     ></area-chart>
     <line-chart
       v-else
       :name="name"
       :data="data"
       :title="title"
+       :download="true"
     ></line-chart>
   </ChartCard>
 </template>

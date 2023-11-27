@@ -8,7 +8,7 @@ import {
 import { firestore } from "src/composables/firebase";
 
 const db = firestore;
-const MONTH_NAMES = [
+export const MONTH_NAMES = [
   "January",
   "February",
   "March",
@@ -22,7 +22,7 @@ const MONTH_NAMES = [
   "November",
   "December",
 ];
-const MONTH_ABBREV = [
+export const MONTH_ABBREV = [
   "Jan",
   "Feb",
   "Mar",
@@ -39,7 +39,7 @@ const MONTH_ABBREV = [
 export function getDaysInTheMonth(month, year) {
   switch (month) {
     case 2:
-      if (!yeay) year = new Date().getFullYear();
+      if (!year) year = new Date().getFullYear();
       return year % 4 > 0 ? 28 : 29;
     case 4:
     case 6:
@@ -58,14 +58,14 @@ export async function getDateData(date, month, year, collectionId) {
   let q = query(
     dbRef,
     //where("Level", "==", 3),
-    where("meta.CreatedAt", ">=", date1),
-    where("meta.CreatedAt", "<=", date2)
+    where("meta.CreatedAt", ">=", Date.parse(date1)),
+    where("meta.CreatedAt", "<=", Date.parse(date2))
   );
   const snapshot = await getCountFromServer(q);
   return snapshot?.data()?.count || 0;
 }
 export async function getMonthData(month, year, collectionId) {
-  const date1 = new Date(year, month, day, 0, 0, 0, 0);
+  const date1 = new Date(year, month, 1, 0, 0, 0, 0);
   const date2 = new Date(
     year,
     month,
@@ -79,8 +79,8 @@ export async function getMonthData(month, year, collectionId) {
   let q = query(
     dbRef,
     //where("Level", "==", 3),
-    where("meta.CreatedAt", ">=", date1),
-    where("meta.CreatedAt", "<=", date2)
+    where("meta.CreatedAt", ">=", Date.parse(date1)),
+    where("meta.CreatedAt", "<=", Date.parse(date2))
   );
   const snapshot = await getCountFromServer(q);
   return snapshot?.data()?.count || 0;
@@ -102,8 +102,8 @@ export async function getYearData(year, collectionId) {
   let q = query(
     dbRef,
     //where("Level", "==", 3),
-    where("meta.CreatedAt", ">=", date1),
-    where("meta.CreatedAt", "<=", date2)
+    where("meta.CreatedAt", ">=", Date.parse(date1)),
+    where("meta.CreatedAt", "<=", Date.parse(date2))
   );
   const snapshot = await getCountFromServer(q);
   return snapshot?.data()?.count || 0;
@@ -123,7 +123,7 @@ export async function getMonthlyData(year, collectionId) {
   const data = [];
   for (let month = 0; month < 12; month++) {
     let d = await getMonthData(month, year, collectionId);
-    data.push([month, d]);
+    data.push([month + 1, d]);
   }
   return data;
 }
@@ -133,6 +133,7 @@ export async function getQuarterlyData(year, collectionId) {
     let d = await getQuarterData(quarter, year, collectionId);
     data.push([quarter, d]);
   }
+  //console.log(data);
   return data;
 }
 export async function getYearlyData(startYear, endYear, collectionId) {
@@ -141,5 +142,6 @@ export async function getYearlyData(startYear, endYear, collectionId) {
     let d = await getYearData(year, collectionId);
     data.push([year, d]);
   }
+  //console.log(data);
   return data;
 }

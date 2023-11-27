@@ -58,7 +58,27 @@
         :rules="[(val) => !!val || 'Company address is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <q-btn
+          unelevated
+          glossy
+          color="teal"
+          :label="$q.screen.gt.xs ? 'Validate' : ''"
+          @click="onValidateAddress(destruction.CoyAddress)"
+          v-if="destruction.CoyAddress"
+        />
+        <template v-slot:prepend>
+          <q-btn
+            dense
+            unelevated
+            glossy
+            color="teal"
+            icon="map"
+            @click="onPreviewMap"
+            v-if="destruction.Lat && destruction.Lng"
+          />
+        </template>
+      </q-input>
       <q-separator spaced inset vertical dark />
       <label>Company email *</label>
       <q-input
@@ -297,9 +317,14 @@
     v-on:doc-uploaded="onAttachmentUploaded"
     title="Application Letter"
   />
+  <q-dialog v-model="previewMap" class="full-width">
+    <q-card flat class="full-width">
+      <GoogleGeoViewer :data="geoData.data" />
+    </q-card>
+  </q-dialog>
 </template>
 <script setup>
-import { Notify, Dialog as dialog } from "quasar";
+import { Notify as notify, Dialog as dialog } from "quasar";
 import { ref, watch, computed, onMounted } from "vue";
 import TableView from "src/components/TableView.vue";
 import { useStates, useCities } from "../composables/address-use";
@@ -308,9 +333,15 @@ import FileViewerDialog from "src/components/FileViewerDialog.vue";
 import UploadDialog from "src/components/UploadDialog.vue";
 import { getStorage, ref as reference, getDownloadURL } from "firebase/storage";
 import { onAddAttachment, onDeleteAttachment } from "../composables/remote";
+import { useGeolocation } from "src/composables/use-geocation";
+//import { Dialog, Notify } from "quasar";
+import CircularProgress from "src/components/CircularProgress.vue";
+import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
 //import stateOptions from "../data/states.json";
 //import cities from "../data/cities.json";
 //import LocationForm from "./LocationForm.vue";
+
+const geo = useGeolocation();
 const props = defineProps({
   data: Object,
   setData: Function,
@@ -339,6 +370,10 @@ const fileTypes = ref("");
 const docTitle = ref("");
 const fileSource = ref("");
 const newAttachments = ref([]);
+const loading = ref(false);
+const previewMap = ref(false);
+const geoData = ref({});
+
 const letters = computed({
   get: () =>
     destruction.value?.Attachments?.filter(
@@ -375,7 +410,7 @@ function reset() {
         newAttachments.value.splice(index2, 1);
       })
       .catch((error) => {
-        Notify.create({
+        notify.create({
           textColor: "red",
           message: error.message,
           icon: "error",
@@ -418,7 +453,7 @@ function onAttachmentUploaded(doc) {
   if (destruction.value.id) {
     onAddAttachment(collection, destruction.value.id, doc)
       .then(() => {
-        Notify.create({
+        notify.create({
           textColor: "teal",
           message: "Document uploaded",
           icon: "error",
@@ -460,7 +495,7 @@ function onRemoveAttachment(d) {
           newAttachments.value.splice(index2, 1);
         })
         .catch((error) => {
-          Notify.create({
+          notify.create({
             textColor: "red",
             message: error.message,
             icon: "error",
@@ -486,7 +521,82 @@ async function onViewAttachment(d) {
   docTitle.value = d.Title;
   fileViewerDialogModel.value = true;
 }
-
+const onPreviewMap = () => {
+  const data = {
+    name: destruction.value.CoyAddress,
+    data: [
+      ["lat", "lng"],
+      [destruction.value?.Lat, destruction.value?.Lng],
+    ],
+  };
+  geoData.value = data;
+  previewMap.value = true;
+};
+const onValidateAddress = async (address) => {
+  loading.value = true;
+  //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+  try {
+    let _address = destruction.value.Name
+      ? destruction.value.Name + ", " + address
+      : address;
+    const { addr, lat, lng, comp, country, state, city } =
+      await geo.getLocation(_address);
+    //console.log(Comp);
+    dialog
+      .create({
+        title: "Accept Address?",
+        message: "Select Location components to use",
+        ok: {
+          push: true,
+        },
+        cancel: {
+          push: true,
+          color: "negative",
+        },
+        persistent: true,
+        options: {
+          type: "checkbox",
+          model: ["address", "location"],
+          // inline: true
+          items: [
+            { label: addr, value: "address", color: "secondary" },
+            { label: lat + " " + lng, value: "location", color: "secondary" },
+            // { label: Lng, value: "longitude", color: "secondary" },
+          ],
+        },
+      })
+      .onOk((data) => {
+        if (data.includes("location")) {
+          destruction.value.Lat = lat;
+          destruction.value.Lng = lng;
+        }
+        if (data.includes("address")) {
+          destruction.value.CoyAddress = addr;
+        }
+        //const country = Comp.find((c) => c.types?.includes("country"));
+        if (country) destruction.value.Country = country.long_name;
+        if (state) destruction.value.State = state.long_name;
+        if (city) {
+          setTimeout(() => (destruction.value.City = city.long_name), 100);
+        }
+      })
+      .onCancel(() => {
+        // console.log('Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      });
+  } catch (e) {
+    //console.log(e);
+    notify.create({
+      title: "Error",
+      message: e.message || e,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
 defineExpose({
   reset,
   validate,

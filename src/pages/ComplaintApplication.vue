@@ -217,7 +217,9 @@
         <q-btn flat round dense icon="close" v-close-popup @click="reset" />
       </q-card-section>
       <q-card-section>
-        <LocationForm :data="location" :setLocation="setLocation" />
+        <q-scroll-area style="width: 400px; height: 280px">
+          <LocationForm :data="location" :setLocation="setLocation" />
+        </q-scroll-area>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" color="primary" v-close-popup />

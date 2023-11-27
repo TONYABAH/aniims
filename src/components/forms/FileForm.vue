@@ -7,7 +7,7 @@
     :getDocument="getDocument"
   >
     <q-form ref="form" class="q-gutter-sm">
-      <div class="row q-col-gutter-md">
+      <div class="row q-col-gutter-sm">
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
           <q-separator spaced inset vertical dark />
           <label>File number *</label>
@@ -63,7 +63,7 @@
         </div>
       </div>
       <q-separator spaced inset vertical dark />
-      <div class="row q-col-gutter-md">
+      <div class="row q-col-gutter-sm">
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
           <q-separator spaced inset vertical dark />
           <label>Location *</label>
@@ -91,27 +91,28 @@
             square=""
           />
         </div>
+        <div class="col col-12 col-xs-12">
+          <template v-if="file.id">
+            <q-expansion-item
+              expand-separator
+              icon="mail"
+              label="File Mails"
+              caption=""
+              class=""
+              style="border: 1px solid"
+            >
+              <q-table
+                title=""
+                :rows="mails"
+                :columns="mailcols"
+                row-key="Title"
+                flat=""
+                @row-dblclick="showMail"
+              />
+            </q-expansion-item>
+          </template>
+        </div>
       </div>
-
-      <template v-if="file.id">
-        <q-expansion-item
-          expand-separator
-          icon="mail"
-          label="File Mails"
-          caption=""
-          class=""
-          style="border: 1px solid"
-        >
-          <q-table
-            title=""
-            :rows="mails"
-            :columns="mailcols"
-            row-key="Title"
-            flat=""
-            @row-dblclick="showMail"
-          />
-        </q-expansion-item>
-      </template>
     </q-form>
   </FormCard>
 </template>

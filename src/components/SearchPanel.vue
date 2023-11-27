@@ -34,7 +34,7 @@
               icon="search"
               v-close-popup
               class="right"
-              @click.stop="searchNow()"
+              @click.stop="onSearch"
               style="border-radius: 0 2px 2px 0"
             />
           </template>
@@ -137,7 +137,7 @@
                 label="Search"
                 v-close-popup
                 class="right"
-                @click.stop="searchNow()"
+                @click.stop="onSearch"
                 style="border-radius: 0 4px 4px 0"
               />
             </template>
@@ -154,7 +154,7 @@
     center-color="lime"
     track-color="secondary"
     class="q-ma-md"
-    v-if="isLoading"
+    v-if="store.loading"
     style="position: absolute; top: 84px; z-index: 0"
   />
   <!--<q-item>
@@ -194,22 +194,12 @@ import { firestore } from "src/composables/firebase";
 //import { useQuasar, Notify, Dialog, BottomSheet } from "quasar";
 const db = firestore;
 const collectionName = inject("collection");
-const iconName = inject("iconName");
+//const iconName = inject("iconName");
 const expandModel = ref(false);
 const searchText = ref("");
 const search = reactive({});
 //const onSearch = inject("on-search");
 const store = useDefaultStore();
-
-const props = defineProps({
-  isDark: Boolean,
-  loading: Boolean,
-  onSearch: Function,
-});
-const isLoading = computed(() => {
-  //console.log(props.loading);
-  return props.loading;
-});
 
 const units = computed(() => {
   if (store.user.role !== "Director" && !store.user.claims?.admin) {
@@ -285,7 +275,8 @@ function computeQuery() {
   }
   return searchFilters;
 }
-function searchNow() {
+function onSearch() {
+  store.loading = true;
   expandModel.value = false;
   const searchConstraints = [];
   const dbRef = collection(db, collectionName);
@@ -295,10 +286,10 @@ function searchNow() {
   const filters = computeQuery();
   const q = query(dbRef, and(...filters, ...searchConstraints), limit(1000));
   store.query = q;
-  // props.onSearch(searchText.value, filters);
+  //props.onSearch(searchText.value, filters);
+  store.loading = false;
 }
-
 defineExpose({
-  searchNow,
+  onSearch,
 });
 </script>

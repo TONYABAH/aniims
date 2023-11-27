@@ -18,7 +18,6 @@
     <q-input
       v-model="location.Name"
       type="text"
-      :readonly="readOnly"
       outlined=""
     />
     <q-separator spaced inset vertical dark />
@@ -26,7 +25,6 @@
     <q-input
       v-model="location.Address"
       type="text"
-      :readonly="readOnly"
       outlined
       multiline
     >
@@ -35,8 +33,9 @@
         glossy
         color="teal"
         icon="map"
-        label="Validate"
+        :label="$q.screen.gt.xs ? 'Validate' : ''"
         @click="onValidateAddress(location.Address)"
+        v-if="location.Address"
       />
     </q-input>
     <q-separator spaced inset vertical dark />
@@ -134,8 +133,9 @@ const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
+     let _address = location.value.Name?location.value.Name + ", " + address:address
     const { addr, lat, lng, comp, country, state, city } =
-      await geo.getLocation(address);
+      await geo.getLocation(_address);
     //console.log(Comp);
     Dialog.create({
       title: "Accept Address?",

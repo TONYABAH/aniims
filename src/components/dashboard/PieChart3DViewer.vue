@@ -10,6 +10,7 @@
         slices,
       }"
       adapter="google"
+      
     ></pie-chart>
   </ChartCard>
 </template>

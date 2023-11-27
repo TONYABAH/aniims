@@ -6,6 +6,7 @@
       :data="data"
       :title="title"
       adapter="chartjs"
+       :download="true"
     ></bubble-chart>
     <scatter-chart
       v-else
@@ -13,6 +14,7 @@
       :data="data"
       :title="title"
       adapter="chartjs"
+       :download="true"
     ></scatter-chart>
   </ChartCard>
 </template>

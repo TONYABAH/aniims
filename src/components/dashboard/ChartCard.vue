@@ -1,9 +1,5 @@
 <template>
-  <q-card
-    :flat="$q.dark.isActive || $q.screen.lt.sm"
-    class="my-card"
-    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-22'"
-  >
+  <q-card :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-8'">
     <q-bar class="bg-transparent">
       <q-toolbar-title></q-toolbar-title>
       <q-btn flat dense icon="fullscreen" @click="zoomChart" />
@@ -14,7 +10,7 @@
   </q-card>
 
   <q-dialog full-width v-model="zoom" persistent="">
-    <q-card class="full-">
+    <q-card flat class="full-">
       <q-bar class="bg-transparent">
         <q-toolbar-title> {{ dialogTitle }}</q-toolbar-title>
         <q-btn flat dense icon="close" color="negative" @click="cancelZoom" />

@@ -10,7 +10,7 @@
     :width="180"
     style="letter-spacing: 1.2px; overflow: hidden"
     class="text-grey-2"
-    :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal'"
+    :class="$q.dark.isActive ? 'bg-teal-9' : 'bg-teal'"
   >
     <q-item>
       <q-item-section class="text-grey-5">
@@ -36,9 +36,14 @@
       shrink=""
       active-bg-color="amber-8"
     >
-      <q-tab name="search" icon="search" label="Search" />
+      <q-tab name="search" icon="search" label="Search" @click="removeHash" />
       <q-tab name="editor" icon="edit" label="Editor" />
-      <q-tab name="dashboard" icon="dashboard" label="Analyse" />
+      <q-tab
+        name="dashboard"
+        icon="dashboard"
+        label="Analyse"
+        @click="removeHash"
+      />
       <q-tab icon="home" label="Home" @click="goHome" />
     </q-tabs>
     <q-scroll-area class="fits">
@@ -156,6 +161,9 @@ const toggleLeftDrawer = () => {
 const toggleLeftMini = () => {
   miniMode.value = !miniMode.value;
 };
+function removeHash() {
+  window.location.hash = "";
+}
 async function logout() {
   $q.dialog({
     title: "Sign out?",

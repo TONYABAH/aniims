@@ -1,41 +1,44 @@
 <template>
-  <div>
-    <div class="row q-col-gutter-sm">
-      <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
-        <!--<AnalogClock class="q-pl-xl" />-->
-        <LocationForm />
-      </div>
-    </div>
-    <div class="row q-col-gutter-sm">
-      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-        <LineChartViewer
+  <div class="q-pb-xl q-mt-md">
+    <div
+      class="row"
+      :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-md'"
+    >
+      <div class="col col-xs-12 col-sm-12 col-md-4 col-lg-3">
+        <BarChartViewer
           :data="lineChartData"
+          :vertical="true"
           name="LineChart"
-          title="Line chart"
-        />
-      </div>
-      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-        <PieChartViewer
-          :data="pieChartData"
-          name="PieChart"
-          title="Pie chart"
+          :title="year - 2 + ' - ' + year"
+          :download="true"
         />
       </div>
       <div class="col col-xs-12 col-sm-12 col-md-4 col-lg-3">
         <PieChartViewer
           :donut="true"
-          :data="pieChartData"
+          :data="interQuarterData"
           name="DonutChart"
-          title="Donut chart"
+          :title="'Q1 - 4 ' + year"
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <PieChartViewer
+          :data="lastQuarterData"
+          name="PieChart"
+          :title="'Q4 ' + year"
         />
       </div>
       <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
-        <GoogleGeoViewer :options="geoChartOptions" :data="geoData" />
+        <LineChartViewer
+          :data="YearData"
+          name="LineChart"
+          :title="'Jan - Dec ' + year"
+        />
       </div>
       <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
         <LineChartViewer
           :area="true"
-          :data="lineChartData"
+          :data="barChartData"
           name="AreaChart"
           title="Area chart"
         />
@@ -43,26 +46,30 @@
       <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
         <LineChartViewer
           :area="true"
-          :data="lineChartData"
+          :data="barChartData0"
           name="Chart"
           title="Area chart"
         />
       </div>
       <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
         <BarChartViewer
-          :data="chartdata"
+          :data="barChartData"
           name="BarChart"
           title="Bar chart"
           :vertical="true"
         />
       </div>
-      <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
-        <!--<GoogleMapViewer
-            :data="geoData"
-            name="GoogleMap"
-            title="Google Map"
-          />-->
+      <!-- <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <GoogleMapViewer
+          :data="geoData"
+          :options="geoChartOptions"
+          name="GoogleMap"
+          title="Google Map"
+        />
       </div>
+      <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
+        <GoogleGeoViewer :options="geoChartOptions" :data="geoData" />
+      </div>-->
     </div>
   </div>
 </template>
@@ -70,15 +77,26 @@
 <script setup>
 import LineChartViewer from "./LineChartViewer.vue";
 import PieChartViewer from "./PieChartViewer.vue";
-import ScatterChartViewer from "./ScatterChartViewer.vue";
 import BarChartViewer from "./BarChartViewer.vue";
-import PieChart3DhartViewer from "./PieChart3DViewer.vue";
-//import GoogleMapViewer from "./GoogleMapViewer.vue";
 import GoogleGeoViewer from "./GoogleGeoViewer.vue";
-import AnalogClock from "../AnalogClock.vue";
+import { computed, ref, onMounted, watch } from "vue";
+import GoogleMapViewer from "./GoogleMapViewer.vue";
+import {
+  lastQuarterData,
+  lineChartData,
+  barChartData,
+  barChartData0,
+  YearData,
+  interQuarterData,
+  useDashboardData,
+} from "src/components/dashboard/dashboard-data";
+//import ScatterChartViewer from "./ScatterChartViewer.vue";
+//import PieChart3DhartViewer from "./PieChart3DViewer.vue";
+//import LocationForm from "../forms/LocationForm.vue";
 //import StreetViewer from "./StreetViewer.vue";
-import { onMounted } from "vue";
-import LocationForm from "../forms/LocationForm.vue";
+//import AnalogClock from "../AnalogClock.vue";
+//import { useDefaultStore } from "src/stores/store";
+//const store = useDefaultStore();
 const geoChartOptions = {
   chart: {
     title: "Company Performance",
@@ -123,79 +141,13 @@ const geoChartOptions = {
     },
   },
 };
-const geoData = [
-  ["Shomolu, Lagos, Nigeria", "Shomolu"],
-  ["Ketu, Lagos, Nigeria", "Ketu"],
-  ["Ilaje, Lagos, Nigeria", "Ilaje"],
-  ["Ladilak", "Ladilak"],
-  ["Palmgrove, Lagos, Nigeria", "Palmgrove"],
-  ["Ikeja, Lagos", "Ikeja"],
-  ["36 Adeshina Street, Ladilak, Bariga, Lagos", "Adeshina"],
-  //["Kaduna, Kaduna", "Kaduna"],
-  //["Asaba, Delta", "Asaba"],
-];
-const pieChartData = [
-  ["Food", 44],
-  ["Drugs", 20],
-  ["Drinks", 26],
-  ["Water", 10],
-];
-const lineChartData = [
-  {
-    name: "Food",
-    data: {
-      "2017-01-01": 3,
-      "2017-01-02": 4,
-      "2017-01-03": 7,
-      "2017-01-04": 10,
-      "2017-01-05": 3,
-      "2017-01-06": 4,
-    },
+useDashboardData();
+const year = computed(() => new Date().getFullYear());
+const props = defineProps({
+  data: {
+    type: Object,
+    required: true,
   },
-  {
-    name: "Water",
-    data: {
-      "2017-01-01": 13,
-      "2017-01-02": 9,
-      "2017-01-03": 4,
-      "2017-01-04": 10,
-      "2017-01-05": 5,
-      "2017-01-06": 4,
-    },
-  },
-];
-const chartdata = [
-  {
-    name: "Admin charge",
-    data: {
-      "2017-01-01": 2,
-      "2017-01-02": 5,
-      "2017-01-03": 7,
-      "2017-01-04": 15,
-      "2017-01-05": 12,
-      "2017-01-06": 5,
-      "2017-01-07": 2,
-      "2017-01-08": 0,
-    },
-  },
-  {
-    name: "Lab fee",
-    data: {
-      "2017-01-01": 8,
-      "2017-01-02": 7,
-      "2017-01-03": 7,
-      "2017-01-04": 5,
-      "2017-01-05": 12,
-      "2017-01-06": 15,
-      "2017-01-07": 12,
-      "2017-01-08": 10,
-    },
-  },
-];
-function logData() {
-  console.log(new Date());
-  window.requestAnimationFrame(logData);
-}
-//window.requestAnimationFrame(logData);
-onMounted(() => {});
+});
+onMounted(async () => {});
 </script>

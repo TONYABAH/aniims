@@ -1,22 +1,7 @@
 <template>
-  <q-form ref="form" class="q-gutter-md full-width">
+  <q-form ref="form" class="q-gutter-md full-width q-pa-md">
     <div class="row">
-      <div class="col col-xs-8 col-sm-4 col-md-4 q-pr-sm q-pt-md" align="left">
-        <q-img
-          :src="suspect.PhotoURL"
-          spinner-color="orange"
-          spinner-size="32px"
-          width="168px"
-          height="180px"
-          alt="Passport photo"
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-          style="border: 1px solid #bbb"
-          class="bg-grey-9 cursor-pointer"
-          @click="showUploadDialog"
-        >
-        </q-img>
+      <!--<div class="col col-xs-12 col-sm-12 col-md-12 q-pr-sm q-pt-md" align="left">
         <q-separator spaced inset vertical dark />
         <q-btn
           no-caps
@@ -27,8 +12,8 @@
           @click="showUploadDialog"
         >
         </q-btn>
-      </div>
-      <div class="col col-xs-12 col-sm-8 col-md-8">
+      </div>-->
+      <div class="col col-xs-12 col-sm-12 col-md-12">
         <label>Full name *</label>
         <q-input
           outlined
@@ -59,7 +44,6 @@
           square
           v-model="suspect.DOB"
           type="date"
-          label="Date of birrth"
           input-class="q-mt-sm"
         />
 
@@ -122,7 +106,27 @@
       :rules="[(val) => !!val || 'This field is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-    />
+    >
+      <q-btn
+        unelevated
+        glossy
+        color="teal"
+        :label="$q.screen.gt.xs ? 'Validate' : ''"
+        @click="onValidateAddress(suspect.Address)"
+        v-if="suspect.Address"
+      />
+      <template v-slot:prepend>
+        <q-btn
+          dense
+          unelevated
+          glossy
+          color="teal"
+          icon="map"
+          @click="onPreviewMap"
+          v-if="suspect.Lat && suspect.Lng"
+        />
+      </template>
+    </q-input>
 
     <div class="row">
       <div class="col col-xs-12 col-sm-6 col-md-6 q-pr-xs">
@@ -173,7 +177,52 @@
         />
       </div>
     </div>
+    <div class="row">
+      <div
+        class="col col-xs-6 col-sm-5 col-md-4 q-pr-sm q-pt-md text-left"
+        align="left"
+      >
+        <q-img
+          :src="suspect.PhotoURL"
+          spinner-color="orange"
+          spinner-size="32px"
+          width="224px"
+          alt="Passport photo"
+          :rules="[(val) => !!val || 'This field is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+          style="
+            border: 1px solid #bbb;
+            border-radius: 4px 4px;
+            background-image: url('https://avatars.dicebear.com/api/adventurer-neutral/mail%40ashallendesign.co.uk.svg');
+            background-repeat: no-repeat;
+            background-size: cover;
+          "
+          class="cursor-pointer"
+          @click="showUploadDialog"
+        >
+        </q-img>
+        <q-separator spaced inset vertical dark />
+        <q-btn
+          rounded
+          unelevated=""
+          no-caps
+          color="blue-grey-8"
+          class="q-py-xs q-ml-sm"
+          style="width: 168px"
+          :label="suspect.PhotoURL ? 'Change photo' : 'Upload photo'"
+          @click="showUploadDialog"
+        >
+        </q-btn>
+      </div>
+    </div>
+    <CircularProgress :loading="loading" :size="140" />
   </q-form>
+  <q-dialog v-model="previewMap" class="full-width">
+    <q-card flat class="full-width">
+      <GoogleGeoViewer :data="geoData.data" />
+    </q-card>
+  </q-dialog>
   <UploadDialog
     accept=".jpg,.jpeg,.png"
     title="Passport photo"
@@ -195,6 +244,12 @@ import {
 } from "src/composables/address-use";
 import UploadDialog from "src/components/UploadDialog.vue";
 import { deleteFile } from "src/composables/remote";
+import { useGeolocation } from "src/composables/use-geocation";
+import { Dialog, Notify } from "quasar";
+import CircularProgress from "src/components/CircularProgress.vue";
+import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
+
+const geo = useGeolocation();
 
 const identityOptions = [
   "Divers License",
@@ -216,7 +271,9 @@ const cities = computed(() => useCities(suspect.value?.State));
 const lgas = computed(() => useLgas(suspect.value?.StateOfOrigin));
 const countries = useCountries();
 const form = ref(null);
-
+const loading = ref(false);
+const previewMap = ref(false);
+const geoData = ref({});
 function reset() {
   form.value.resetValidation();
 }
@@ -242,6 +299,81 @@ async function onDocumentUploaded(doc) {
   // Delete previous image for this suspect
   if (fileName) await deleteFile(fileName);
 }
+const onPreviewMap = () => {
+  const data = {
+    name: suspect.value.Address,
+    data: [
+      ["lat", "lng"],
+      [suspect.value?.Lat, suspect.value?.Lng],
+    ],
+  };
+  geoData.value = data;
+  previewMap.value = true;
+};
+const onValidateAddress = async (address) => {
+  loading.value = true;
+  //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+  try {
+    let _address = suspect.value.Name
+      ? suspect.value.Name + ", " + address
+      : address;
+    const { addr, lat, lng, comp, country, state, city } =
+      await geo.getLocation(_address);
+    //console.log(Comp);
+    Dialog.create({
+      title: "Accept Address?",
+      message: "Select Location components to use",
+      ok: {
+        push: true,
+      },
+      cancel: {
+        push: true,
+        color: "negative",
+      },
+      persistent: true,
+      options: {
+        type: "checkbox",
+        model: ["address", "location"],
+        // inline: true
+        items: [
+          { label: addr, value: "address", color: "secondary" },
+          { label: lat + " " + lng, value: "location", color: "secondary" },
+          // { label: Lng, value: "longitude", color: "secondary" },
+        ],
+      },
+    })
+      .onOk((data) => {
+        if (data.includes("location")) {
+          suspect.value.Lat = lat;
+          suspect.value.Lng = lng;
+        }
+        if (data.includes("address")) {
+          suspect.value.Address = addr;
+        }
+        //const country = Comp.find((c) => c.types?.includes("country"));
+        if (country) suspect.value.Country = country.long_name;
+        if (state) suspect.value.State = state.long_name;
+        if (city) {
+          setTimeout(() => (suspect.value.City = city.long_name), 100);
+        }
+      })
+      .onCancel(() => {
+        // console.log('Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      });
+  } catch (e) {
+    //console.log(e);
+    Notify.create({
+      title: "Error",
+      message: e.message || e,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
 watch(
   () => suspect.value.StateOfOrigin,
   (val) => {

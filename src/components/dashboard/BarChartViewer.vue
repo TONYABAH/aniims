@@ -5,12 +5,14 @@
       :name="name"
       :data="data"
       :title="title"
+       :download="true"
     ></column-chart>
     <bar-chart
       v-else
       :name="name"
       :data="data"
       :title="title"
+       :download="true"
     ></bar-chart>
   </ChartCard>
 </template>

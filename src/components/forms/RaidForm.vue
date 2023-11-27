@@ -73,7 +73,27 @@
         :rules="[(val) => !!val || 'Location address is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <q-btn
+          unelevated
+          glossy
+          color="teal"
+          :label="$q.screen.gt.xs ? 'Validate' : ''"
+          @click="onValidateAddress(raid.Address)"
+          v-if="raid.Address"
+        />
+        <template v-slot:prepend>
+          <q-btn
+            dense
+            unelevated
+            glossy
+            color="teal"
+            icon="map"
+            @click="onPreviewMap"
+            v-if="raid.Lat && raid.Lng"
+          />
+        </template>
+      </q-input>
       <div class="row">
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
           <q-separator spaced inset vertical dark />
@@ -315,6 +335,11 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="previewMap" class="full-width">
+      <q-card flat class="full-width">
+        <GoogleGeoViewer :data="geoData.data" />
+      </q-card>
+    </q-dialog>
   </FormCard>
 </template>
 
@@ -328,9 +353,13 @@ import TextEditor from "src/components/TextEditor.vue";
 import FormCard from "src/components/FormCard.vue";
 import { onAddDocument, onDeleteDocument } from "src/composables/remote";
 import { useStates, useCities } from "src/composables/address-use";
+import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
+import { useGeolocation } from "src/composables/use-geocation";
+import { Dialog, Notify } from "quasar";
 
 const RAID_OPTIONS = ["Hawkers raid", "Investigative raid", "Mop up"];
 //const $q = useQuasar();
+const geo = useGeolocation();
 const store = useDefaultStore();
 const product = ref({});
 const productPopupModel = ref(false);
@@ -344,6 +373,10 @@ const states = useStates("Nigeria");
 const cities = computed(() => useCities(raid.value.State));
 const field = ref(1);
 const productFormRef = ref(null);
+const loading = ref(false);
+const previewMap = ref(false);
+const geoData = ref({});
+
 const staffList = computed(() => {
   return store.staffList.filter((s) =>
     unitFilter.value ? s.Units?.includes(unitFilter.value.Abbrev) : s
@@ -422,6 +455,79 @@ function showEditProduct(p, index, type) {
   productPopupModel.value = true;
   popupReadOnly.value = false;
 }
+const onPreviewMap = () => {
+  const data = {
+    name: raid.value.Address,
+    data: [
+      ["lat", "lng"],
+      [raid.value?.Lat, raid.value?.Lng],
+    ],
+  };
+  geoData.value = data;
+  previewMap.value = true;
+};
+const onValidateAddress = async (address) => {
+  loading.value = true;
+  //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+  try {
+    let _address = raid.value.Name ? raid.value.Name + ", " + address : address;
+    const { addr, lat, lng, comp, country, state, city } =
+      await geo.getLocation(_address);
+    //console.log(Comp);
+    Dialog.create({
+      title: "Accept Address?",
+      message: "Select Location components to use",
+      ok: {
+        push: true,
+      },
+      cancel: {
+        push: true,
+        color: "negative",
+      },
+      persistent: true,
+      options: {
+        type: "checkbox",
+        model: ["address", "location"],
+        // inline: true
+        items: [
+          { label: addr, value: "address", color: "secondary" },
+          { label: lat + " " + lng, value: "location", color: "secondary" },
+          // { label: Lng, value: "longitude", color: "secondary" },
+        ],
+      },
+    })
+      .onOk((data) => {
+        if (data.includes("location")) {
+          raid.value.Lat = lat;
+          raid.value.Lng = lng;
+        }
+        if (data.includes("address")) {
+          raid.value.Address = addr;
+        }
+        //const country = Comp.find((c) => c.types?.includes("country"));
+        if (country) raid.value.Country = country.long_name;
+        if (state) raid.value.State = state.long_name;
+        if (city) {
+          setTimeout(() => (raid.value.City = city.long_name), 100);
+        }
+      })
+      .onCancel(() => {
+        // console.log('Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      });
+  } catch (e) {
+    //console.log(e);
+    Notify.create({
+      title: "Error",
+      message: e.message || e,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
 watch(
   () => raid.value.State,
   (val) => {

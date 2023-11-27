@@ -2,19 +2,23 @@
   <div
     class="window-height window-width justify-center items-center bg-blue-grey-10"
     :class="$q.screen.gt.xs ? 'row' : ''"
-    style="background: rgb(243, 239, 242)"
+    style="padding: 0px"
   >
-    <div class="col col-sm-6 col-md-5 col-lg-4 col-xl-3 q-pa-xs full-height">
-      <q-card flat class="q-pb-lg" style="width: 100%; height: 100%">
-        <q-card-section align="center">
-          <q-avatar
-            size="72px"
-            font-size="64px"
-            icon="lock"
-          />
+    <div class="col col-sm-6 col-md-5 col-lg-4 col-xl-3 q-px-xs">
+      <q-card
+        :flat="$q.screen.lt.sm"
+        square=""
+        :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-'"
+        :style="$q.screen.lt.sm ? 'width: calc(100vw + 10px);' : ''"
+        style="height: calc(100vh - 0px);margin-left:-10px;padding:0; border 2px solid red"
+      >
+        <q-card-section align="center" class="bg-blue-8 text-grey-1">
+          <q-avatar size="76px" font-size="76px" icon="lock" />
         </q-card-section>
         <q-card-section align="center">
           <!--<q-btn
+            rounded
+            unelevated=""
             color="primary"
             to="register"
             icon="add"
@@ -35,15 +39,18 @@
               clear-icon="close"
               v-model="id"
               type="text"
-              :autocomplete="false"
-              :autofill="false"
               :rules="[isValid]"
               lazy-rules="ondemand"
               hide-bottom-space=""
               outlined=""
               square=""
-              placeholder="Email, StaffId or Phone"
-            />
+              placeholder="Your email, Id or phone"
+              input-class="q-px-sm"
+            >
+              <template v-slot:prepend>
+                <q-icon name="perm_identity" />
+              </template>
+            </q-input>
             <q-separator spaced inset vertical dark />
             <label for="pwd">Password</label>
             <q-input
@@ -57,7 +64,11 @@
               hide-bottom-space=""
               outlined=""
               square=""
+              placeholder="Your password..."
             >
+              <template v-slot:prepend>
+                <q-icon name="key" />
+              </template>
               <template v-slot:append>
                 <q-icon
                   :name="visibilityIcon"
@@ -77,9 +88,10 @@
             v-if="loading"
           />
           <q-btn
-            unelevated
             no-caps
-            color="pink-8"
+            glossy
+            unelevated
+            color="primary"
             @click="submit"
             label="Login"
             class="text-white q-ml-xs"

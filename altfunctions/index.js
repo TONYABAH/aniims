@@ -685,7 +685,7 @@ exports.oncomment = onDocumentCreated(
   "{collectionId}/{docId}/Minutes/{minuteId}",
   async (event) => {
     const snapshot = event.data;
-    console.log(event);
+    //console.log(event);
     if (!snapshot) {
       //console.log("No data associated with the event");
       return;

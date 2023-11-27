@@ -2,7 +2,7 @@
   <q-page
     padding=""
     class="main"
-    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-pink-10'"
+    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-8'"
   >
     <q-bar class="q-my-md bg-transparent">
       <span class="text-teal-1 text-bold" style="padding-left: 5%"
@@ -31,14 +31,14 @@
                   size="36px"
                   font-size="24px"
                   color=""
-                  :text-color="$q.dark.isActive ? 'teal-5' : 'teal-2'"
+                  :text-color="$q.dark.isActive ? 'teal-5' : 'white'"
                   :icon="item.icon"
                   style="text-shadow: 1px 1px 7px 3px"
                 />
               </q-item-section>
               <q-item-section
                 class="text-h6"
-                :class="$q.dark.isActive ? 'text-teal-5' : 'text-teal-2'"
+                :class="$q.dark.isActive ? 'text-teal-5' : 'text-white'"
                 >{{ item.name }}</q-item-section
               >
             </q-item>
