@@ -35,7 +35,7 @@ import {
 //import { updateDocument, createDocument } from "./functions";
 import { addSearch, generateId } from "./searchProvider";
 import { useDefaultStore } from "src/stores/store";
-import { timestamp } from "rxjs";
+//import { timestamp } from "rxjs";
 
 const db = firestore;
 const storage = getStorage(app);
@@ -100,7 +100,7 @@ export async function getSuperior(unit) {
   //console.log(superior);
   return superior;
 }
-export async function logSMS(to, coll, docId, transaction) {
+/*export async function logSMS(to, coll, docId, transaction) {
   const data = {
     phone: to.Phone,
     coll: coll,
@@ -109,7 +109,7 @@ export async function logSMS(to, coll, docId, transaction) {
   };
   const _ref = doc(db, "SMS", generateId());
   return transaction.set(_ref, data);
-}
+}*/
 
 export async function addHistory(
   operation,
@@ -137,7 +137,28 @@ export async function addHistory(
     .set(historyRef, d)
     .set(logRef, { op, time, coll, docId, uid, user, ...data });
 }
-
+export async function addChildDocument(
+  collectionName,
+  docId,
+  subCollection,
+  data
+) {
+  //const logRef = doc(db, "applogs", generateId());
+  const childId = generateId();
+  const docRef = doc(db, collectionName, docId, subCollection, childId);
+  await runTransaction(db, async (t) => {
+    t.set(docRef, data);
+    //t.set(logRef, { op, time, coll, docId, uid, user, ...data });
+    addHistory(
+      "Added child document",
+      collectionName,
+      docId,
+      { child: subCollection, childId },
+      t
+    );
+  });
+  return childId;
+}
 export const addComment = async (
   collectionName,
   documentId,
@@ -217,6 +238,7 @@ export const create = async (data, collectionName, searchFields = []) => {
 
   // We set the id manually here to ensure ordering
   let id = generateId();
+  data.id = id;
   const docRef = doc(db, collectionName, id);
   await runTransaction(db, async (t) => {
     t.set(docRef, data);
@@ -430,6 +452,7 @@ export function uploadFile(f, uploadTask, progress, callback) {
 export const get = async (id, collectionName) => {
   const docRef = doc(db, collectionName, id);
   const documentSnapshot = await getDoc(docRef);
+  if (!documentSnapshot || !documentSnapshot.data()) return null;
   const document = { id: documentSnapshot.id, ...documentSnapshot.data() };
   return document;
 };

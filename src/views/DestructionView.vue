@@ -1,32 +1,47 @@
 <template>
-  <ViewContainer
-    :validateForm="validate"
-    :resetForm="reset"
+  <FormCard
+    :reset="reset"
+    :validate="validate"
+    :set-current-doc="setDocument"
     :updateFields="updateFields"
+    :getDocument="getDocument"
   >
-    <DestructionForm ref="formRef" />
-  </ViewContainer>
+    <DestructionApplication
+      ref="form"
+      :data="destruction"
+      :setData="setDocument"
+    />
+  </FormCard>
 </template>
-
 <script setup>
+//import { Notify, Dialog } from "quasar";
 import { ref, provide } from "vue";
-// import FileForm from "src/components/FileForm.vue";
-import ViewContainer from "./DefaultViewer.vue";
-import DestructionForm from "src/components/DestructionForm.vue";
+import FormCard from "src/components/FormCard.vue";
+import DestructionApplication from "src/components/forms/DestructionForm.vue";
 
+const form = ref(null);
 const updateFields = [];
-const formRef = ref(null);
+const destruction = ref({});
 
-async function validate() {
-  return await formRef.value?.validate();
+const setDocument = (v) => (destruction.value = v);
+
+function getDocument() {
+  return destruction.value;
 }
-async function reset() {
-  return await formRef.value?.reset();
+function reset() {
+  form.value?.reset();
 }
+const validate = async () => await form.value?.validate();
+
 provide("iconName", "delete");
 provide("titleField", "Title");
 provide("secondTitle", "Date");
 provide("collection", "Destructions");
 provide("searchFields", ["CoyName", "CoyAddress"]);
-// watch(current, (c) => onPageChange(c))
+defineExpose({
+  reset,
+  validate,
+  destruction,
+});
+// accept=".xls, .xlsx, .jpg, .png, .pdf, image/jpeg"
 </script>

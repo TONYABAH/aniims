@@ -14,18 +14,10 @@ if (!foundScript) {
   script.type = "text/javascript";
   document.head.append(script);
 }
-var _Geocoder = null;
-script.onload = async () => {
-  if (window.google !== undefined) {
-    const { Geocoder } = await google.maps.importLibrary("geocoding");
-    _Geocoder = Geocoder;
-  }
-};
-
 export const useGeolocation = () => {
-  var geocoder = new _Geocoder();
   return {
     async getLocation(address) {
+      let geocoder = new google.maps.Geocoder();
       return new Promise((resolve, reject) => {
         geocoder.geocode(
           { address: address },

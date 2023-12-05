@@ -1,315 +1,304 @@
 <template>
-  <FormCard
-    :reset="reset"
-    :validate="validate"
-    :set-current-doc="setDocument"
-    :updateFields="updateFields"
-    :getDocument="getDocument"
-  >
-    <q-form ref="form" class="q-gutter-sm" lazy-rules>
-      <q-separator spaced inset vertical dark />
-      <label>Case number *</label>
-      <q-input
-        v-model="raid.CaseNumber"
-        type="text"
-        color=""
-        name="caseNumber"
-        :rules="[(val) => !!val || 'Case number is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        outlined
-        square
-        style="max-width: 49%"
-      />
-      <div class="row">
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-          <q-separator spaced inset vertical dark />
-          <label>Type of raid *</label>
-          <q-select
-            v-model="raid.Type"
-            :options="RAID_OPTIONS"
-            options-dense=""
-            :rules="[(val) => !!val || 'Type of raid is required']"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-            outlined
-            square
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical dark />
-          <label>Date of raid *</label>
-          <q-input
-            v-model="raid.Date"
-            type="date"
-            input-class="q-mt-md q-pb-md"
-            clear-icon="clear"
-            :rules="[(val) => !!val || 'Date of raid is required']"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-            outlined
-            square
-          />
-        </div>
+  <q-form ref="form" class="q-gutter-sm" lazy-rules>
+    <q-separator spaced inset vertical dark />
+    <label>Case number *</label>
+    <q-input
+      v-model="raid.CaseNumber"
+      type="text"
+      color=""
+      name="caseNumber"
+      :rules="[(val) => !!val || 'Case number is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      outlined
+      filled
+      style="max-width: 49%"
+    />
+    <div class="row">
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
+        <q-separator spaced inset vertical dark />
+        <label>Type of raid *</label>
+        <q-select
+          v-model="raid.Type"
+          :options="RAID_OPTIONS"
+          options-dense=""
+          :rules="[(val) => !!val || 'Type of raid is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+          outlined
+          filled
+        />
       </div>
-      <q-separator spaced inset vertical dark />
-      <label>Nature of offence *</label>
-      <q-input
-        v-model="raid.Title"
-        type="text"
-        :rules="[(val) => !!val || 'Offence is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        outlined
-        square
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <q-separator spaced inset vertical dark />
+        <label>Date of raid *</label>
+        <q-input
+          v-model="raid.Date"
+          type="date"
+          input-class="q-mt-md q-pb-md"
+          clear-icon="clear"
+          :rules="[(val) => !!val || 'Date of raid is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+          outlined
+          filled
+        />
+      </div>
+    </div>
+    <q-separator spaced inset vertical dark />
+    <label>Nature of offence *</label>
+    <q-input
+      v-model="raid.Title"
+      type="text"
+      :rules="[(val) => !!val || 'Offence is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      outlined
+      filled
+    />
+    <q-separator spaced inset vertical dark />
+    <label>Raid location address *</label>
+    <q-input
+      v-model="raid.Address"
+      type="text"
+      outlined
+      filled
+      :rules="[(val) => !!val || 'Location address is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+    >
+      <q-btn
+        unelevated
+        glossy
+        color="teal"
+        :label="$q.screen.gt.xs ? 'Validate' : ''"
+        @click="onValidateAddress(raid.Address)"
+        v-if="raid.Address"
       />
-      <q-separator spaced inset vertical dark />
-      <label>Raid location address *</label>
-      <q-input
-        v-model="raid.Address"
-        type="text"
-        outlined
-        square
-        :rules="[(val) => !!val || 'Location address is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-      >
+      <template v-slot:prepend>
         <q-btn
+          dense
           unelevated
           glossy
           color="teal"
-          :label="$q.screen.gt.xs ? 'Validate' : ''"
-          @click="onValidateAddress(raid.Address)"
-          v-if="raid.Address"
+          icon="map"
+          @click="onPreviewMap"
+          v-if="raid.Lat && raid.Lng"
         />
-        <template v-slot:prepend>
-          <q-btn
-            dense
-            unelevated
-            glossy
-            color="teal"
-            icon="map"
-            @click="onPreviewMap"
-            v-if="raid.Lat && raid.Lng"
-          />
-        </template>
-      </q-input>
-      <div class="row">
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-          <q-separator spaced inset vertical dark />
-          <label>State *</label>
-          <q-select
-            v-model="raid.State"
-            :options="states"
-            options-dense=""
-            outlined
-            square
-            :rules="[(val) => !!val || 'State is required']"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical dark />
-          <label>City *</label>
-          <q-select
-            v-model="raid.City"
-            :options="cities"
-            options-dense=""
-            outlined
-            square
-            :bottom-slots="false"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-          />
-        </div>
+      </template>
+    </q-input>
+    <div class="row">
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
+        <q-separator spaced inset vertical dark />
+        <label>State *</label>
+        <q-select
+          v-model="raid.State"
+          :options="states"
+          options-dense=""
+          outlined
+          filled
+          :rules="[(val) => !!val || 'State is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+        />
       </div>
-      <div class="row">
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-          <q-separator spaced inset vertical dark />
-          <label>Team members *</label>
-          <q-select
-            outlined
-            square
-            v-model="raid.Team"
-            :options="staffList"
-            :rules="[(val) => !!val || 'Team is required']"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-            multiple
-            emit-value
-            map-options
-            options-=""
-            options-dense=""
-            option-value="value"
-            option-label="Name"
-            :use-chips="false"
-          >
-            <template
-              v-slot:option="{ itemProps, opt, selected, toggleOption }"
-            >
-              <q-item dense v-bind="itemProps">
-                <q-item-section thumbnail="">
-                  <q-checkbox
-                    left-label
-                    :model-value="selected"
-                    @update:model-value="toggleOption(opt)"
-                    size="xs"
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ opt.Name }} ({{ opt.Rank }})</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical dark />
-          <label>Division filter</label>
-          <q-select
-            options-dense=""
-            v-model="unitFilter"
-            :options="store.units"
-            option-label="Abbrev"
-            option-value="Abbrev"
-            outlined
-            square
-            :clearable="true"
-            clear-icon="close"
-          />
-        </div>
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <q-separator spaced inset vertical dark />
+        <label>City *</label>
+        <q-select
+          v-model="raid.City"
+          :options="cities"
+          options-dense=""
+          outlined
+          filled
+          :bottom-slots="false"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+        />
       </div>
-      <q-separator spaced inset vertical dark />
-      <label>Team leader *</label>
-      <q-select
-        outlined
-        square
-        v-model="raid.TeamLead"
-        :options="raid.Team"
-        :rules="[(val) => !!val || 'Team Leader is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        :multiple="false"
-        emit-value
-        map-options
-        options-=""
-        options-dense=""
-        option-value="Name"
-        option-label="Name"
-        :use-chips="false"
-      />
-      <q-separator spaced inset vertical dark />
-      <label>IPO *</label>
-      <q-select
-        outlined
-        square
-        v-model="raid.IPOs"
-        :options="store.ipos"
-        :rules="[(val) => !!val || 'IPO is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        multiple
-        emit-value
-        map-options
-        options-=""
-        options-dense=""
-        option-value="Name"
-        option-label="Name"
-        :use-chips="false"
-      >
-        <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
-          <q-item dense v-bind="itemProps">
-            <q-item-section thumbnail="">
-              <q-checkbox
-                left-label
-                :model-value="selected"
-                @update:model-value="toggleOption(opt)"
-                size="xs"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ opt.Name }} ({{ opt.Rank }})</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-select>
-      <div class="row">
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-          <q-separator spaced inset vertical dark />
-          <label>Number of Mopols *</label>
-          <q-input
-            outlined
-            square
-            mask="number"
-            v-model="raid.Mopols"
-            type="number"
-            :rules="[(val) => !!val || 'Number of Mopols is required']"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical dark />
-          <label>Number of arrests *</label>
-          <q-input
-            v-model="raid.Suspects"
-            type="number"
-            :rules="[(val) => !!val || 'Number of arrests is required']"
-            lazy-rules="ondemand"
-            hide-bottom-space=""
-            outlined
-            square=""
-          />
-        </div>
+    </div>
+    <div class="row">
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
+        <q-separator spaced inset vertical dark />
+        <label>Team members *</label>
+        <q-select
+          outlined
+          filled
+          v-model="raid.Team"
+          :options="staffList"
+          :rules="[(val) => !!val || 'Team is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+          multiple
+          emit-value
+          map-options
+          options-=""
+          options-dense=""
+          option-value="Name"
+          option-label="Name"
+          :use-chips="false"
+        >
+          <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+            <q-item dense v-bind="itemProps">
+              <q-item-section thumbnail="">
+                <q-checkbox
+                  left-label
+                  :model-value="selected"
+                  @update:model-value="toggleOption(opt)"
+                  size="xs"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ opt.Name }} ({{ opt.Rank }})</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
       </div>
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <q-separator spaced inset vertical dark />
+        <label>Division filter</label>
+        <q-select
+          options-dense=""
+          v-model="unitFilter"
+          :options="store.units"
+          option-label="Abbrev"
+          option-value="Abbrev"
+          outlined
+          filled
+          :clearable="true"
+          clear-icon="close"
+        />
+      </div>
+    </div>
+    <q-separator spaced inset vertical dark />
+    <label>Team leader *</label>
+    <q-select
+      outlined
+      filled
+      v-model="raid.TeamLead"
+      :options="raid.Team"
+      :rules="[(val) => !!val || 'Team Leader is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      :multiple="false"
+      emit-value
+      map-options
+      options-=""
+      options-dense=""
+      option-value="Name"
+      option-label="Name"
+      :use-chips="false"
+    />
+    <q-separator spaced inset vertical dark />
+    <label>IPO *</label>
+    <q-select
+      outlined
+      filled
+      v-model="raid.IPOs"
+      :options="store.ipos"
+      :rules="[(val) => !!val || 'IPO is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      multiple
+      emit-value
+      map-options
+      options-=""
+      options-dense=""
+      option-value="Name"
+      option-label="Name"
+      :use-chips="false"
+    >
+      <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+        <q-item dense v-bind="itemProps">
+          <q-item-section thumbnail="">
+            <q-checkbox
+              left-label
+              :model-value="selected"
+              @update:model-value="toggleOption(opt)"
+              size="xs"
+            />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>{{ opt.Name }} ({{ opt.Rank }})</q-item-label>
+          </q-item-section>
+        </q-item>
+      </template>
+    </q-select>
+    <div class="row">
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
+        <q-separator spaced inset vertical dark />
+        <label>Number of Mopols *</label>
+        <q-input
+          outlined
+          filled
+          mask="number"
+          v-model="raid.Mopols"
+          type="number"
+          :rules="[(val) => !!val || 'Number of Mopols is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+        />
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <q-separator spaced inset vertical dark />
+        <label>Number of arrests *</label>
+        <q-input
+          v-model="raid.Suspects"
+          type="number"
+          :rules="[(val) => !!val || 'Number of arrests is required']"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+          outlined
+          filled=""
+        />
+      </div>
+    </div>
 
-      <q-separator spaced inset vertical dark />
-      <label>Division in Charge *</label>
-      <q-select
-        options-dense=""
-        v-model="raid.Unit"
-        :options="store.units"
-        option-label="Abbrev"
-        option-value="Abbrev"
-        :rules="[(val) => !!val || 'Division is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        outlined
-        square
-      />
+    <q-separator spaced inset vertical dark />
+    <label>Division in Charge *</label>
+    <q-select
+      options-dense=""
+      v-model="raid.Unit"
+      :options="store.units"
+      option-label="Abbrev"
+      option-value="Abbrev"
+      :rules="[(val) => !!val || 'Division is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      outlined
+      filled
+    />
 
-      <TableView
-        :data="productsOnHold"
-        :columns="product_columns"
-        :onAddItem="() => showAddProduct(1)"
-        :onRemoveItem="(p, i) => removeProduct(p, i, 1)"
-        :onViewItem="(p, i) => showViewProduct(p, i, 1)"
-        :deletable="true"
-        :editable="false"
-        title="Products on HOLD"
-      />
-      <TableView
-        :data="productsEvacuated"
-        :columns="product_columns"
-        :onAddItem="() => showAddProduct(0)"
-        :onRemoveItem="(p, i) => removeProduct(p, i, 0)"
-        :onViewItem="(p, i) => showViewProduct(p, i, 0)"
-        :deletable="true"
-        :editable="false"
-        title="Products Evacuated"
-      />
+    <TableView
+      :data="productsOnHold"
+      :columns="product_columns"
+      :onAddItem="() => showAddProduct(1)"
+      :onRemoveItem="(p, i) => removeProduct(p, i, 1)"
+      :onViewItem="(p, i) => showViewProduct(p, i, 1)"
+      :deletable="true"
+      :editable="false"
+      title="Products on HOLD"
+    />
+    <TableView
+      :data="productsEvacuated"
+      :columns="product_columns"
+      :onAddItem="() => showAddProduct(0)"
+      :onRemoveItem="(p, i) => removeProduct(p, i, 0)"
+      :onViewItem="(p, i) => showViewProduct(p, i, 0)"
+      :deletable="true"
+      :editable="false"
+      title="Products Evacuated"
+    />
 
-      <q-separator spaced inset vertical dark />
-      <label>Report (brief)</label>
-      <TextEditor
-        :Text="raid.Details"
-        :set-text="(v) => (raid.Details = v)"
-        style="border: 4px solid orange"
-        class="full-width"
-      />
-    </q-form>
-
+    <q-separator spaced inset vertical dark />
+    <label>Report (brief)</label>
+    <TextEditor
+      :Text="raid.Details"
+      :set-text="(v) => (raid.Details = v)"
+      style="border: 4px solid orange"
+      class="full-width"
+    />
     <q-dialog
       v-model="productPopupModel"
       class=""
@@ -340,7 +329,7 @@
         <GoogleGeoViewer :data="geoData.data" />
       </q-card>
     </q-dialog>
-  </FormCard>
+  </q-form>
 </template>
 
 <script setup>
@@ -366,16 +355,25 @@ const productPopupModel = ref(false);
 const popupReadOnly = ref(false);
 const form = ref(null);
 const updateFields = [];
-const raid = ref({});
+
 const unitFilter = ref();
-const location = ref(raid.value.Location);
-const states = useStates("Nigeria");
-const cities = computed(() => useCities(raid.value.State));
+
 const field = ref(1);
 const productFormRef = ref(null);
 const loading = ref(false);
 const previewMap = ref(false);
 const geoData = ref({});
+const props = defineProps({
+  model: Object,
+  setModel: Function,
+});
+const raid = computed({
+  get: () => props.model || {},
+  set: (v) => props.setModel(v),
+});
+const location = ref(raid.value.Location);
+const states = useStates("Nigeria");
+const cities = computed(() => useCities(raid.value.State));
 
 const staffList = computed(() => {
   return store.staffList.filter((s) =>

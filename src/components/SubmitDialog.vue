@@ -79,7 +79,7 @@
 <script setup>
 import { ref, reactive, computed, inject } from "vue";
 import { useDefaultStore } from "src/stores/store";
-import { onSubmit } from "../composables/remote";
+//import { onSubmit } from "../composables/remote";
 import { Notify } from "quasar";
 
 const store = useDefaultStore();
@@ -87,6 +87,7 @@ const assigned = ref("");
 const location = ref("");
 const unit = ref("");
 const comment = inject("comment");
+const onSubmit = inject("on-submit");
 
 const formRef = ref(null);
 
@@ -115,12 +116,7 @@ const staffList = computed(() => {
 async function submitDocument() {
   if (!formRef.value.validate()) return;
   try {
-    await onSubmit(
-      comment.value,
-      assigned.value,
-      unit.value.Abbrev,
-      store.currentDocument.id
-    );
+    await onSubmit(comment.value, assigned.value, unit.value.Abbrev);
     reset();
     comment.value = null;
   } catch (error) {

@@ -1,192 +1,196 @@
 <template>
-  <FormCard
-    :reset="reset"
-    :validate="validate"
-    :set-current-doc="setDocument"
-    :updateFields="updateFields"
-    :getDocument="getDocument"
-  >
-    <q-form ref="form" class="q-gutter-xs">
-      <q-separator spaced inset vertical dark />
-      <label>Case Number *</label>
-      <q-input
-        outlined
-        square=""
-        v-model="sample.CaseId"
-        type="number"
-        :rules="[(val) => !!val || 'Case number is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        class="q-mb-md"
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Product name *</label>
-      <q-input
-        outlined
-        square
-        v-model="sample.Name"
-        type="text"
-        :rules="[required]"
-        lazy-rules
-        hide-bottom-space=""
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Manufacturer *</label>
-      <q-input outlined square v-model="sample.Manufacturer" type="text" />
-      <q-separator spaced inset vertical dark />
-      <label>Manufacturer address*</label>
-      <q-input outlined square v-model="sample.ManAddress" type="text" />
-      <q-separator spaced inset vertical dark />
-      <label>Country of origin</label>
-      <q-select
-        outlined
-        square=""
-        v-model="sample.Country"
-        :options="countries"
-        options-dense=""
-        clear-icon="clear"
-        clearable=""
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Category</label>
-      <q-select
-        outlined
-        square
-        v-model="sample.Category"
-        :options="categories"
-        clear-icon="clear"
-        clearable=""
-        options-dense
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Pharmacological class</label>
-      <q-select
-        v-if="sample.Category === 'Pharmaceuticals'"
-        v-model="sample.PharmClass"
-        :options="pharm_class"
-        options-dense=""
-        outlined
-        square=""
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Batch</label>
-      <q-input outlined square v-model="sample.Batch" type="text" />
-      <q-separator spaced inset vertical dark />
-      <label>Pack size</label>
-      <q-input outlined square v-model="sample.PackSize" type="text" />
-      <q-separator spaced inset vertical dark />
-      <label>NAFDAC Number</label>
-      <q-input outlined square v-model="sample.NAFDACNumber" type="text" />
-      <q-separator spaced inset vertical dark />
-      <label>Quantity *</label>
-      <q-input
-        outlined
-        square
-        v-model="sample.Quantity"
-        type="text"
-        :rules="[(val) => !!val || 'Quantity is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-      />
-      <q-separator spaced inset vertical dark />
-      <div class="row">
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-          <label>Manufaturing date</label>
-          <q-input
-            outlined
-            square
-            v-model="sample.ManDate"
-            type="date"
-            label=""
-          />
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <label>Expiry date (Best Before date)</label>
-          <q-input
-            outlined
-            square
-            v-model="sample.ExpiryDate"
-            type="date"
-            label=""
-          />
-        </div>
+  <q-form ref="form" class="q-gutter-xs">
+    <q-separator spaced inset vertical dark />
+    <label>Case Number *</label>
+    <q-input
+      outlined
+      filled
+      square=""
+      v-model="sample.CaseId"
+      type="number"
+      :rules="[(val) => !!val || 'Case number is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      class="q-mb-md"
+    />
+    <q-separator spaced inset vertical dark />
+    <label>Product name *</label>
+    <q-input
+      outlined
+      filled
+      square
+      v-model="sample.Name"
+      type="text"
+      :rules="[required]"
+      lazy-rules
+      hide-bottom-space=""
+    />
+    <q-separator spaced inset vertical dark />
+    <label>Manufacturer *</label>
+    <q-input outlined filled square v-model="sample.Manufacturer" type="text" />
+    <q-separator spaced inset vertical dark />
+    <label>Manufacturer address*</label>
+    <q-input outlined filled square v-model="sample.ManAddress" type="text" />
+    <q-separator spaced inset vertical dark />
+    <label>Country of origin</label>
+    <q-select
+      outlined
+      filled
+      square=""
+      v-model="sample.Country"
+      :options="countries"
+      options-dense=""
+      clear-icon="clear"
+      clearable=""
+    />
+    <q-separator spaced inset vertical dark />
+    <label>Category</label>
+    <q-select
+      outlined
+      filled
+      square
+      v-model="sample.Category"
+      :options="categories"
+      clear-icon="clear"
+      clearable=""
+      options-dense
+    />
+    <q-separator spaced inset vertical dark />
+    <label>Pharmacological class</label>
+    <q-select
+      v-if="sample.Category === 'Pharmaceuticals'"
+      v-model="sample.PharmClass"
+      :options="pharm_class"
+      options-dense=""
+      outlined
+      filled
+      square=""
+    />
+    <q-separator spaced inset vertical dark />
+    <label>Batch</label>
+    <q-input outlined filled square v-model="sample.Batch" type="text" />
+    <q-separator spaced inset vertical dark />
+    <label>Pack size</label>
+    <q-input outlined filled square v-model="sample.PackSize" type="text" />
+    <q-separator spaced inset vertical dark />
+    <label>NAFDAC Number</label>
+    <q-input outlined filled square v-model="sample.NAFDACNumber" type="text" />
+    <q-separator spaced inset vertical dark />
+    <label>Quantity *</label>
+    <q-input
+      outlined
+      filled
+      square
+      v-model="sample.Quantity"
+      type="text"
+      :rules="[(val) => !!val || 'Quantity is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+    />
+    <q-separator spaced inset vertical dark />
+    <div class="row">
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
+        <label>Manufaturing date</label>
+        <q-input
+          outlined
+          filled
+          square
+          v-model="sample.ManDate"
+          type="date"
+          label=""
+        />
       </div>
-      <div class="row">
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-          <q-separator spaced inset vertical />
-          <label>Date sent to Lab</label>
-          <q-input
-            outlined
-            square
-            name="sentDate"
-            v-model="sample.SentDate"
-            type="date"
-            :rules="[required]"
-            lazy-rules=""
-            hide-bottom-space=""
-            clearable=""
-            clear-icon="close"
-          >
-            <template v-slot:append>
-              <q-btn
-                v-if="update_sentDate"
-                flat
-                color="primary"
-                label="Update"
-                @click="updateSentDate"
-              />
-            </template>
-          </q-input>
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical />
-          <label>Date report received from Lab *</label>
-          <q-input
-            outlined
-            square=""
-            name="reportDate"
-            v-model="sample.ReportDate"
-            type="date"
-            hide-bottom-space=""
-            clearable=""
-            clear-icon="close"
-          >
-            <template v-slot:append>
-              <q-btn
-                v-if="update_reportDate"
-                flat
-                color="primary"
-                label="Update"
-                @click="updateReport"
-              />
-            </template>
-          </q-input>
-        </div>
-        <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical />
-          <label>Lab result</label>
-          <q-select
-            v-model="sample.Result"
-            options-dense
-            :options="LAB_REPORT_OPTIONS"
-            outlined
-            square
-          />
-        </div>
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <label>Expiry date (Best Before date)</label>
+        <q-input
+          outlined
+          filled
+          square
+          v-model="sample.ExpiryDate"
+          type="date"
+          label=""
+        />
       </div>
-      <q-separator spaced inset vertical />
-      <label>Exhibit Officer</label>
-      <q-input
-        v-model="sample.Sender"
-        :model-value="sample.Sender || store.user.displayName"
-        type="text"
-        :rules="[(val) => !!val || 'Submitting officer is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        outlined=""
-      />
-    </q-form>
-  </FormCard>
+    </div>
+    <div class="row">
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
+        <q-separator spaced inset vertical />
+        <label>Date sent to Lab</label>
+        <q-input
+          outlined
+          filled
+          square
+          name="sentDate"
+          v-model="sample.SentDate"
+          type="date"
+          :rules="[required]"
+          lazy-rules=""
+          hide-bottom-space=""
+          clearable=""
+          clear-icon="close"
+        >
+          <template v-slot:append>
+            <q-btn
+              v-if="update_sentDate"
+              flat
+              color="primary"
+              label="Update"
+              @click="updateSentDate"
+            />
+          </template>
+        </q-input>
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <q-separator spaced inset vertical />
+        <label>Date report received from Lab *</label>
+        <q-input
+          outlined
+          filled
+          square=""
+          name="reportDate"
+          v-model="sample.ReportDate"
+          type="date"
+          hide-bottom-space=""
+          clearable=""
+          clear-icon="close"
+        >
+          <template v-slot:append>
+            <q-btn
+              v-if="update_reportDate"
+              flat
+              color="primary"
+              label="Update"
+              @click="updateReport"
+            />
+          </template>
+        </q-input>
+      </div>
+      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <q-separator spaced inset vertical />
+        <label>Lab result</label>
+        <q-select
+          v-model="sample.Result"
+          options-dense
+          :options="LAB_REPORT_OPTIONS"
+          outlined
+          filled
+          square
+        />
+      </div>
+    </div>
+    <q-separator spaced inset vertical />
+    <label>Exhibit Officer</label>
+    <q-input
+      v-model="sample.Sender"
+      :model-value="sample.Sender || store.user.displayName"
+      type="text"
+      :rules="[(val) => !!val || 'Submitting officer is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      outlined
+      filled=""
+    />
+  </q-form>
 </template>
 
 <script setup>
@@ -230,13 +234,16 @@ const docTitle = ref("");
 const fileSource = ref("");
 const assigned = ref();
 const updateFields = [];
-const sample = ref({});
 
-const setDocument = (v) => (sample.value = v);
+const props = defineProps({
+  model: Object,
+  setModel: Function,
+});
+const sample = computed({
+  get: () => props.model || {},
+  set: (v) => props.setModel(v),
+});
 
-function getDocument() {
-  return sample.value;
-}
 function reset() {
   form.value?.resetValidation();
 }

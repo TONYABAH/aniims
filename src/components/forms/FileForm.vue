@@ -7,6 +7,11 @@
     :getDocument="getDocument"
   >
     <q-form ref="form" class="q-gutter-sm">
+      <label
+        >NAFDAC/ENFD/{{ file.Location?.toUpperCase() }}/{{ file.Number }}/VOL{{
+          file.Volume || 1
+        }}</label
+      >
       <div class="row q-col-gutter-sm">
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
           <q-separator spaced inset vertical dark />
@@ -135,6 +140,7 @@ const form = ref(null);
 const options = ref(store.locations);
 const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn");
+const file_number = ref();
 const props = defineProps({
   readOnly: {
     type: Boolean,
@@ -193,7 +199,13 @@ function showMail(e, data) {
   //console.log(data);
   router.push("/mails/#" + data.id);
 }
-
+watch(
+  () => file,
+  (f) =>
+    (file_number.value = `NAFDAC/ENFD/${file.value.Location?.toUpperCase()}/${
+      file.value.Number
+    }/VOL${file.value.Volume || 1}`)
+);
 provide("iconName", "folder");
 provide("titleField", "Title");
 provide("secondTitle", "CreatedAt");

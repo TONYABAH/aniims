@@ -1,14 +1,14 @@
 <template>
   <q-circular-progress
-    indeterminate
     :size="size + 'px'"
     :thickness="thickness"
+    :style="style"
+    indeterminate
     color="lime"
-    center-color="grey-8"
-    track-color="red"
+    center-color="orange-9"
+    track-color="orange-8"
     class="q-ma-md"
     style="position: absolute"
-    :style="style"
     v-if="loading"
   />
 </template>

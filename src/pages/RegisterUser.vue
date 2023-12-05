@@ -144,7 +144,7 @@
 import { useQuasar } from "quasar";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { addCompany } from "../composables/functions";
+import { addUser } from "../composables/functions";
 
 //import { decodeMessage } from "../composables/decodeErrorMessage";
 const $q = useQuasar();
@@ -177,7 +177,7 @@ function isEmail(val) {
 
 async function registerUser() {
   loading.value = true;
-  addCompany({
+  addUser({
     ...user.value,
   })
     .then((result) => {
@@ -188,7 +188,7 @@ async function registerUser() {
       //router.push("/");
     })
     .catch((error) => {
-      //console.log(error);
+      console.log(error);
       //const [status, message] = String(error).split(":");
       //errorMessage.value = message; //+ " " + details ? details : ""; // || e.response.statusText;
       //statusMessage.value = status;

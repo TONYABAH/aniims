@@ -50,24 +50,23 @@
         />
       </q-form>
     </q-card-section>
-    <q-card-actions align="right" class="q-mx-md">
+    <q-card-actions align="right" class="q-pr-md">
       <q-btn
         v-if="unit && assigned"
         no-caps=""
         unelevated=""
-        label="Submit"
-        color="secondary"
-        glossy=""
+        label="Ok"
+        color="primary"
         icon="check"
+        icon-right="arrow_right"
         @click="assignDocument"
         v-close-popup
       />
       <q-btn
         no-caps=""
-        unelevated=""
+        flat=""
         label="Cancel"
         color="negative"
-        glossy=""
         v-close-popup
         icon="close"
         @click="cancel"
@@ -77,18 +76,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, inject } from "vue";
+import { ref, computed, inject } from "vue";
 import { useDefaultStore } from "src/stores/store";
-import { onAssign, list } from "../composables/remote";
 import { Notify } from "quasar";
 
 const store = useDefaultStore();
-const assigned = ref("");
-const location = ref("");
-const unit = ref("");
-const comment = inject("comment");
 
+const comment = inject("comment");
+const onAssign = inject("on-assign");
 const formRef = ref(null);
+const unit = ref(store.currentDocument?.meta?.Unit);
+const location = ref(store.currentDocument?.Location);
+const assigned = ref(getOwner());
 
 const props = defineProps({
   onSuccess: {
@@ -103,25 +102,27 @@ const props = defineProps({
 
 const units = computed(() => {
   return location.value
-    ? store.units.filter((u) => u.Location === location.value)
-    : store.units;
+    ? store.units
+        .filter((u) => u.Location === location.value)
+        .map((unit) => unit.Abbrev)
+    : store.units.map((unit) => unit.Abbrev);
 });
 const staffList = computed(() => {
   return unit.value
-    ? store.staffList.filter((s) => s.Units?.includes(unit.value.Abbrev))
+    ? store.staffList.filter((s) => s.Units?.includes(unit.value))
     : store.staffList;
 });
-
+function getOwner() {
+  return (
+    store.staffList.find((s) => s.uid === store.currentDocument?.meta?.From) ||
+    {}
+  );
+}
 async function assignDocument() {
   if (!formRef.value.validate()) return;
   //console.log(comment.value, assigned.value, unit.value);
   try {
-    await onAssign(
-      comment.value,
-      assigned.value,
-      unit.value.Abbrev,
-      store.currentDocument.id
-    );
+    await onAssign(comment.value, assigned.value, unit.value);
     reset();
     comment.value = null;
   } catch (error) {
@@ -138,7 +139,6 @@ async function assignDocument() {
 }
 
 function cancel() {
-  //props.onCancel();
   store.assignDialogModel = false;
   reset();
 }

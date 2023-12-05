@@ -8,20 +8,23 @@
     :list="userList"
     :reset="reset"
     :validate="validate"
+    :handle-search="handleSearch"
+    :on-add="create"
+    :on-save="save"
     icon-name="perm_identity"
   >
     <q-form class="q-pb-sm q-gutter-sm" ref="form">
-      <q-input
+      <!--<q-input
         v-model="searchText"
         type="text"
         label="Search name, email, location..."
-        outlined
+        outlined filled dense
         rounded
       >
         <template v-slot:append>
           <q-icon name="search" />
         </template>
-      </q-input>
+      </q-input>-->
       <q-separator spaced inset vertical dark />
       <label>Title *</label>
       <q-select
@@ -29,7 +32,7 @@
         :options="TITLE_OPTIONS"
         options-dense=""
         outlined
-        square
+        filled
         name="title"
         :rules="[validation.required]"
         lazy-rules="ondemand"
@@ -42,7 +45,7 @@
         type="text"
         input-class="text-input"
         outlined
-        square
+        filled
         name="name"
         :rules="[validation.required]"
         lazy-rules="ondemand"
@@ -56,7 +59,7 @@
       <label>Phone *</label>
       <q-input
         outlined
-        square
+        filled
         v-model="staff.Phone"
         type="text"
         name="phone"
@@ -72,7 +75,7 @@
       <label>Email *</label>
       <q-input
         outlined
-        square
+        filled
         v-model="staff.Email"
         type="email"
         name="email"
@@ -88,7 +91,7 @@
       <label>Staff Number *</label>
       <q-input
         outlined
-        square
+        filled
         v-model="StaffId"
         type="text"
         name="staffnumber"
@@ -101,7 +104,7 @@
       <label>Rank *</label>
       <q-input
         outlined
-        square
+        filled
         v-model="staff.Rank"
         type="text"
         name="rank"
@@ -116,7 +119,7 @@
         options-dense=""
         :options="store.locations"
         outlined
-        square
+        filled
         name="location"
         :rules="[validation.required]"
         lazy-rules="ondemand"
@@ -127,7 +130,7 @@
       <q-select
         v-if="staff.Role !== 'Director'"
         outlined
-        square
+        filled
         v-model="staff.Units"
         :options="store.units"
         option-value="Abbrev"
@@ -160,10 +163,10 @@
         </template>
       </q-select>
       <q-separator spaced inset vertical dark />
-      <label>Select Divisions Headed *</label>
+      <label>Divisions Headed (if any)</label>
       <q-select
         outlined
-        square
+        filled
         v-model="staff.Heads"
         :options="staff.Units"
         multiple
@@ -194,7 +197,8 @@
       <label>Role *</label>
       <q-select
         outlined
-        square
+        filled
+        Disabled
         v-model="staff.Role"
         :options="roleOptions"
         options-dense=""
@@ -203,23 +207,13 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-
-      <!--<q-checkbox left-label v-model="isActive" label="Active" />-->
-      <q-checkbox right-label v-model="isAdmin" label="Admin" /><q-btn
-        color="teal"
-        label="Update"
-        unelevated=""
-        rounded
-        flat
-        @click="onAdminStatusChanged"
-      />
       <q-select
         v-model="status"
         :options="STATUS_OPTIONS"
         options-dense=""
         label="Status"
         outlined
-        square
+        filled
       >
         <template v-slot:append>
           <q-btn
@@ -232,13 +226,22 @@
           ></q-btn>
         </template>
       </q-select>
-      <q-toolbar class="q-mt-md bg-transparent" style="border-radius: 6px">
+
+      <!--<q-toolbar class="bg-grey-9" style="border-radius: 6px">
         <q-toolbar-title></q-toolbar-title>
+        <q-btn
+          color="teal"
+          label="Save changes"
+          unelevated=""
+          @click="save"
+          v-if="!!staff.id"
+        />
+        <q-separator spaced inset vertical dark />
         <q-btn
           unelevated=""
           class="q-mr-xs"
           color="negative"
-          label="Update"
+          label="Save"
           glossy=""
           @click.stop="save"
           :disable="!staff.id || !store.user.claims.admin"
@@ -249,49 +252,51 @@
           color="secondary"
           label="Create"
           glossy=""
-          @click.stop="save"
-          :disable="!!staff.id"
+          @click.stop="create"
+          v-if="!staff.id"
         />
-      </q-toolbar>
+      </q-toolbar>-->
     </q-form>
   </AdminViewer>
 </template>
 
 <script setup>
-import { Notify, Dialog } from "quasar";
+import { Notify, Dialog, debounce } from "quasar";
 import { computed, onMounted, ref, watch } from "vue";
 import { useDefaultStore } from "src/stores/store";
 import { createUser } from "src/composables/functions";
 import { update } from "src/composables/remote";
 import { validation } from "src/composables/use";
 import AdminViewer from "src/views/AdminViewer.vue";
+import { addSearch, lifeSearch } from "src/composables/searchProvider";
 
 const form = ref(null);
 const store = useDefaultStore();
 const roleOptions = [
   "Director",
-  "Head",
+  "Head Location",
+  "Head Division",
   "Regulatory",
   "Secretary",
   "Accountant",
-  "Admin",
+  "Administrative",
   "Press",
   "Legal",
-  "Engineer",
+  "Maintenance",
+  "Transport",
 ];
 const TITLE_OPTIONS = ["Mr", "Mrs", "Miss", "Ms", "Dr", "Pharm", "Prof"];
-const STATUS_OPTIONS = ["Active", "Deleted", "Deactivated"];
+const STATUS_OPTIONS = ["Active", "Inactive"];
 const collection = "Staff";
 const searchFields = ["Name", "Rank", "Email", "Location"];
-const _list = ref(store.staffList || []);
-const allUsers = ref([]);
-const searchText = ref("");
+const staffList = ref([]);
 
 const model = ref({});
 
 function setModel(s) {
   model.value = s;
 }
+//const active = ref(staff.value?.Active)
 const staff = computed({
   get: () => model.value || {},
   set: (val) => {
@@ -300,9 +305,9 @@ const staff = computed({
 });
 
 const userList = computed({
-  get: () => _list.value,
+  get: () => staffList.value,
   set: (v) => {
-    _list.value = v;
+    staffList.value = v;
   },
 });
 const StaffId = computed({
@@ -314,7 +319,7 @@ const status = computed({
   set: (v) => (staff.value.Status = v),
 });
 const isAdmin = computed({
-  get: () => staff.value.IsAdmin || false,
+  get: () => staff.value.IsAdmin || undefined,
   set: (v) => (staff.value.IsAdmin = v),
 });
 async function onAdminStatusChanged() {
@@ -371,11 +376,57 @@ async function onStatusChanged() {
     });
 }
 async function save() {
+  if (!staff.value.id) return;
+  store.loading = true;
+  update(
+    staff.value.id,
+    {
+      Status: status.value,
+      Rank: staff.value.Rank,
+      Role: staff.value.Role,
+      Heads: staff.value.Heads || [],
+      Units: staff.value.Units || [],
+      Location: staff.value.Location,
+      //Admin: isAdmin.value,
+      //CanEditPayment: staff.value.CanEditPayment || false,
+      //CanConfirmPayment: staff.value.CanConfirmPayment || false,
+      CanReceiveMail: staff.value.CanReceiveMail || false,
+    },
+    "Users"
+  )
+    .then(() => {
+      Notify.create({
+        timeout: 800,
+        message: "User status updated",
+        caption: "Update",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      store.loading = false;
+    });
+}
+async function create() {
   if (!(await validate())) return;
   store.loading = true;
-  createUser({ ...staff.value })
+  const _fields = ["Name", "StaffId", "Rank"].map((f) => staff.value[f]);
+  const meta = {
+    search: addSearch(_fields),
+  };
+  createUser({ ...staff.value, meta })
     .then((result) => {
       staff.value.id = result.data;
+      handleSearch("");
       Notify.create({
         timeout: 800,
         message: "Created successfully",
@@ -397,7 +448,7 @@ async function save() {
       store.loading = false;
     });
 }
-function filter(val) {
+/*function filter(val) {
   const needle = val?.toLowerCase() || "";
   if (!needle || needle.trim().length === 0) {
     userList.value = store.staffList;
@@ -412,13 +463,23 @@ function filter(val) {
   });
   userList.value = filtered;
   return filtered;
-}
+}*/
 function reset() {
   form.value?.resetValidation();
 }
 const validate = async () => await form.value?.validate(true);
 
-watch(searchText, (val) => filter(val), { immediate: true });
+//watch(searchText, (val) => filter(val), { immediate: true });
+
+const handleSearch = debounce(async (d) => {
+  const whereFilters = [["Level", "==", 3]];
+  const _users = await lifeSearch("Users", {
+    searchText: d,
+    whereFilters,
+    limits: 100,
+  });
+  staffList.value = _users;
+}, 500);
 
 defineExpose({
   reset,

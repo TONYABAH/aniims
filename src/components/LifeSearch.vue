@@ -1,22 +1,18 @@
 <template>
   <q-select
-    dense
-    filled=""
-    v-model="model"
+    v-model="_model"
     use-input
-    color="white"
+    hint=""
+    clearable=""
+    clear-icon="close"
     input-debounce="400"
+    style="max-width: 450px"
+    :rounded="rounded"
     :label="label"
     :options="options"
     @filter="filterFunction"
     @filter-abort="abortFilterFunction"
-    style="max-width: 450px"
-    hint=""
-    :rounded="rounded"
-    :readonly="readOnly"
     @update:model-value="updateFunction"
-    clearable=""
-    clear-icon="close"
   >
     <template v-slot:no-option>
       <q-item>
@@ -27,33 +23,18 @@
 </template>
 
 <script setup>
-import { useBackend } from "src/composables/backend.js";
-import { Dialog, Notify } from "quasar";
+//import { useBackend } from "src/composables/backend.js";
+//import { Dialog, Notify } from "quasar";
 //import { useDefaultStore } from "src/stores/store";
 import { onMounted, ref, watch, computed } from "vue";
-import { api } from "src/boot/axios";
+import { lifeSearch } from "src/composables/searchProvider";
 
-const backend = useBackend();
+//import { api } from "src/boot/axios";
 // const store = useDefaultStore();
 const props = defineProps({
-  readOnly: {
-    type: Boolean,
-    default: false,
-  },
-  initial: {
+  model: {
     type: String,
     default: "",
-  },
-  abortFilterFn: {
-    type: Function,
-    //default: abortFilterFunction,
-  },
-  path: {
-    type: String,
-  },
-  id: {
-    type: String,
-    default: "id",
   },
   label: {
     type: String,
@@ -63,52 +44,53 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  abortFilterFunction: {
+    type: Function,
+    default: () => console.log("aborted"),
+  },
   updateFunction: {
     type: Function,
-    default: (d) => {
-      console.log(d);
-    },
+    required: true,
   },
+  idField: {
+    type: String,
+    required: false,
+  },
+  /*loadFunction: {
+    type: Function,
+    default: () => [],
+  },*/
 });
 
 const options = ref([]);
-const model = computed({
-  get: () => props.initial,
+
+const _model = computed({
+  get: () => props.model,
   set: (v) => props.updateFunction(v),
 });
-
-async function loadData(path, query) {
-  let resp = await api.get(`${path}/?s=${query}`);
-  if (resp.data) {
-    return resp.data;
-  }
-  return [];
+async function loadSearch(val) {
+  return await lifeSearch("Units", { searchText: val });
 }
 function filterFunction(val, update, abort) {
   setTimeout(() => {
     update(async () => {
       if (val === "") {
-        options.value = [];
+        options.value = await loadSearch(val);
       } else {
-        let data = await loadData(props.path, val);
+        let data = await loadSearch(val);
+
         if (data.length == 0) {
           options.value = [];
           return;
         }
         options.value = data.reduce((acc, opt) => {
-          acc.push(opt[props.id]);
+          acc.push(opt);
           return acc;
         }, []);
       }
     });
   }, 0);
 }
-
-function abortFilterFunction() {
-  if (props.abortFilterFn) return props.abortFilterFn();
-  console.log("delayed filter aborted");
-}
-
 onMounted(async () => {
   //const res = await api.get('units')
   //units.value = res.data

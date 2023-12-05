@@ -5,25 +5,28 @@
     :collection="collection"
     :search-fields="searchFields"
     :selected="ipo"
-    :list="userList"
-    icon-name="perm_identity"
+    :list="ipoList"
     :reset="reset"
     :validate="validate"
+    :handle-search="handleSearch"
+    :on-add="create"
+    :on-save="save"
+    icon-name="perm_identity"
   >
     <!--<IpoForm ref="ipoFormRef" :setProfile="setModel" :profile="selectedIPO" />-->
 
     <q-form ref="form" class="q-pb-sm q-gutter-sm">
-      <q-input
+      <!--<q-input
         v-model="searchText"
         type="text"
         label="Search name, email, location..."
-        outlined
+        outlined filled dense
         rounded
       >
         <template v-slot:append>
           <q-icon name="search" />
         </template>
-      </q-input>
+      </q-input>-->
       <q-separator spaced inset vertical dark />
       <label>Full name *</label>
       <q-input
@@ -34,7 +37,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       >
         <template v-slot:append>
           <q-icon name="perm_identity" />
@@ -49,7 +53,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       >
         <template v-slot:append>
           <q-icon name="phone" />
@@ -64,7 +69,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       >
         <template v-slot:append>
           <q-icon name="email" />
@@ -79,7 +85,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       >
         <template v-slot:append>
           <q-btn
@@ -102,7 +109,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       />
       <q-separator spaced inset vertical dark />
       <label>Location *</label>
@@ -114,7 +122,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       />
       <q-separator spaced inset vertical dark />
       <label>Unit *</label>
@@ -126,7 +135,8 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square
+        filled
+        dense
       />
       <q-separator spaced inset vertical dark />
       <label>Status *</label>
@@ -135,7 +145,8 @@
         :options="STATUS_OPTIONS"
         options-dense=""
         outlined
-        square
+        filled
+        dense
       >
         <template v-slot:append>
           <q-btn
@@ -143,21 +154,21 @@
             color="teal"
             label="Update"
             glossy
-            @click.stop="onStatusChanged"
+            @click.stop="save"
             v-if="ipo.id"
           ></q-btn>
         </template>
       </q-select>
-      <q-toolbar class="bg-transparent text- q-mt-md">
+      <!--<q-toolbar class="bg-transparent text- q-mt-md">
         <q-toolbar-title></q-toolbar-title>
         <q-btn
           unelevated=""
           class="q-mr-xs"
           @click="save"
           color="negative"
-          label="Update"
+          label="Save changes"
           glossy
-          :disable="!ipo.id"
+          v-if="!!ipo.id"
         />
         <q-btn
           unelevated=""
@@ -166,9 +177,9 @@
           color="secondary"
           label="Create"
           glossy
-          :disable="!!ipo.id"
+          v-else
         />
-      </q-toolbar>
+      </q-toolbar>-->
     </q-form>
   </AdminViewer>
 </template>
@@ -182,18 +193,19 @@ import { addIPO } from "src/composables/functions";
 import { update } from "src/composables/remote";
 import { validation } from "src/composables/use";
 import AdminViewer from "src/views/AdminViewer.vue";
+import { addSearch, lifeSearch } from "src/composables/searchProvider";
 
 const store = useDefaultStore();
 const roleOptions = ["IPO", "2IC", "OC"];
 const unitsOptions = ref(["FTF", "NAFDAC Police"]);
 const form = ref(null);
-const STATUS_OPTIONS = ["Active", "Deleted", "Deactivated"];
+const STATUS_OPTIONS = ["Active", "Inactive"];
 const collection = "IPO";
 const searchFields = ["Name", "Rank", "Email", "Location"];
-const searchText = ref("");
+//const searchText = ref("");
 const userList = ref([]);
-const _list = ref(store.ipos || []);
-const allUsers = ref([]);
+const ipoList = ref([]);
+//const allUsers = ref([]);
 
 const profile = ref({});
 
@@ -203,10 +215,10 @@ const ipo = computed({
     profile.value = val;
   },
 });
-const isActive = computed({
+/*const isActive = computed({
   get: () => ipo.value.Active || false,
   set: (v) => (ipo.value.Active = v),
-});
+});*/
 function setModel(m) {
   ipo.value = m;
 }
@@ -244,7 +256,7 @@ async function onRankChanged() {
       store.loading = false;
     });
 }
-async function onStatusChanged() {
+async function save() {
   if (!ipo.value.id) return;
   store.loading = true;
   update(ipo.value.id, { Status: status.value }, "Users")
@@ -270,12 +282,18 @@ async function onStatusChanged() {
       store.loading = false;
     });
 }
-async function save() {
+async function create() {
   if (!(await validate())) return;
   store.loading = true;
-  addIPO({ ...ipo.value })
+  const _fields = ["Name", "Rank"].map((f) => ipo.value[f]);
+  const meta = {
+    search: addSearch(_fields),
+  };
+  // unit.value.meta = meta;
+  addIPO({ ...ipo.value, meta })
     .then((result) => {
       ipo.value = result.data;
+      handleSearch("");
       Notify.create({
         timeout: 800,
         message: "Created successfully",
@@ -299,7 +317,7 @@ async function save() {
       store.loading = false;
     });
 }
-function filter(val) {
+/*function filter(val) {
   const needle = val?.toLowerCase() || "";
   if (!needle || needle.trim().length === 0) {
     userList.value = store.ipos;
@@ -314,8 +332,19 @@ function filter(val) {
   });
   userList.value = filtered;
   return filtered;
-}
-watch(searchText, (val) => filter(val), { immediate: true });
+}*/
+//watch(searchText, (val) => filter(val), { immediate: true });
+
+const handleSearch = debounce(async (d) => {
+  const whereFilters = [["Level", "==", 2]];
+  const _users = await lifeSearch("Users", {
+    searchText: d,
+    whereFilters,
+    limits: 100,
+  });
+  ipoList.value = _users;
+}, 500);
+
 defineExpose({
   reset,
   validate,

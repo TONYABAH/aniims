@@ -1,6 +1,6 @@
 <template>
-  <q-header class="bg-teal-7">
-    <q-toolbar class="bg-transparent">
+  <q-header class="bg-teal-7 q-pa-sm">
+    <q-bar class="bg-teal q-py-sm">
       <q-btn
         flat
         dense
@@ -60,7 +60,7 @@
         @click="$q.fullscreen.toggle()"
         :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
       ></q-btn>
-    </q-toolbar>
+    </q-bar>
   </q-header>
 </template>
 

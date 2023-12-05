@@ -53,6 +53,7 @@ function isPhoneNumber(data) {
   return regEx.test(data.toString());
 }
 async function getNextCaseNumber() {
+  //Use realtime database for Case Count
   const snapshot = await getDatabase().ref("cases").child("count").get();
   let count = snapshot?.val() || 0;
   count++;
@@ -269,7 +270,24 @@ exports.recoveremail = onCall(async (request) => {
     throw new HttpsError("unknown", error.message);
   }
 });
-
+async function setCustomClaims(uid, data) {
+  getAuth()
+    .setCustomUserClaims(uid, {
+      //displayName: displayName || email,
+      units: data.Units || [],
+      level: data.Level || 0,
+      admin: data.IsAdmin || false,
+      location: data.Location || "",
+      role: data.Role || "public",
+    })
+    .catch((e) => {
+      logger.log(e.message);
+    });
+  if (!data.Email) return;
+  sendPasswordResetEmail(data.Email, data.Name).catch((e) =>
+    logger.log(e.message)
+  );
+}
 exports.register = onCall(async (request) => {
   try {
     if (!request.auth?.uid || !request.auth?.token?.admin) {
@@ -283,6 +301,7 @@ exports.register = onCall(async (request) => {
     }
     let Level = 3;
     let data = request.data;
+    data.Level = Level;
     let password = "password1";
     const userRecord = await createUser(
       data.Email,
@@ -296,17 +315,10 @@ exports.register = onCall(async (request) => {
       .collection("Users")
       .doc(userRecord.uid)
       .set({
-        Level,
         uid: userRecord.uid,
         ...data,
       });
-
-    try {
-      //await sendVerifyEmailLink(userRecord.email, userRecord.displayName);
-      sendPasswordResetEmail(userRecord.email, userRecord.displayName);
-    } catch (e) {
-      console.log(e);
-    }
+    setCustomClaims(userRecord.uid, data);
     return userRecord.uid;
   } catch (error) {
     logger.error(error);
@@ -316,11 +328,7 @@ exports.register = onCall(async (request) => {
 
 exports.getuseremail = onCall(async (request) => {
   try {
-    if (
-      !request.data?.id ||
-      //!request.data?.password
-      !request.data?.role
-    )
+    if (!request.data?.id)
       throw new HttpsError(
         "permission-denied",
         "User data required",
@@ -328,33 +336,17 @@ exports.getuseremail = onCall(async (request) => {
       );
     //console.log(request.data);
     const id = request.data?.id;
-    const role = request.data?.role?.toLowerCase();
-    let _collection = "public";
-    let filter = ["Email", "==", id];
-    switch (role) {
-      case "staff":
-        _collection = "Staff";
-        filter = ["StaffId", "==", id.toUpperCase()];
-        break;
-      case "ipo":
-        _collection = "IPO";
-        filter = ["Phone", "==", id];
-        break;
-      case "company":
-        _collection = "Companies";
-        filter = ["Email", "==", id.toLowerCase()];
-        break;
-      default:
-    }
+    //const role = request.data?.role?.toLowerCase();
+    let _collection = "Users";
+    let filter = ["StaffId", "==", id.toUpperCase()];
     const snapshot = await getFirestore()
       .collection(_collection)
       .where(...filter)
       .get();
     if (snapshot.empty) {
       throw new HttpsError("permission-denied", `User id '${id}' not found`);
-      //return null;
     } else {
-      let data = snapshot.docs[0]?.data();
+      let data = snapshot?.docs[0]?.data();
       return data.Email;
     }
   } catch (error) {
@@ -474,7 +466,7 @@ exports.addipo = onCall(async (request) => {
     let Level = 2;
     let data = request.data;
     let password = "password1";
-
+    data.Level = Level;
     const userRecord = await createUser(
       data.Email,
       password,
@@ -483,24 +475,15 @@ exports.addipo = onCall(async (request) => {
       false
       //data.photoURL || "https://example.com/123/photo.jpg"
     );
-    //let TenantId = data.Email;
-    //console.log(data.Roles);
+    // Create the user
     await getFirestore()
       .collection("Users")
       .doc(userRecord.uid)
       .set({
-        Level,
-        //AccessId: TenantId,
         uid: userRecord.uid,
         ...data,
       });
-
-    try {
-      //await sendVerifyEmailLink(userRecord.email, userRecord.displayName);
-      sendPasswordResetEmail(userRecord.email, userRecord.displayName);
-    } catch (e) {
-      console.log(e);
-    }
+    setCustomClaims(userRecord.uid, data);
     return userRecord.uid;
   } catch (error) {
     logger.error(error);
@@ -508,11 +491,11 @@ exports.addipo = onCall(async (request) => {
   }
 });
 
-exports.addcompany = onCall(async (request) => {
+exports.adduser = onCall(async (request) => {
   try {
     let Level = 1;
-    // let Role = "Public";
     let data = request.data;
+    data.Level = Level;
     let password = "password1";
     if (!request.data.Email || !request.data.Phone || !request.data.Name) {
       throw new HttpsError(
@@ -528,24 +511,15 @@ exports.addcompany = onCall(async (request) => {
       false
       //data.photoURL || "https://example.com/123/photo.jpg"
     );
-    //let TenantId = data.Email;
-    //console.log(data.Roles);
+    // Create the user
     await getFirestore()
       .collection("Users")
       .doc(userRecord.uid)
       .set({
-        Level,
-        //AccessId: TenantId,
         uid: userRecord.uid,
         ...data,
       });
-
-    try {
-      //await sendVerifyEmailLink(userRecord.email, userRecord.displayName);
-      sendPasswordResetEmail(userRecord.email, userRecord.displayName);
-    } catch (e) {
-      console.log(e);
-    }
+    setCustomClaims(userRecord.uid, data);
     return userRecord.uid;
   } catch (error) {
     logger.error(error);
@@ -575,20 +549,23 @@ exports.setuserrights = onCall(async (request) => {
     let _collection = "Users";
     let user = await getAuth().getUser(request.data.uid);
     if (user) {
-      await getAuth().updateUser(user.uid, {
-        disabled: request.data?.Disabled || false,
-      });
-      await getAuth().setCustomUserClaims(user.uid, {
-        admin: request.data?.IsAdmin || false,
-      });
-      let profile = await getFirestore()
-        .collection(_collection)
-        .doc(request.data.uid);
-
+      let promises = [
+        getAuth().updateUser(user.uid, {
+          disabled: request.data?.Disabled || false,
+        }),
+        getAuth().setCustomUserClaims(user.uid, {
+          ...request.data?.claims,
+        }),
+        getFirestore().collection(_collection).doc(request.data.uid),
+      ];
+      const [u, c, profile] = await Promise.all(promises);
       if (profile) {
         profile.update({
           Active: request.data?.Disabled ? false : true,
           Admin: request.data?.IaAdmin || false,
+          //CanEditMail: request.data?.CanEditMail || false,
+          //CanEditPayment: request.data?.CanEditPayment || false,
+          //CanConfirmPayment: request.data?.CanConfirmPayment || false,
         });
       }
     }
@@ -601,19 +578,24 @@ exports.setuserrights = onCall(async (request) => {
 exports.beforeusersignin = beforeUserSignedIn(async (event) => {
   const user = event.data;
   const { email, uid, displayName } = user;
-  //let _collection = "Users";
   //let snapshot = await getFirestore().collection(_collection).get();
-  //console.log(user, snapshot.empty);
   if (email === "armyanthonyabah@yahoo.co.uk") {
+    const claims = event.data.customClaims || {
+      //displayName: displayName || email,
+      admin: true,
+      developer: true,
+      units: [],
+      level: 5,
+    };
+    if (!claims.level) {
+      claims.level = 5;
+      claims.admin = true;
+      claims.developer = true;
+      claims.units = [];
+    }
     return {
       emailVerified: true,
-      customClaims: {
-        displayName: displayName || email,
-        admin: true,
-        developer: true,
-        units: [],
-        level: 5,
-      },
+      customClaims: claims,
     };
   } else if (!user.emailVerified) {
     throw new HttpsError(
@@ -622,66 +604,50 @@ exports.beforeusersignin = beforeUserSignedIn(async (event) => {
       "Email " + email + " not verified."
     );
   }
+});
+exports.oncasecreated = onDocumentCreated("Cases/{id}", async (event) => {
   try {
-    let _collection = "Users";
-    snapshot = await getFirestore()
-      .collection(_collection)
-      .where("Email", "==", email)
-      .get();
-    if (!snapshot.empty) {
-      const data = snapshot.docs.shift().data();
-      /*await getAuth().setCustomUserClaims(uid, {
-        units: data.Units || [],
-        level: data.Level || 0,
-        admin: data.IsAdmin,
-        location: data.Location,
-        //accountant: data.Role === "Accountant",
-        role: data.Role || "public",
-      });*/
-      return {
-        // If no display name is provided, set it to "Guest".
-        sessionClaims: {
-          displayName: displayName || email,
-          units: data.Units || [],
-          level: data.Level || 0,
-          admin: data.IsAdmin || false,
-          location: data.Location || "",
-          //accountant: data.Role === "Accountant",
-          role: data.Role || "public",
-        },
-      };
-    } else {
-      throw new HttpsError(
-        "permission-denied",
-        "No profile information.",
-        "No profile information found."
-      );
+    const snapshot = event.data;
+    const id = event.params.id;
+    if (!snapshot) {
+      return;
     }
+    const CaseNumber = await getNextCaseNumber();
+    //const data = { CaseNumber };
+    getFirestore()
+      .doc("Cases/" + id)
+      .update({ CaseNumber });
   } catch (error) {
-    logger.log(error);
-    throw new HttpsError("unknown", error.message);
+    logger.error(error);
   }
 });
-
-/*exports.sendsms = onDocumentCreated("SMS/{sid}", async (event) => {
+exports.onusercreated = onDocumentCreated("Users/{uid}", async (event) => {
   const snapshot = event.data;
+  const uid = event.params.uid;
   if (!snapshot) {
-    //console.log("No data associated with the event");
     return;
   }
   const data = snapshot.data();
-  if (!isPhoneNumber(data.phone)) return;
-  const to = formatPhoneNumber(data.phone);
-  const from = SENDER_ID;
-  const documentId = data.docId;
-  const coll = data.coll;
-  const body = `A document for your attention: ${BASE_URL}/${coll}/#${documentId}/`;
-  sendMessage({ to, from, body }, (err, info) => {
-    //if (err) console.log(err);
-    //if (info) return info;
-  });
-});*/
-exports.oncomment = onDocumentCreated(
+  //getAuth.getUser(uid)
+  getAuth()
+    .setCustomUserClaims(uid, {
+      //displayName: displayName || email,
+      units: data.Units || [],
+      level: data.Level || 0,
+      admin: data.IsAdmin || false,
+      location: data.Location || "",
+      role: data.Role || "public",
+    })
+    .catch((e) => {
+      logger.log(e.message);
+    });
+  if (!data.Email) return;
+  sendPasswordResetEmail(data.Email, data.Name).catch((e) =>
+    logger.log(e.message)
+  );
+});
+
+exports.oncommentcreated = onDocumentCreated(
   "{collectionId}/{docId}/Minutes/{minuteId}",
   async (event) => {
     const snapshot = event.data;
@@ -718,7 +684,7 @@ exports.oncomment = onDocumentCreated(
   }
 );
 
-exports.sendcomplaintnotification = onDocumentCreated(
+exports.oncomplaintcreated = onDocumentCreated(
   "Complaints/{sid}",
   async (event) => {
     const snapshot = event.data;
@@ -738,8 +704,7 @@ exports.sendcomplaintnotification = onDocumentCreated(
     });
   }
 );
-
-exports.senddestructionnotification = onDocumentCreated(
+exports.ondestructioncreated = onDocumentCreated(
   "Destructions/{sid}",
   async (event) => {
     const snapshot = event.data;
@@ -826,10 +791,10 @@ exports.createdocument = onCall(async (request) => {
     if (!request.auth?.uid) {
       throw new HttpsError("bad-request", `User not logged in`);
     }
-    if (collection === "Cases") {
+    /*if (collection === "Cases") {
       const caseNumber = await getNextCaseNumber();
       payload.CaseNumber = caseNumber;
-    }
+    }*/
     await getFirestore().runTransaction(async (t) => {
       const doc = getFirestore().doc(collection + "/" + documentId);
       payload.id = documentId;

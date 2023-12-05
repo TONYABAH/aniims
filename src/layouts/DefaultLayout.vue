@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr Fff" style="overflow: hidden">
+  <q-layout view="hHh Lpr Fff" style="overflow: hidden">
     <default-header />
     <DefaultDrawer />
     <q-page-container style="overflow: auto">
@@ -10,9 +10,13 @@
 </template>
 
 <script setup>
+import { ref, computed } from "vue";
 import DefaultHeader from "./DefaultHeader.vue";
 import DefaultDrawer from "./DefaultDrawer.vue";
 import DefaultFooter from "./DefaultFooter.vue";
+import { useDefaultStore } from "../stores/store.js";
+//const tabModel = ref("search");
+const store = useDefaultStore();
 </script>
 <script type="application/javascript">
 // Tawk_API = Tawk_A(PI || {},

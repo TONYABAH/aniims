@@ -1,60 +1,83 @@
 <template>
-  <ViewContainer
-    :validateForm="validate"
-    :resetForm="reset"
+  <FormCard
+    :reset="reset"
+    :validate="validate"
+    :set-current-doc="setDocument"
     :updateFields="updateFields"
+    :getDocument="getDocument"
   >
-    <ComplaintForm ref="formRef" id="myForm" />
-  </ViewContainer>
+    <ComplaintApplication ref="form" :data="complaint" :setData="setDocument" />
+  </FormCard>
 </template>
 
 <script setup>
-import ViewContainer from "src/views/DefaultViewer.vue";
-import ComplaintForm from "src/components/ComplaintForm.vue";
-import { onMounted, ref, provide } from "vue";
-// const $q = useQuasar()
-const complaint = ref({});
-const dataTable = "complaints";
-const readOnly = ref(false);
-const complaintFormRef = ref(null);
-const formRef = ref(null);
-const columns = [
-  {
-    name: "Date",
-    field: "date",
-    label: "Date",
-    align: "left",
+import { onMounted, ref, watch, provide } from "vue";
+import FormCard from "src/components/FormCard.vue";
+import ComplaintApplication from "src/components/forms/ComplaintForm.vue";
+
+/*const props = defineProps({
+  readOnly: {
+    type: Boolean,
+    default: false,
   },
+  setEditable: Function,
+  selectedComplaint: Object,
+  setSelectedComplaint: Function,
+});*/
+
+const form = ref(null);
+const location = ref({});
+const updateFields = [];
+const complaint = ref({});
+const update_caseNumber = ref(false);
+
+const setDocument = (v) => {
+  complaint.value = v;
+};
+
+function getDocument() {
+  return complaint.value;
+}
+function reset() {
+  form.value?.reset();
+}
+const validate = async () => await form.value?.validate();
+watch(
+  () => complaint.value.CaseNumber,
+  (newValue) => {
+    //console.log(newValue);
+    update_caseNumber.value = newValue ? true : false;
+  }
+);
+
+const tableColumns = [
   {
-    name: "Title",
-    field: "title",
-    label: "Title",
+    name: "Address",
+    label: "Address",
+    field: "Address",
+    title: "Address",
     align: "left",
   },
 ];
-
-async function onComplaintLoaded(s) {
-  complaint.value = s;
-}
-function setEditable(value) {
-  readOnly.value = value !== undefined ? !value : false;
-}
-function onUpdateData(d) {
-  complaint.value = d;
-}
-
-async function validate() {
-  return await formRef.value?.validate();
-}
-async function reset() {
-  await formRef.value?.reset();
-}
-// watch(current, (c) => onPageChange(c))
-
 provide("iconName", "campaign");
 provide("titleField", "Title");
 provide("secondTitle", "Date");
 provide("collection", "Complaints");
 provide("searchFields", ["Title", "Source", "Address"]);
-onMounted(() => {});
+
+defineExpose({
+  reset,
+  validate,
+  complaint,
+});
+
+onMounted(async () => {
+  if (!complaint.value.Locations) {
+    complaint.value.Locations = [];
+  }
+  provide("location", location);
+  provide("locations", complaint.value.Locations);
+});
+
+// defineExpose({ reset, save, add })
 </script>

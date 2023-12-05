@@ -1,5 +1,5 @@
 <template>
-  <router-view  />
+  <router-view />
 </template>
 
 <script setup>
@@ -11,7 +11,7 @@ import { useDefaultStore } from "./stores/store";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./composables/firebase";
 import { useRouter } from "vue-router";
-import { Dark } from "quasar";
+//import { Dark } from "quasar";
 //import { getUserToken } from "./composables/auth";
 //import { api } from "./boot/axios";
 const store = useDefaultStore();
@@ -55,7 +55,6 @@ onAuthStateChanged(auth, async (user) => {
     store.user = d;
     //const { get } = await import("./composables/remote");
     //store.currentStaff = await get(d.uid, "Users");
-    //console.log(store.user);
     //Confirm the user is an Admin.
     const fullpath = getParameterByName("redirect", d.claims?.level || 0);
     router.push(fullpath);

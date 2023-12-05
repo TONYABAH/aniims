@@ -20,7 +20,7 @@ const routes = [
       {
         path: "cases",
         name: "Cases",
-        component: () => import("../components/forms/CaseForm.vue"),
+        component: () => import("../views/CaseView.vue"),
       },
       {
         path: "files",
@@ -30,27 +30,27 @@ const routes = [
       {
         path: "complaints",
         name: "Complaints",
-        component: () => import("../components/forms/ComplaintForm.vue"),
-      },
-      {
-        path: "raids",
-        name: "Raids",
-        component: () => import("../components/forms/RaidForm.vue"),
-      },
-      {
-        path: "samples",
-        name: "Sample",
-        component: () => import("../components/forms/SampleForm.vue"),
-      },
-      {
-        path: "payments",
-        name: "Payment",
-        component: () => import("../components/forms/PaymentForm.vue"),
+        component: () => import("../views/ComplaintView.vue"),
       },
       {
         path: "destructions",
         name: "Destructions",
-        component: () => import("../components/forms/DestructionForm.vue"),
+        component: () => import("../views/DestructionView.vue"),
+      },
+      {
+        path: "raids",
+        name: "Raids",
+        component: () => import("../views/RaidsView.vue"),
+      },
+      {
+        path: "samples",
+        name: "Sample",
+        component: () => import("../views/SampleView.vue"),
+      },
+      {
+        path: "payments",
+        name: "Payment",
+        component: () => import("../views/PaymentView.vue"),
       },
     ],
   },
@@ -124,6 +124,34 @@ const routes = [
     name: "Password",
     meta: { requiresAuth: false },
     component: () => import("src/pages/PasswordReset.vue"),
+  },
+  {
+    path: "/:document/search",
+    component: () => import("src/layouts/DefaultLayout.vue"),
+    meta: { requiresAuth: true },
+    name: "Search",
+    children: [
+      {
+        path: "",
+        component: () => import("src/components/forms/SearchForm.vue"),
+        meta: { requiresAuth: true },
+        name: "Search",
+      },
+    ],
+  },
+  {
+    path: "/:document/dashboard",
+    component: () => import("src/layouts/DefaultLayout.vue"),
+    meta: { requiresAuth: true },
+    name: "Dashboard",
+    children: [
+      {
+        path: "",
+        component: () => import("src/components/dashboard/DashboardViewer.vue"),
+        meta: { requiresAuth: true },
+        name: "Dashboard",
+      },
+    ],
   },
   // Always leave this as last one,
   // but you can also remove it

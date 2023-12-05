@@ -1,5 +1,5 @@
 <template>
-  <div class="row q-col-gutter-xs">
+  <div class="row q-col-gutter-xs q-mb-xl q-pb-xl">
     <div
       class="col col-xs-12 col-sm-6 col-md-5 col-lg-5"
       :class="$q.dark.isActive ? 'bg-grey-grey-9' : 'bg-blue-grey-9'"
@@ -10,13 +10,37 @@
         class="my-card"
         :class="$q.dark.isActive ? 'bg-blue-grey-9 q-ma-xs' : 'bg-blue-grey-9'"
       >
-        <q-card-section>
+        <div class="q-pl-sm q-pt-md">
           <q-list dense>
             <q-item>
+              <q-item-section avatar>
+                <q-icon :name="iconName"></q-icon>
+              </q-item-section>
               <q-item-section>
                 <q-item-label class="text-h6 text-teal-2">{{
                   collection
                 }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-input
+                  v-model="search"
+                  type="text"
+                  color="white"
+                  placeholder="Search..."
+                  dark
+                  dense
+                  @update:model-value="handleSearch"
+                  :debounce="400"
+                  class="q-my-md"
+                >
+                  <q-btn
+                    color="primary"
+                    icon="search"
+                    @click="handleSearch(search)"
+                  />
+                </q-input>
               </q-item-section>
             </q-item>
             <q-item
@@ -26,8 +50,8 @@
               :key="i"
               @click="_setModel(item)"
             >
-              <q-item-section thumbnail="" top>
-                <q-icon :name="iconName" class="q-ml-sm text-grey-2" />
+              <q-item-section thumbnail="" class="q-pl-lg text-grey-2">
+                {{ i + 1 }}.
               </q-item-section>
               <q-item-section
                 >{{ item.Name || item.displayName || item.email }}
@@ -35,14 +59,14 @@
               >
             </q-item>
           </q-list>
-        </q-card-section>
+        </div>
       </q-card>
     </div>
     <div class="col col-xs-12 col-sm-6 col-md-7 col-lg-7">
       <q-card
         flat
         class="my-card q-pa-xs q-ma-xs q-mb-xl"
-        :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal-7'"
+        :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-teal'"
       >
         <q-card-section class="text-white text-h6">
           {{
@@ -56,22 +80,35 @@
           :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-yellow-1'"
         >
           <slot> </slot>
-          <q-circular-progress
-            indeterminate
-            size="90px"
-            :thickness="0.2"
-            color="lime"
-            center-color="grey-8"
-            track-color="transparent"
-            class="q-ma-md absolute"
-            style="position: absolute; right: 144px; bottom: 0px"
-            v-if="store.loading"
-          />
         </q-card-section>
         <q-card-actions class="text-white">
           <q-space />
-
-          <q-btn flat no-caps="" icon="close" @click="onReset" label="Reset" />
+          <q-btn
+            v-if="!_selected.id && onAdd"
+            flat=""
+            icon-right="arrow_right"
+            label="Create"
+            @click="onAdd"
+          />
+          <q-btn
+            v-if="_selected.id || _selected.uid"
+            flat
+            icon="check"
+            label="Save"
+            @click="onSave"
+          />
+          <q-btn flat icon="close" label="Cancel" @click="onReset" />
+          <q-circular-progress
+            :thickness="0.2"
+            indeterminate
+            size="256px"
+            color="lime"
+            center-color="orange-9"
+            track-color="orange-8"
+            class="q-ma-md absolute"
+            style="position: fixed; left: 144px; top: 20px; opacity: 0.8"
+            v-if="store.loading"
+          />
         </q-card-actions>
       </q-card>
     </div>
@@ -79,15 +116,16 @@
 </template>
 
 <script setup>
-//import BaseForm from "src/components/BaseForm.vue";
-//import UnitForm from "src/components/UnitForm.vue";
 import { ref, computed, onBeforeMount, inject, provide } from "vue";
-import * as remote from "../composables/remote.js";
-import { Notify } from "quasar";
+//import * as remote from "../composables/remote.js";
+//import { Notify } from "quasar";
 import { useDefaultStore } from "src/stores/store";
+//import { createUser, addIPO, addCompany } from "src/composables/functions";
+//import { addipo } from "app/altfunctions";
+
 const store = useDefaultStore();
-//const loading = inject("loading");
-const tab = ref("search");
+const search = ref("");
+
 const _selected = computed({
   get: () => props.selected || {},
   set: (val) => props.setModel(val),
@@ -100,17 +138,17 @@ const props = defineProps({
   collection: String,
   selected: Object,
   list: Array,
-  searchFields: {
-    type: Array,
-    default: () => [],
-  },
   reset: Function,
+  handleSearch: Function,
+  onAdd: Function,
+  onSave: Function,
 });
 
 function _setModel(m) {
   _selected.value = m;
 }
-async function onSave() {
+
+/*async function onSave() {
   if (!_selected.value.id) return onAdd();
   try {
     await remote.update(_selected.value.id, _selected.value, props.collection);
@@ -139,7 +177,12 @@ async function onSave() {
 async function onAdd() {
   if (_selected.value.id) return onSave();
   try {
-    //_selected.value.role = "Staff";
+    const createFn = addipo;
+    if (props.collection === "Units") {
+      createFn = addUnit;
+    } else if (props.collection === "Staff") {
+      createFn = createUser;
+    }
     const result = await remote.create(
       _selected.value,
       props.collection,
@@ -168,20 +211,19 @@ async function onAdd() {
       position: "right",
     });
   }
-}
+}*/
 async function onReset() {
   _selected.value = {};
   props.reset();
   store.loading = false;
 }
-
 onBeforeMount(async () => {
   //const results = await remote.list(collection);
   //store.units = results;
   //console.log(store.units);
 });
 </script>
-<style scoped>
+<style lang="scss" scoped>
 .absolute {
   position: absolute;
 }

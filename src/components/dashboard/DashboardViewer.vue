@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pb-xl q-mt-md">
+  <div class="q-py-xl q-mt-md q-px-sm fits" style="overflow: auto">
     <div
       class="row"
       :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-md'"

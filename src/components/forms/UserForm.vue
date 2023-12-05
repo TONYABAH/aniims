@@ -8,54 +8,102 @@
     :list="userList"
     :reset="reset"
     :validate="validate"
+    :handle-search="handleSearch"
+    :on-save="save"
     icon-name="perm_identity"
   >
     <q-form ref="form" class="q-gutter-sm">
-      <q-input
+      <!--<q-input
         v-model="searchText"
         type="text"
         label="Search..."
         outlined
+        filled
+        dense
         rounded
       >
         <template v-slot:append>
           <q-icon name="search" />
         </template>
-      </q-input>
+      </q-input>-->
       <q-separator spaced inset vertical dark />
       <label>Display Name</label>
       <q-input
-        outlined=""
+        outlined
+        filled
+        dense=""
         v-model="user.displayName"
         type="text"
         :disable="true"
-        square
       />
       <q-separator spaced inset vertical dark />
       <label>Email</label>
       <q-input
-        outlined=""
+        outlined
+        filled
+        dense=""
         v-model="user.email"
         type="text"
         :disable="true"
-        square
       />
       <q-separator spaced inset vertical dark />
       <label>Phone</label>
       <q-input
         outlined
+        filled
+        dense
         v-model="user.phoneNumber"
         type="text"
         :disable="true"
-        square
       />
-      <div align="left" class="q-pa-sm">
-        <q-separator spaced inset vertical dark />
-        <q-toggle v-model="isAdmin" color="green" label="Admin" />
-        <q-toggle v-model="disabled" color="green" label="Disabled" />
-        <q-separator spaced inset vertical dark />
+      <q-separator spaced inset vertical dark size="40px" />
+      <label>Status</label>
+      <q-separator spaced inset vertical dark />
+      <q-checkbox
+        right-label
+        v-model="disabled"
+        indeterminate-icon=""
+        label="Disabled"
+      />
+      <q-separator spaced inset vertical dark />
+      <label>Previledges</label>
+      <div
+        style="display: flex; flex-direction: column"
+        v-if="user.customClaims?.level === 3"
+      >
+        <!--<q-checkbox left-label v-model="isActive" label="Active" />-->
+        <q-checkbox
+          right-label
+          v-model="isAdmin"
+          indeterminate-icon=""
+          label="Is Admin"
+        />
+        <q-checkbox
+          right-label
+          v-model="canEditPay"
+          indeterminate-icon=""
+          label="Can Edit Payment"
+        />
+        <q-checkbox
+          right-label
+          v-model="canConfirmPay"
+          indeterminate-icon=""
+          label="Can Confirm Payment"
+        />
+        <q-checkbox
+          right-label
+          v-model="canEditMail"
+          indeterminate-icon=""
+          label="Can Receive Mail"
+        />
+        <q-checkbox
+          right-label
+          v-model="canDestroy"
+          indeterminate-icon=""
+          label="Handle Destruction"
+        />
       </div>
-      <q-toolbar
+      <!--<q-toolbar
         class="bg- text- q-mt-md"
         style="
           border-top: 1px solid #777;
@@ -73,7 +121,7 @@
           @click="save"
           color="teal"
         />
-      </q-toolbar>
+      </q-toolbar>-->
     </q-form>
   </AdminViewer>
 </template>
@@ -86,14 +134,17 @@ import { useDefaultStore } from "src/stores/store";
 import { setUserRights } from "src/composables/functions";
 import AdminViewer from "src/views/AdminViewer.vue";
 import { listUsers } from "src/composables/functions";
-import SearchAuto from "src/components/AutoComplete.vue";
+//import SearchAuto from "src/components/AutoComplete.vue";
 
 const store = useDefaultStore();
 const model = ref();
 const form = ref(null);
 const disabled = ref(false);
 const isAdmin = ref(false);
-const loading = ref(false);
+const canEditPay = ref(false);
+const canConfirmPay = ref(false);
+const canEditMail = ref(false);
+const canDestroy = ref(false);
 const collection = "Users";
 const _list = ref([]);
 const allUsers = ref([]);
@@ -121,7 +172,7 @@ function setModel(val) {
   model.value = val;
 }
 
-function filter(val) {
+/*function filter(val) {
   const needle = val?.toLowerCase() || "";
   if (!needle || needle.trim().length === 0) {
     userList.value = allUsers.value;
@@ -136,13 +187,32 @@ function filter(val) {
   });
   userList.value = filtered;
   return filtered;
-}
+}*/
 function save() {
   store.loading = true;
+  const {
+    //displayName: displayName || email,
+    units,
+    level,
+    //admin,
+    location,
+    role,
+  } = user.value.customClaims;
   setUserRights({
     Disabled: disabled.value,
     IsAdmin: isAdmin.value,
     uid: user.value.uid,
+    claims: {
+      units,
+      level,
+      location,
+      role,
+      admin: isAdmin.value,
+      editpay: canEditPay.value,
+      editmail: canEditMail.value,
+      confirmpay: canConfirmPay.value,
+      candestroy: canDestroy.value,
+    },
   })
     .then((result) => {
       //console.log(result.data);
@@ -178,12 +248,22 @@ function reset() {
 function validate() {
   return true;
 }
-watch(user, (u) => {
-  isAdmin.value = u.customClaims?.admin;
-  disabled.value = u.disabled;
-});
-watch(searchText, (val) => filter(val));
-watchEffect(async () => {
+watch(
+  user,
+  (u) => {
+    if (!u) return;
+    //console.log(u);
+    isAdmin.value = u.customClaims?.admin || false;
+    canEditPay.value = u.customClaims?.editpay || false;
+    canConfirmPay.value = u.customClaims?.confirmpay || false;
+    canEditMail.value = u.customClaims?.editmail || false;
+    canDestroy.value = u.customClaims?.candestroy || false;
+    disabled.value = u.disabled || false;
+  },
+  { immediate: true }
+);
+//watch(searchText, (val) => filter(val));
+/*watchEffect(async () => {
   const all = (await listUsers())?.data || [];
   allUsers.value = all;
 
@@ -198,7 +278,47 @@ watchEffect(async () => {
       phoneNumber,
     });
   });
-});
+});*/
+
+const handleSearch = debounce(async (d) => {
+  store.loading = true;
+  //const all = (await listUsers())?.data || [];
+  listUsers()
+    .then((users) => {
+      //console.log(JSON.stringify(data));
+      let filtered = users?.data?.filter(
+        (u) =>
+          d === "" ||
+          u.displayName?.toLowerCase().split(" ").includes(d.toLowerCase())
+      );
+      userList.value.splice(0, userList.value.length);
+      filtered.forEach((v) => {
+        let { customClaims, disabled, email, uid, displayName, phoneNumber } =
+          v;
+        userList.value.push({
+          customClaims,
+          disabled,
+          email,
+          uid,
+          displayName,
+          phoneNumber,
+        });
+      });
+    })
+    .catch((e) => {
+      Dialog.create({
+        message: e.message,
+        title: "Error",
+        timeout: 2000,
+        cancel: true,
+        ok: false,
+      });
+    })
+    .finally(() => {
+      store.loading = false;
+    });
+}, 500);
+
 onMounted(() => {
   disabled.value = false;
   isAdmin.value = false;

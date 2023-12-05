@@ -1,6 +1,7 @@
 .DS_Store
 .thumbs.db
 node_modules
+start-up.bat
 
 # Quasar core related directories
 .quasar
@@ -35,6 +36,7 @@ firestore-debug.log
 database-debug.log
 pubsub-debug.log
 ui-debug.logyarn-error.log
-/functions
+/firestore-backup
+/BACKUP
 
 

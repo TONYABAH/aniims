@@ -7,11 +7,111 @@
     :mini-width="$q.screen.lt.md ? 100 : 100"
     :behavior="$q.screen.gt.xs ? 'desktop' : 'mobile'"
     :elevated="false"
-    :width="180"
+    :width="380"
     style="letter-spacing: 1.2px; overflow: hidden"
-    class="text-grey-2"
-    :class="$q.dark.isActive ? 'bg-teal-9' : 'bg-teal'"
+    class="text-grey-1"
   >
+    <div class="fits">
+      <q-item class="window-height bg-teal" style="padding: 0">
+        <q-item-section top avatar class="bg-teal-8" style="padding: 0">
+          <q-tabs
+            v-model="store.tabModel"
+            vertical=""
+            indicator-color="amber"
+            active-bg-color=""
+            class="text-lime-2 text-bold bg-"
+          >
+            <q-tab icon="home" label="Home" @click="goHome" />
+            <q-route-tab
+              to="search"
+              icon="search"
+              label="Search"
+              @click="removeHash"
+            />
+            <q-tab icon="edit" label="Editor" @click="goBack" />
+            <q-route-tab
+              to="dashboard"
+              icon="dashboard"
+              label="Analyse"
+              @click="removeHash"
+            />
+          </q-tabs>
+        </q-item-section>
+        <q-item-section top class="bg-teal-9">
+          <q-scroll-area class="fits">
+            <q-list>
+              <q-item
+                v-for="link in sidelinks"
+                clickable
+                v-ripple
+                :to="link.path"
+                :key="link.title"
+                :v-bind="link"
+                active-class="bg-teal-4"
+                class="q-mb-s"
+              >
+                <q-item-section
+                  v-if="link.icon"
+                  thumbnail=""
+                  class="q-pl-md text-grey-2"
+                >
+                  <q-icon :name="link.icon" />
+                </q-item-section>
+
+                <q-item-section class="text-uppercase">
+                  <q-item-label>{{ link.title }}</q-item-label>
+                </q-item-section>
+              </q-item>
+              <!--<q-item
+              clickable
+              v-ripple
+              active-class="bg-teal-4"
+              class="q-mb-s"
+              @click="() => (store.dashboard = true)"
+            >
+              <q-item-section thumbnail="" class="text-white q-pl-md">
+                <q-icon name="dashboard" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label class="text-">Dashboard</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item
+              clickable
+              v-ripple
+              active-class="bg-teal-4"
+              class="q-mb-s"
+              @click="() => (store.dashboard = false)"
+            >
+              <q-item-section thumbnail="" class="text-white q-pl-md">
+                <q-icon name="edit" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label class="text-">Editor</q-item-label>
+              </q-item-section>
+            </q-item>-->
+              <q-item
+                clickable
+                v-ripple
+                active-class="bg-secondary"
+                class="q-mb-s"
+                @click="logout"
+              >
+                <q-item-section thumbnail="" class="text-white q-pl-md">
+                  <q-icon name="lock" />
+                </q-item-section>
+
+                <q-item-section>
+                  <q-item-label class="text-">Logout</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-scroll-area>
+        </q-item-section>
+      </q-item>
+    </div>
     <q-item>
       <q-item-section class="text-grey-5">
         {{ pkg.productName }}
@@ -28,96 +128,7 @@
         />
       </q-item-section>
     </q-item>
-    <q-tabs
-      v-model="store.tabModel"
-      class="text-white"
-      vertical=""
-      indicator-color="amber"
-      shrink=""
-      active-bg-color="amber-8"
-    >
-      <q-tab name="search" icon="search" label="Search" @click="removeHash" />
-      <q-tab name="editor" icon="edit" label="Editor" />
-      <q-tab
-        name="dashboard"
-        icon="dashboard"
-        label="Analyse"
-        @click="removeHash"
-      />
-      <q-tab icon="home" label="Home" @click="goHome" />
-    </q-tabs>
-    <q-scroll-area class="fits">
-      <q-list>
-        <!--<q-item
-          v-for="link in sidelinks"
-          clickable
-          v-ripple
-          :to="link.path"
-          :key="link.title"
-          :v-bind="link"
-          active-class="bg-teal-4"
-          class="q-mb-s"
-        >
-          <q-item-section
-            v-if="link.icon"
-            thumbnail=""
-            class="q-pl-md text-grey-2"
-          >
-            <q-icon :name="link.icon" />
-          </q-item-section>
-
-          <q-item-section class="text-uppercase">
-            <q-item-label>{{ link.title }}</q-item-label>
-          </q-item-section>
-        </q-item>-->
-        <q-item
-          clickable
-          v-ripple
-          active-class="bg-teal-4"
-          class="q-mb-s"
-          @click="() => (store.dashboard = true)"
-        >
-          <q-item-section thumbnail="" class="text-white q-pl-md">
-            <q-icon name="dashboard" />
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-">Dashboard</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          v-ripple
-          active-class="bg-teal-4"
-          class="q-mb-s"
-          @click="() => (store.dashboard = false)"
-        >
-          <q-item-section thumbnail="" class="text-white q-pl-md">
-            <q-icon name="edit" />
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-">Editor</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          v-ripple
-          active-class="bg-secondary"
-          class="q-mb-s"
-          @click="logout"
-        >
-          <q-item-section thumbnail="" class="text-white q-pl-md">
-            <q-icon name="lock" />
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-">Logout</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-scroll-area>
-    <q-item>
+    <!--<q-item>
       <q-item-section class="text-grey-5">
         {{ pkg.productName }} v {{ pkg.version }}
       </q-item-section>
@@ -133,7 +144,7 @@
           @click="$q.screen.gt.xs ? toggleLeftMini() : toggleLeftDrawer()"
         />
       </q-item-section>
-    </q-item>
+    </q-item>-->
   </q-drawer>
 </template>
 <script setup>
@@ -149,7 +160,7 @@ const store = useDefaultStore();
 const $q = useQuasar();
 const router = useRouter();
 const route = useRoute();
-const miniMode = ref(true);
+const miniMode = ref(false);
 
 const leftDrawerOpen = computed({
   get: () => store.leftDrawerOpen,
@@ -179,6 +190,12 @@ async function logout() {
 }
 function goHome() {
   router.push("/");
+}
+function goBack() {
+  let param = route.params;
+  if (!route.params.document) return;
+  //console.log(route.params.document);
+  router.push("/" + route.params.document + "/");
 }
 </script>
 <style>

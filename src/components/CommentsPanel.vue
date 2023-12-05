@@ -1,6 +1,6 @@
 <template>
   <div class="text-bold">
-    <div v-if="comments?.length > 0" class="full-width">
+    <div v-if="minutes?.length > 0" class="full-width">
       <q-expansion-item
         expand-separator
         icon="comment"
@@ -19,7 +19,7 @@
             <!--<q-toggle v-model="store.chatMode" color="primary" label="Chat" />-->
           </q-toolbar>
         </template>
-        <CommentsWidget :comments="comments" />
+        <CommentsWidget :comments="minutes" />
         <template v-slot:append></template>
       </q-expansion-item>
     </div>
@@ -37,7 +37,7 @@ const store = useDefaultStore();
 const expanded = ref(true);
 const props = defineProps({
   handleComment: Function,
-  comments: {
+  minutes: {
     type: Array,
     default: () => [],
   },

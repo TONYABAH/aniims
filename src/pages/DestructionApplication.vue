@@ -331,11 +331,11 @@ import { useStates, useCities } from "../composables/address-use";
 import { useDefaultStore } from "src/stores/store";
 import FileViewerDialog from "src/components/FileViewerDialog.vue";
 import UploadDialog from "src/components/UploadDialog.vue";
-import { getStorage, ref as reference, getDownloadURL } from "firebase/storage";
+//import { getStorage, ref as reference, getDownloadURL } from "firebase/storage";
 import { onAddAttachment, onDeleteAttachment } from "../composables/remote";
 import { useGeolocation } from "src/composables/use-geocation";
 //import { Dialog, Notify } from "quasar";
-import CircularProgress from "src/components/CircularProgress.vue";
+//import CircularProgress from "src/components/CircularProgress.vue";
 import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
 //import stateOptions from "../data/states.json";
 //import cities from "../data/cities.json";
@@ -506,7 +506,7 @@ function onRemoveAttachment(d) {
 }
 
 async function onEditAttachment(d) {
-  const storage = getStorage();
+  //const storage = getStorage();
   //const path = "http://localhost:3000/upload/" + d.id;
   //const url = await getDownloadURL(reference(storage, "files/" + d.id));
   fileSource.value = d.downloadURL;
@@ -514,7 +514,7 @@ async function onEditAttachment(d) {
   fileViewerDialogModel.value = true;
 }
 async function onViewAttachment(d) {
-  const storage = getStorage();
+  //const storage = getStorage();
   //const path = "http://localhost:3000/upload/" + d.id;
   //const url = await getDownloadURL(reference(storage, "files/" + d.id));
   fileSource.value = d.downloadURL;
@@ -617,11 +617,12 @@ onMounted(() => {
   destruction.value.ContactPhone = store.user?.phoneNumber;
   destruction.value.ContactEmail = store.user?.email;
   destruction.value.uid = store.user?.uid;
-  destruction.value.CoyName = store.company?.Name;
+  /*destruction.value.CoyName = store.company?.Name;
   destruction.value.CoyAddress = store.company?.Address;
   destruction.value.CoyEmail = store.company?.Email;
   destruction.value.CoyPhone = store.company?.Phone;
   destruction.value.CoyId = store.company?.id;
+  */
   destruction.value.ApplicationYear = new Date().getFullYear();
 });
 // accept=".xls, .xlsx, .jpg, .png, .pdf, image/jpeg"

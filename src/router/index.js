@@ -52,7 +52,6 @@ export default route(function (/* { store, ssrContext } */) {
           query: { redirect: to.fullPath },
         };
       } else {
-        //console.log(store.user?.claims);
         if (store.user?.claims?.level < 2 && to.name != "Applications") {
           //console.log(from, to);
           return {
@@ -60,9 +59,8 @@ export default route(function (/* { store, ssrContext } */) {
           };
         } else if (to.path.match(/\/admin/i) && !store.user?.claims?.admin) {
           throw { message: "Admin right required" };
-          /*return {
-            name: "Home",
-          };*/
+        } else {
+          return true;
         }
       }
     }

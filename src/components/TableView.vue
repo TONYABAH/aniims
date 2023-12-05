@@ -77,7 +77,7 @@
         </tr>
       </tbody>
       <tfoot class="bg-">
-        <tr>
+        <tr v-if="addBtn">
           <td class="sn-col" colspan="100">
             <q-btn
               outline=""
@@ -109,6 +109,10 @@ const props = defineProps({
   title: String,
   data: { type: Array, required: true },
   columns: Array,
+  addBtn: {
+    type: Boolean,
+    default: true,
+  },
   editable: {
     type: Boolean,
     default: false,

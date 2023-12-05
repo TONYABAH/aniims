@@ -55,7 +55,7 @@
       >
         <template v-slot:append>
           <q-btn
-            v-if="update_fileNumber"
+            v-if="update_fileNumber && mail.id"
             flat
             color="primary"
             label="Update"
@@ -138,7 +138,7 @@
           >
             <template v-slot:append>
               <q-btn
-                v-if="update_outdate"
+                v-if="update_outdate && mail.id"
                 flat
                 color="primary"
                 label="Update"
@@ -254,7 +254,7 @@ function generateComplaint() {}
 watch(
   () => mail.value.FileNumber,
   (newValue) => {
-    //console.log(newValue);
+    console.log(mail.value);
     update_fileNumber.value = newValue ? true : false;
   }
 );

@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { firestore } from "./firebase";
 import { useDefaultStore } from "src/stores/store";
-import { array } from "i/lib/util";
+//import { array } from "i/lib/util";
 const db = firestore;
 
 const GENERATION_OFFSET = new Date("5000-01-01").getTime();
@@ -72,7 +72,6 @@ export const dataGram = (txt) => {
       }
     }
   }
-  //console.log(map1);
   return map1;
 };
 // Generates a trigram
@@ -135,7 +134,7 @@ export const advancedSearch = async (
       _orderByFilters.push(orderBy(...o));
     });
   }
-  //console.log(searchConstraints, _whereFilters);
+
   const q = query(
     dbRef,
     ..._whereFilters,
@@ -155,6 +154,52 @@ export const advancedSearch = async (
   store.query = q;
   return store.searchResults;
 };
+export const lifeSearch = async (
+  collectionName,
+  { searchText, whereFilters, orderByFilters, start, limits }
+) => {
+  //const store = useDefaultStore();
+  const dbRef = collection(db, collectionName);
+  const _whereFilters = [];
+  const _startAtFilters = [];
+  const _orderByFilters = [];
+  // First we build out all our search constraints
+  const searchConstraints = [];
+  const data = dataGram(searchText || "");
+
+  if (data && data.length > 0)
+    searchConstraints.push(where(`meta.search`, "array-contains-any", data));
+  if (start) {
+    _startAtFilters.push(startAt(...start));
+  }
+  if (whereFilters) {
+    whereFilters.forEach((w) => {
+      _whereFilters.push(where(...w));
+    });
+  }
+  if (orderByFilters) {
+    orderByFilters.forEach((o) => {
+      _orderByFilters.push(orderBy(...o));
+    });
+  }
+  const q = query(
+    dbRef,
+    ..._whereFilters,
+    ...searchConstraints,
+    //..._orderByFilters,
+    ..._startAtFilters,
+    limit(limits || 25)
+  );
+  const querySnapshot = await getDocs(q);
+
+  const list = [];
+  querySnapshot.forEach((doc) => {
+    const document = doc.data();
+    document.id = doc.id;
+    list.push(document);
+  });
+  return list;
+};
 export const loadDocuments = async (collectionName, staff, limits) => {
   if (!staff) return;
   const store = useDefaultStore();
@@ -171,7 +216,6 @@ export const loadDocuments = async (collectionName, staff, limits) => {
     );
   }
   // First we build out all our search constraints
-  //console.log(user);
   const q = query(dbRef, or(..._whereFilters), limit(limits || 25));
   store.query = q;
   return store.searchResults;
