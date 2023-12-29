@@ -1,5 +1,10 @@
 <template>
-  <q-card flat class="my-card" :class="$q.screen.lt.sm ? '' : 'q-px-md'">
+  <q-card
+    flat
+    class="bg-grey-2 q-pb-xl"
+    :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-2'"
+    style="opacity: 1"
+  >
     <q-toolbar>
       <q-icon name="dashboard" size="sm" class="q-mr-md" />
       <q-toolbar-title>

@@ -1,12 +1,8 @@
 <template>
   <div
     id="q-app"
-    class="window-height window-width justify-center items-center bg-blue-grey-10"
-    style="
-      background: linear-gradient(#827, #827);
-      height: 100vh;
-      overflow: auto;
-    "
+    class="window-height window-width justify-center items-center modern-bg"
+    style="height: 100vh; overflow: auto"
   >
     <div class="row justify-center align-items-center" v-if="success">
       <q-card
@@ -35,14 +31,21 @@
         </q-card-actions>
       </q-card>
     </div>
-    <div class="row justify-center align-items-center items-center" v-else>
-      <q-card flat style="width: 400px; height: auto" class="q-mt-sm bg-">
-        <q-card-section :align="$q.screen.lt.sm ? 'center' : ''">
+    <div class="row justify-center full-height" style="opacity: 0.9" v-else>
+      <q-card
+        style="width: 400px; height: 100vh"
+        class="full-height shadow-2"
+        align="center"
+      >
+        <q-card-section
+          :align="$q.screen.lt.sm ? 'center' : ''"
+          class="bg-teal text-white"
+        >
           <q-toolbar class="q-mb-md">
             <q-avatar
               size="56px"
               font-size="48px"
-              color="deep-purple-10"
+              color=""
               text-color="grey-2"
               icon="perm_identity"
             />
@@ -50,84 +53,85 @@
           </q-toolbar>
         </q-card-section>
         <q-card-section :align="$q.screen.lt.sm ? 'center' : ''">
-          <q-form ref="form" class="q-gutter-sm q-mb-md">
-            <label>Full name *</label>
+          <q-form ref="form" class="q-gutter-sm q-mb-md q-pb-sm" align="left">
             <q-input
               v-model="user.Name"
+              label="Full name *"
               type="text"
               color=""
               name="contact_name"
               outlined=""
-              square
+              :rules="[required]"
+              lazy-rules="ondemand"
+              hide-bottom-space=""
             />
-            <q-separator spaced inset vertical dark />
-            <label>Email address *</label>
             <q-input
+              label="Email address *"
               outlined=""
               v-model="user.Email"
               type="text"
               name="contact_email"
-              square
+              :rules="[isEmail]"
+              lazy-rules="ondemand"
+              hide-bottom-space=""
             />
-            <q-separator spaced inset vertical dark />
-            <label>Phone number *</label>
             <q-input
               outlined
               v-model="user.Phone"
+              label="Phone number *"
               type="text"
               name="contact_phone"
-              square
+              :rules="[isPhoneNumber]"
+              lazy-rules="ondemand"
+              hide-bottom-space=""
             />
             <!-- <label>Full name *</label>
             <q-input
-              filled
+
               v-model="user.CoyRegNumber"
               type="text"
               label="Company registration number *"
             />
            <q-input
-              filled
+
               v-model="user.CoyName"
               type="text"
               label="Company name *"
             />
             <q-input
-              filled
+
               v-model="user.CoyAddress"
               type="text"
               label="Company address *"
             />
             <q-input
-              filled
+
               v-model="user.CoyEmail"
               type="text"
               label="Company email *"
             />
             <q-input
-              filled
+
               v-model="user.CoyPhone"
               type="text"
               label="Company phone *"
             />-->
           </q-form>
-          <q-spinner
-            color="primary"
-            size="1.5rem"
-            :thickness="5"
-            v-if="loading"
-          />
           <q-btn
-            unelevated
-            no-caps
-            color="pink-8"
-            label="Register"
+            unelevated=""
+            color="teal-8"
             icon-right="arrow_right"
-            class="text-white"
-            icon="check"
+            label="Continue"
+            padding="md"
+            :loading="loading"
             @click="submit"
-            v-else
           >
+            <template v-slot:loading>
+              <q-spinner-hourglass class="on-left" />
+              Wait...
+            </template>
           </q-btn>
+          <q-space />
           <q-btn no-caps flat unelevated to="login"
             >Already registered? Login</q-btn
           >
@@ -174,8 +178,11 @@ function isEmail(val) {
     /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
   return emailPattern.test(val) || "Not a valid email";
 }
+const validate = async () => await form.value?.validate(true);
 
 async function registerUser() {
+  const valid = await validate();
+  if (!valid) return;
   loading.value = true;
   addUser({
     ...user.value,
@@ -207,24 +214,35 @@ async function submit() {
   const validated = await form.value.validate();
   if (validated) await registerUser();
 }
-
-/*function switchVisibility() {
-  visibility.value = !visibility.value;
-  passwordFieldType.value = visibility.value ? "text" : "password";
-  visibilityIcon.value = visibility.value ? "visibility_off" : "visibility";
-}*/
 onMounted(() => {});
 </script>
-<style scoped>
-#fbButton {
-  background-image: url("../assets/images/facebook_signin.png");
-  background-repeat: no-repeat;
-  background-size: contain;
-}
 
-#googleButton {
-  background-image: url("../assets/images/google_signin.png");
+<style>
+.blue-bg {
+  background: #000;
+}
+.pink-bg {
+  background: linear-gradient(#827, #827);
+}
+.modern-bg {
+  background: url(../assets/modernbg.jpg);
+}
+.design-bg {
+  background: url(../assets/designbg.jpg);
+}
+.exortic-bg {
+  background: url(../assets/exorticbg.jpg);
+}
+.patterns-bg {
+  background: url(../assets/patterns.jpg);
+}
+.modern-bg,
+.exortic-bg,
+.design-bg,
+.patterns-bg {
   background-repeat: no-repeat;
-  background-size: contain;
+  background-position-y: top;
+  background-size: cover;
+  background-attachment: scroll;
 }
 </style>

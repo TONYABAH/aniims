@@ -1,5 +1,5 @@
 <template>
-  <search-auto
+  <AutoComplete
     label="User"
     :model="assigned"
     :min-chars="2"
@@ -12,7 +12,9 @@
 <script setup>
 import { ref, onMounted, computed, watch, provide } from "vue";
 import { useDefaultStore } from "src/stores/store";
-import SearchAuto from "./AutoComplete.vue";
+import AutoComplete from "./AutoComplete.vue";
+import { useStaffList } from "src/composables/use-fn";
+
 const store = useDefaultStore();
 const assigned = ref(null);
 const emits = defineEmits(["selected-user"]);

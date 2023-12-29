@@ -1,5 +1,5 @@
 <template>
-  <q-card :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-8'">
+  <q-card  :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-1'" class="shadow-1">
     <q-bar class="bg-transparent">
       <q-toolbar-title></q-toolbar-title>
       <q-btn flat dense icon="fullscreen" @click="zoomChart" />

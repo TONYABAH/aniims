@@ -11,6 +11,7 @@
     :handle-search="handleSearch"
     :on-add="create"
     :on-save="save"
+    :loading="loading"
     icon-name="perm_identity"
   >
     <!--<IpoForm ref="ipoFormRef" :setProfile="setModel" :profile="selectedIPO" />-->
@@ -20,7 +21,7 @@
         v-model="searchText"
         type="text"
         label="Search name, email, location..."
-        outlined filled dense
+        outlined  dense
         rounded
       >
         <template v-slot:append>
@@ -37,7 +38,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       >
         <template v-slot:append>
@@ -53,7 +53,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       >
         <template v-slot:append>
@@ -69,7 +68,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       >
         <template v-slot:append>
@@ -85,7 +83,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       >
         <template v-slot:append>
@@ -109,7 +106,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       />
       <q-separator spaced inset vertical dark />
@@ -122,7 +118,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       />
       <q-separator spaced inset vertical dark />
@@ -135,7 +130,6 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        filled
         dense
       />
       <q-separator spaced inset vertical dark />
@@ -145,7 +139,6 @@
         :options="STATUS_OPTIONS"
         options-dense=""
         outlined
-        filled
         dense
       >
         <template v-slot:append>
@@ -191,10 +184,11 @@ import { useDefaultStore } from "src/stores/store";
 import { computed, onMounted, ref, watch } from "vue";
 import { addIPO } from "src/composables/functions";
 import { update } from "src/composables/remote";
-import { validation } from "src/composables/use";
+import { useValidation } from "src/composables/use-fn";
 import AdminViewer from "src/views/AdminViewer.vue";
 import { addSearch, lifeSearch } from "src/composables/searchProvider";
 
+const validation = useValidation();
 const store = useDefaultStore();
 const roleOptions = ["IPO", "2IC", "OC"];
 const unitsOptions = ref(["FTF", "NAFDAC Police"]);
@@ -202,10 +196,8 @@ const form = ref(null);
 const STATUS_OPTIONS = ["Active", "Inactive"];
 const collection = "IPO";
 const searchFields = ["Name", "Rank", "Email", "Location"];
-//const searchText = ref("");
-const userList = ref([]);
 const ipoList = ref([]);
-//const allUsers = ref([]);
+const loading = ref(false);
 
 const profile = ref({});
 
@@ -232,7 +224,7 @@ const status = computed({
 });
 async function onRankChanged() {
   if (!ipo.value.id) return;
-  store.loading = true;
+  loading.value = true;
   update(ipo.value.id, { Rank: ipo.value.Rank }, "Users")
     .then(() => {
       Notify.create({
@@ -253,12 +245,12 @@ async function onRankChanged() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 async function save() {
   if (!ipo.value.id) return;
-  store.loading = true;
+  loading.value = true;
   update(ipo.value.id, { Status: status.value }, "Users")
     .then(() => {
       Notify.create({
@@ -279,12 +271,12 @@ async function save() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 async function create() {
   if (!(await validate())) return;
-  store.loading = true;
+  loading.value = true;
   const _fields = ["Name", "Rank"].map((f) => ipo.value[f]);
   const meta = {
     search: addSearch(_fields),
@@ -314,7 +306,7 @@ async function create() {
       //loading.value = false;
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 /*function filter(val) {
@@ -335,8 +327,9 @@ async function create() {
 }*/
 //watch(searchText, (val) => filter(val), { immediate: true });
 
-const handleSearch = debounce(async (d) => {
+const handleSearch = debounce(async (d, active) => {
   const whereFilters = [["Level", "==", 2]];
+  if (active) whereFilters.push(["Status", "==", "Active"]);
   const _users = await lifeSearch("Users", {
     searchText: d,
     whereFilters,
@@ -352,6 +345,7 @@ defineExpose({
 
 onMounted(async () => {
   //defaults.value = {};
+  handleSearch("", true);
 });
 </script>
 <style scoped></style>

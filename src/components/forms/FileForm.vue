@@ -6,12 +6,12 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
   >
+    <label>
+      NAFDAC/ENFD/{{ file.Location?.toUpperCase() }}/{{ file.Number }}/VOL{{
+        file.Volume || 1
+      }}</label
+    >
     <q-form ref="form" class="q-gutter-sm">
-      <label
-        >NAFDAC/ENFD/{{ file.Location?.toUpperCase() }}/{{ file.Number }}/VOL{{
-          file.Volume || 1
-        }}</label
-      >
       <div class="row q-col-gutter-sm">
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
           <q-separator spaced inset vertical dark />
@@ -186,17 +186,11 @@ const mailsDataSource = computed(() =>
     where("FileNumber", "==", file.value?.Number || 0)
   )
 );
-/*const filesDataSource = computed(() =>
-  query(
-    collection(db, "Cases"),
-    where("FileNumber", "==", file.value?.Number || 0)
-  )
-);*/
+
 var mails = useCollection(mailsDataSource);
 //var cases = useCollection(filesDataSource);
 
 function showMail(e, data) {
-  //console.log(data);
   router.push("/mails/#" + data.id);
 }
 watch(
@@ -211,6 +205,15 @@ provide("titleField", "Title");
 provide("secondTitle", "CreatedAt");
 provide("collection", "Files");
 provide("searchFields", ["Title", "Name"]);
+
+/*store.fn.currentCollection = "Files";
+store.fn.searchFields = ["Title", "Name"];
+store.fn.iconName = "folder";
+store.fn.reset = reset;
+store.fn.validate = validate;
+store.fn.setCurrentDoc = setDocument;
+store.fn.updateFields = updateFields;
+store.fn.getDocument = getDocument;*/
 onMounted(async () => {
   //console.log(mails.value);
 });

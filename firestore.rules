@@ -66,6 +66,11 @@ service cloud.firestore {
       allow update: if isSignedIn() && request.auth.token.level > 2
       allow delete: if canDelete();
     }
+    match /Cases/{docId}/Reports/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+    }
     match /{collection}/{id} {
       //function isDoc(){return collection in ["Mails", "Files","Complaints","Surveillances","Raids","Cases","Samples","Destructions","Payments"]}
       allow create: if isSignedIn();

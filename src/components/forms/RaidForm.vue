@@ -11,7 +11,6 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined
-      filled
       style="max-width: 49%"
     />
     <div class="row">
@@ -26,7 +25,6 @@
           lazy-rules="ondemand"
           hide-bottom-space=""
           outlined
-          filled
         />
       </div>
       <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
@@ -41,7 +39,6 @@
           lazy-rules="ondemand"
           hide-bottom-space=""
           outlined
-          filled
         />
       </div>
     </div>
@@ -54,7 +51,6 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined
-      filled
     />
     <q-separator spaced inset vertical dark />
     <label>Raid location address *</label>
@@ -62,7 +58,6 @@
       v-model="raid.Address"
       type="text"
       outlined
-      filled
       :rules="[(val) => !!val || 'Location address is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
@@ -96,7 +91,6 @@
           :options="states"
           options-dense=""
           outlined
-          filled
           :rules="[(val) => !!val || 'State is required']"
           lazy-rules="ondemand"
           hide-bottom-space=""
@@ -110,7 +104,6 @@
           :options="cities"
           options-dense=""
           outlined
-          filled
           :bottom-slots="false"
           lazy-rules="ondemand"
           hide-bottom-space=""
@@ -123,7 +116,6 @@
         <label>Team members *</label>
         <q-select
           outlined
-          filled
           v-model="raid.Team"
           :options="staffList"
           :rules="[(val) => !!val || 'Team is required']"
@@ -165,7 +157,6 @@
           option-label="Abbrev"
           option-value="Abbrev"
           outlined
-          filled
           :clearable="true"
           clear-icon="close"
         />
@@ -175,7 +166,6 @@
     <label>Team leader *</label>
     <q-select
       outlined
-      filled
       v-model="raid.TeamLead"
       :options="raid.Team"
       :rules="[(val) => !!val || 'Team Leader is required']"
@@ -194,7 +184,6 @@
     <label>IPO *</label>
     <q-select
       outlined
-      filled
       v-model="raid.IPOs"
       :options="store.ipos"
       :rules="[(val) => !!val || 'IPO is required']"
@@ -231,7 +220,6 @@
         <label>Number of Mopols *</label>
         <q-input
           outlined
-          filled
           mask="number"
           v-model="raid.Mopols"
           type="number"
@@ -249,8 +237,7 @@
           :rules="[(val) => !!val || 'Number of arrests is required']"
           lazy-rules="ondemand"
           hide-bottom-space=""
-          outlined
-          filled=""
+          outlined=""
         />
       </div>
     </div>
@@ -267,7 +254,6 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined
-      filled
     />
 
     <TableView
@@ -339,11 +325,11 @@ import { computed, onMounted, provide, ref, watch } from "vue";
 import ProductForm from "src/components/forms/ProductForm.vue";
 import TableView from "src/components/TableView.vue";
 import TextEditor from "src/components/TextEditor.vue";
-import FormCard from "src/components/FormCard.vue";
+//import FormCard from "src/components/FormCard.vue";
 import { onAddDocument, onDeleteDocument } from "src/composables/remote";
-import { useStates, useCities } from "src/composables/address-use";
+import { useStates, useCities, useGeolocation } from "src/composables/use-fn";
 import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
-import { useGeolocation } from "src/composables/use-geocation";
+//import { useGeolocation } from "src/composables/use-fn";
 import { Dialog, Notify } from "quasar";
 
 const RAID_OPTIONS = ["Hawkers raid", "Investigative raid", "Mop up"];

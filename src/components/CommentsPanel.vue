@@ -1,6 +1,6 @@
 <template>
   <div class="text-bold">
-    <div v-if="minutes?.length > 0" class="full-width">
+    <div v-if="store.minutes?.length > 0" class="full-width">
       <q-expansion-item
         expand-separator
         icon="comment"
@@ -15,11 +15,15 @@
           <q-toolbar dark>
             <q-icon name="comment" />
             <q-toolbar-title>Minutes</q-toolbar-title>
-            <q-checkbox left-label v-model="store.chatMode" label="Conversational" />
+            <q-checkbox
+              left-label
+              v-model="store.chatMode"
+              label="Conversational"
+            />
             <!--<q-toggle v-model="store.chatMode" color="primary" label="Chat" />-->
           </q-toolbar>
         </template>
-        <CommentsWidget :comments="minutes" />
+        <CommentsWidget :comments="store.minutes" />
         <template v-slot:append></template>
       </q-expansion-item>
     </div>
@@ -30,16 +34,38 @@
 </template>
 <script setup>
 import CommentsWidget from "./CommentsWidget.vue";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useDefaultStore } from "src/stores/store";
+import { useCollection, useDocument } from "vuefire";
+import { collection, query, orderBy, doc } from "firebase/firestore";
+import { firestore } from "src/composables/firebase";
 
 const store = useDefaultStore();
 const expanded = ref(true);
-const props = defineProps({
-  handleComment: Function,
+/*const props = defineProps({
+  //handleComment: Function,
   minutes: {
     type: Array,
     default: () => [],
   },
-});
+});*/
+watch(
+  () => store.currentDocument,
+  async (doc) => {
+    if (doc?.id) {
+      store.minutes = useCollection(
+        query(
+          collection(
+            firestore,
+            store.currentCollection,
+            store.currentDocument.id,
+            "Minutes"
+          ),
+          orderBy("time", "asc")
+        )
+      );
+    }
+  },
+  { immediate: true }
+);
 </script>

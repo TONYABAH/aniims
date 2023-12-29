@@ -5,6 +5,7 @@
     min-height="5rem"
     :toolbar="toolbar"
     :fonts="fonts"
+    max-height="15em"
   />
 </template>
 <script setup>

@@ -13,7 +13,6 @@
         label="Case Number *"
         color=""
         name="caseNumber"
-        filled
         dense
         :rules="[(val) => !!val || 'This field is required']"
         lazy-rules="ondemand"
@@ -34,7 +33,6 @@
       <q-input
         v-model="surveillance.Date"
         label="Surveillance date"
-        filled
         type="date"
         input-class="q-mt-md q-pb-md"
         clearable=""
@@ -47,7 +45,6 @@
         v-model="surveillance.Address"
         type="text"
         label="Address *"
-        filled
         dense
         :rules="[(val) => !!val || 'This field is required']"
         hide-bottom-space=""
@@ -57,7 +54,6 @@
         :options="states"
         options-dense=""
         label="State *"
-        filled
         dense
         :rules="[(val) => !!val || 'This field is required']"
         hide-bottom-space=""
@@ -67,7 +63,6 @@
         :options="cities"
         options-dense=""
         label="City *"
-        filled
         dense
         :rules="[(val) => !!val || 'This field is required']"
         hide-bottom-space=""
@@ -79,7 +74,6 @@
         :rules="[(val) => !!val || 'Title is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
-        filled
         dense=""
       />
       <label>Details</label>

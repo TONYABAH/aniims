@@ -23,5 +23,8 @@ $positive: #21ba45;
 $negative: #c10015;
 $info: #31ccec;
 $warning: #f2c037;
-$input-text-color: rgb(0, 0, 0);
-$input-label-color: rgba(0, 0, 0, 0.8);
+
+$input-font-size: 18px !default;
+$input-text-color: rgba(46, 25, 210, 0.87) !default;
+$input-label-color: rgba(0, 0, 0, 0.6) !default;
+$input-autofill-color: none !default;

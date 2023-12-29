@@ -11,8 +11,9 @@
       name="viewport"
       content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>"
     />
-
-    <!--<link
+    <!--<link rel="prefetch" href="path-to-chunk-with-modal-window" />
+    <link rel="prefetch" href="path-to-chunk-with-modal-window" />-->
+    <link
       rel="icon"
       type="image/png"
       sizes="128x128"
@@ -23,7 +24,7 @@
       type="image/png"
       sizes="96x96"
       href="icons/favicon-96x96.png"
-    />-->
+    />
     <link
       rel="icon"
       type="image/png"
@@ -40,25 +41,17 @@
     <!-- Animate on scroll
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script
-      async
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBISSc3EaCcch7wX9BxFdjtj6QMAe4xr6o"
-    ></script>
     -->
     <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <script></script>
-    <!-- CDN example for Animate.css -->
-    <!--<link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />-->
     <style>
       * {
         font-weight: 500;
       }
+      html,
       body {
         padding: 0;
         margin: 0;
+        height: 100%;
       }
     </style>
   </head>

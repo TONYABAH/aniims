@@ -10,6 +10,7 @@
     :validate="validate"
     :handle-search="handleSearch"
     :on-save="save"
+    :loading="loading"
     icon-name="perm_identity"
   >
     <q-form ref="form" class="q-gutter-sm">
@@ -18,7 +19,7 @@
         type="text"
         label="Search..."
         outlined
-        filled
+
         dense
         rounded
       >
@@ -30,7 +31,6 @@
       <label>Display Name</label>
       <q-input
         outlined
-        filled
         dense=""
         v-model="user.displayName"
         type="text"
@@ -40,7 +40,6 @@
       <label>Email</label>
       <q-input
         outlined
-        filled
         dense=""
         v-model="user.email"
         type="text"
@@ -50,7 +49,6 @@
       <label>Phone</label>
       <q-input
         outlined
-        filled
         dense
         v-model="user.phoneNumber"
         type="text"
@@ -147,9 +145,9 @@ const canEditMail = ref(false);
 const canDestroy = ref(false);
 const collection = "Users";
 const _list = ref([]);
-const allUsers = ref([]);
-const searchText = ref("");
-
+//const allUsers = ref([]);
+//const searchText = ref("");
+const loading = ref(false);
 /*const props = defineProps({
   setModel: Function,
   selected: Object,
@@ -189,7 +187,7 @@ function setModel(val) {
   return filtered;
 }*/
 function save() {
-  store.loading = true;
+  loading.value = true;
   const {
     //displayName: displayName || email,
     units,
@@ -198,6 +196,7 @@ function save() {
     location,
     role,
   } = user.value.customClaims;
+
   setUserRights({
     Disabled: disabled.value,
     IsAdmin: isAdmin.value,
@@ -239,7 +238,7 @@ function save() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 function reset() {
@@ -281,7 +280,7 @@ watch(
 });*/
 
 const handleSearch = debounce(async (d) => {
-  store.loading = true;
+  loading.value = true;
   //const all = (await listUsers())?.data || [];
   listUsers()
     .then((users) => {
@@ -291,7 +290,9 @@ const handleSearch = debounce(async (d) => {
           d === "" ||
           u.displayName?.toLowerCase().split(" ").includes(d.toLowerCase())
       );
+
       userList.value.splice(0, userList.value.length);
+
       filtered.forEach((v) => {
         let { customClaims, disabled, email, uid, displayName, phoneNumber } =
           v;
@@ -301,6 +302,7 @@ const handleSearch = debounce(async (d) => {
           email,
           uid,
           displayName,
+          Name: displayName,
           phoneNumber,
         });
       });
@@ -315,7 +317,7 @@ const handleSearch = debounce(async (d) => {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }, 500);
 

@@ -45,7 +45,8 @@ setGlobalOptions({ maxInstances: 10 });
 const app = initializeApp(firebaseConfig);
 
 function formatPhoneNumber(number) {
-  return number ? number.toString().replace(/^0/, "+234") : "";
+  let phone = number.toString();
+  return phone.indexOf("+") === 0 ? phone : phone.replace(/^0/, "+234");
 }
 function isPhoneNumber(data) {
   if (!data) return false;
@@ -58,6 +59,14 @@ async function getNextCaseNumber() {
   let count = snapshot?.val() || 0;
   count++;
   getDatabase().ref("cases/count").set(count);
+  return count;
+}
+async function getNextDestructionApplicationNumber() {
+  //Use realtime database for Case Count
+  const snapshot = await getDatabase().ref("destructions").child("count").get();
+  let count = snapshot?.val() || 0;
+  count++;
+  getDatabase().ref("destructions/count").set(count);
   return count;
 }
 // Start listing users = require(the beginning, 1000 at a time.
@@ -292,7 +301,7 @@ exports.register = onCall(async (request) => {
   try {
     if (!request.auth?.uid || !request.auth?.token?.admin) {
       throw new HttpsError(
-        "permission-denied",
+        "bad-request",
         `Staff user can be created only by logged in admin`
       );
     }
@@ -326,35 +335,6 @@ exports.register = onCall(async (request) => {
   }
 });
 
-exports.getuseremail = onCall(async (request) => {
-  try {
-    if (!request.data?.id)
-      throw new HttpsError(
-        "permission-denied",
-        "User data required",
-        "Username, password, role required"
-      );
-    //console.log(request.data);
-    const id = request.data?.id;
-    //const role = request.data?.role?.toLowerCase();
-    let _collection = "Users";
-    let filter = ["StaffId", "==", id.toUpperCase()];
-    const snapshot = await getFirestore()
-      .collection(_collection)
-      .where(...filter)
-      .get();
-    if (snapshot.empty) {
-      throw new HttpsError("permission-denied", `User id '${id}' not found`);
-    } else {
-      let data = snapshot?.docs[0]?.data();
-      return data.Email;
-    }
-  } catch (error) {
-    logger.error(error);
-    throw new HttpsError("unknown", error.message);
-  }
-});
-
 exports.deleteusers = onCall(async (request) => {
   try {
     return await deleteUsers(request.data.uids);
@@ -363,7 +343,6 @@ exports.deleteusers = onCall(async (request) => {
     throw new HttpsError("unknown", error.message);
   }
 });
-
 exports.listusers = onCall(async (request) => {
   try {
     const users = [];
@@ -373,19 +352,52 @@ exports.listusers = onCall(async (request) => {
     throw new HttpsError("unknown", error.message);
   }
 });
-
+exports.getstaffbyid = onCall(async (request) => {
+  try {
+    if (!request.data?.staffId)
+      throw new HttpsError(
+        "bad-request",
+        "User data required",
+        "Username, password, role required"
+      );
+    //console.log(request.data);
+    const staffId = request.data?.staffId;
+    //const role = request.data?.role?.toLowerCase();
+    let _collection = "Users";
+    let filter = ["StaffId", "==", staffId.toUpperCase()];
+    const snapshot = await getFirestore()
+      .collection(_collection)
+      .where(...filter)
+      .get();
+    if (snapshot.empty) {
+      throw new HttpsError(
+        "permission-denied",
+        `User id '${staffId}' not found`
+      );
+    } else {
+      let data = snapshot?.docs[0]?.data();
+      return data;
+    }
+  } catch (error) {
+    logger.error(error);
+    throw new HttpsError("unknown", error.message);
+  }
+});
 exports.getuser = onCall(async (request) => {
   try {
-    const userRecord = await getAuth().getUser(request.data);
+     let uid = request.data.uid;
+     if (!uid) throw new HttpsError("bad-request", "User ID required");
+    const userRecord = await getAuth().getUser(request.data.uid);
     return userRecord?.toJSON();
   } catch (error) {
     logger.error(error.message);
     throw new HttpsError("unknown", error.message);
   }
 });
-
 exports.getuserbyemail = onCall(async (request) => {
   try {
+     let email = request.data.email;
+     if (!email) throw new HttpsError("bad-request", "Email address required");
     const userRecord = await getAuth().getUserByEmail(request.data.email);
     return userRecord?.toJSON();
   } catch (error) {
@@ -393,13 +405,17 @@ exports.getuserbyemail = onCall(async (request) => {
     throw new HttpsError("unknown", error.message);
   }
 });
-
 exports.getuserbyphonenumber = onCall(async (request) => {
   try {
-    const userRecord = await getAuth().getUserByPhoneNumber(request.data.phone);
+    let phone = request.data.phone;
+    if (!phone) throw new HttpsError("bad-request", "Phone number required");
+    if (isPhoneNumber(phone)) phone = formatPhoneNumber(phone);
+    //if (!phone)throw new HttpsError("bad-request", "Phone number not valid");
+
+    const userRecord = await getAuth().getUserByPhoneNumber(phone);
     return userRecord?.toJSON();
   } catch (error) {
-    logger.error(error.message);
+    //logger.error(error.message);
     throw new HttpsError("unknown", error.message);
   }
 });
@@ -605,6 +621,40 @@ exports.beforeusersignin = beforeUserSignedIn(async (event) => {
     );
   }
 });
+
+async function updateDestruction(id) {
+  try {
+    const ApplicationNumber = await getNextDestructionApplicationNumber();
+    //const data = { CaseNumber };
+    getFirestore()
+      .doc("Destructions/" + id)
+      .update({ ApplicationNumber });
+  } catch (error) {
+    logger.error(error);
+  }
+}
+exports.ondestructioncreated = onDocumentCreated(
+  "Destructions/{id}",
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+      //console.log("No data associated with the event");
+      return;
+    }
+    const data = snapshot.data();
+    updateDestruction(event.params.id);
+
+    if (!isPhoneNumber(data.ContactPhone)) return;
+    const to = formatPhoneNumber(data.ContactPhone);
+    const from = SENDER_ID;
+    //const documentId = data.id;
+    const link = `${BASE_URL}/applications`;
+    const body = `Your application for destruction received. Visit ${link} to view status`;
+    sendMessage({ to, from, body }, (err, info) => {
+      if (err) console.log(err);
+    });
+  }
+);
 exports.oncasecreated = onDocumentCreated("Cases/{id}", async (event) => {
   try {
     const snapshot = event.data;
@@ -701,26 +751,6 @@ exports.oncomplaintcreated = onDocumentCreated(
     const body = `Your complaint received. Visit. ${link} to view status`;
     sendMessage({ to, from, body }, (err, info) => {
       //if (err) console.log(err);
-    });
-  }
-);
-exports.ondestructioncreated = onDocumentCreated(
-  "Destructions/{sid}",
-  async (event) => {
-    const snapshot = event.data;
-    if (!snapshot) {
-      //console.log("No data associated with the event");
-      return;
-    }
-    const data = snapshot.data();
-    if (!isPhoneNumber(data.ContactPhone)) return;
-    const to = formatPhoneNumber(data.ContactPhone);
-    const from = SENDER_ID;
-    //const documentId = data.id;
-    const link = `${BASE_URL}/applications`;
-    const body = `Your application for destruction received. Visit ${link} to view status`;
-    sendMessage({ to, from, body }, (err, info) => {
-      if (err) console.log(err);
     });
   }
 );

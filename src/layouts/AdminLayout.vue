@@ -1,17 +1,20 @@
 <template>
-  <q-layout view="hHh Lpr fFf">
+  <q-layout view="lHh Lpr fFf">
     <default-header />
     <q-drawer
       v-model="leftDrawerOpen"
       :show-if-above="true"
-      :breakpoint="900"
-      :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-teal-10'"
+      :class="store.theme.bg.normal"
       :mini-width="68"
       :mini="miniMode"
       :bordered="$q.dark.isActive"
-      class="text-white"
+      :breakpoint="800"
+      :width="$q.screen.width > 800 ? 380 : $q.screen.width"
+      class="text-white elevation-1"
+      style="opacity: 0.99"
+      elevated=""
     >
-      <q-item class="bg-" :clickable="false">
+      <q-item :class="store.theme.bg.dark" :clickable="false">
         <q-item-section>
           {{ pkg.productName }} v {{ pkg.version }}
         </q-item-section>
@@ -37,27 +40,41 @@
           :active-class="
             link.link !== '/admin'
               ? $q.dark.isActive
-                ? 'bg-blue-grey-9'
-                : 'bg-blue-grey-8'
+                ? store.theme.bg.dark
+                : store.theme.bg.light
               : ''
           "
-          class="q-ml-xs"
         >
           <q-item-section v-if="link.icon" avatar>
             <q-icon :name="link.icon" />
           </q-item-section>
 
-          <q-item-section>
+          <q-item-section style="font-variant: small-caps; font-size: large">
             <q-item-label>{{ link.title }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
     </q-drawer>
 
-    <q-page-container
-      :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'bg-blue-grey-9'"
-    >
+    <q-page-container class="modern-bg2">
       <q-scroll-area style="width: 100%; height: calc(100vh - 48px)">
+        <q-banner
+          v-if="banner"
+          class="bg-deep-purple text-white"
+          style="opacity: 0.8"
+        >
+          <div class="text-h5">
+            Welcome {{ store.user?.displayName || store.user?.email }}
+          </div>
+          <template v-slot:action>
+            <q-btn
+              unelevated=""
+              color="grey-10"
+              label="Dismiss"
+              @click="() => (banner = false)"
+            />
+          </template>
+        </q-banner>
         <router-view />
       </q-scroll-area>
     </q-page-container>
@@ -77,6 +94,7 @@ import DefaultFooter from "./DefaultFooter.vue";
 const $q = useQuasar();
 const store = useDefaultStore();
 const miniMode = ref(false);
+const banner = ref(true);
 const leftDrawerOpen = computed({
   get: () => store.leftDrawerOpen,
   set: (v) => (store.leftDrawerOpen = v),
@@ -89,9 +107,10 @@ const toggleMiniMode = () => {
 };
 const links = [
   {
-    title: "Admin Home",
-    icon: "house",
-    link: "/admin",
+    title: "Users",
+    caption: "User entry",
+    icon: "perm_identity",
+    link: "/admin/user",
   },
   {
     title: "Staff",
@@ -101,13 +120,7 @@ const links = [
   },
 
   {
-    title: "Users",
-    caption: "User entry",
-    icon: "perm_identity",
-    link: "/admin/user",
-  },
-  {
-    title: "IPOs",
+    title: "Ipos",
     caption: "IPO entry",
     icon: "balance",
     link: "/admin/ipo",
@@ -117,6 +130,11 @@ const links = [
     caption: "Unit entry",
     icon: "work",
     link: "/admin/unit",
+  },
+  {
+    title: "Home",
+    icon: "house",
+    link: "/",
   },
   /* {
     title: "Admin home",
@@ -132,10 +150,26 @@ const links = [
   /*background: linear-gradient(#827, #827);*/
   background: linear-gradient(#827, #827);
 }
-.q-item {
-  border-radius: 15px;
+.q-list .q-item {
+  /*border-radius: 15px;*/
 }
-.q-drawer .q-item {
-  border-radius: 25px 0 0 25px;
+.q-drawer .q-list .q-item {
+  /*border-radius: 25px 0 0 25px;*/
+}
+</style>
+<style>
+.modern-bg {
+  background: url(../assets/modernbg.jpg);
+  background-repeat: no-repeat;
+  background-position-y: top;
+  background-size: cover;
+  background-attachment: scroll;
+}
+.modern-bg2 {
+  background: url(../assets/modernbg.jpg);
+  background-repeat: no-repeat;
+  background-position-y: top;
+  background-size: cover;
+  background-attachment: scroll;
 }
 </style>

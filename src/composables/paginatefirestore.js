@@ -15,21 +15,28 @@ import {
   // DocumentData,
 } from "firebase/firestore";
 
-export function usePaginate(collectionName, size, oderByField, orderDirection) {
+export function usePaginate(
+  collectionName,
+  getQuery
+  //docsPerFetch
+  //oderByField,
+  //orderDirection
+) {
   const firestore = useFirestore();
-  const docsPerFetch = size;
+  //const docsPerFetch = size;
   const lastVisibleDocSnap = ref();
   const firstVisibleDocSnap = ref();
   const collectionRef = collection(firestore, collectionName);
   const direction = ref("");
   const documentCount = ref(0);
-  function getQuery(cursor, snapshot) {
+
+  /*function __getQuery(cursor, snapshot) {
     if (!snapshot || snapshot?.length === 0) {
       // Default query
       return query(
         collectionRef,
         orderBy(oderByField, orderDirection),
-        limit(docsPerFetch)
+        limit(fetchSize)
       );
     } else {
       // Paginated query
@@ -37,10 +44,11 @@ export function usePaginate(collectionName, size, oderByField, orderDirection) {
         collectionRef,
         orderBy(oderByField, orderDirection),
         cursor(snapshot),
-        limit(docsPerFetch)
+        limit(fetchSize)
       );
     }
-  }
+  }*/
+
   //Build a computed collection query
   const collectionQuery = computed(() => {
     return direction.value === "+"
@@ -55,6 +63,7 @@ export function usePaginate(collectionName, size, oderByField, orderDirection) {
     console.log("count: ", snapshot.data().count);
     documentCount.value = snapshot.data().count || 0;
   });
+
   watch(direction, async (d) => {
     if (direction.value === "+") {
       const lastVisibleDoc = vueFireDocs.value[vueFireDocs.value.length - 1];
@@ -80,6 +89,7 @@ export function usePaginate(collectionName, size, oderByField, orderDirection) {
     }
     //vueFireDocs.value = useCollection(collectionQuery);
   });
+
   return {
     // When "Next" button is clicked change the lastVisibleDocSnap
     // Because lastVisibleDocSnap is tracked in the computed collection query it triggers useCollection to get new docs

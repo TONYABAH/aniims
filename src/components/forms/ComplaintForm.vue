@@ -6,7 +6,6 @@
       v-model="complaint.id"
       type="text"
       label="Complaint ID"
-      outlined
       filled
       square
       readonly=""
@@ -26,28 +25,33 @@
         </q-btn>
       </template>
     </q-input>
-    <q-separator spaced inset vertical dark />
-    <label>Mail ID</label>
-    <q-input v-model="complaint.MailId" type="text" outlined filled square>
-      <template v-slot:append>
-        <q-btn
-          :loading="loadingMailId"
-          unelevated
-          flat
-          color=""
-          label="Update"
-          @click.stop="updateMailId"
-        >
-          <template v-slot:loading>
-            <q-spinner-hourglass class="on-left" />
-          </template>
-        </q-btn>
-      </template>
-    </q-input>
+    <template
+      v-if="$route.name === 'Complaints' || $route.name === 'Investigations'"
+    >
+      <q-separator spaced inset vertical dark />
+      <label>Mail ID</label>
+      <q-input v-model="complaint.MailId" type="text" filled square>
+        <template v-if="complaint.id && complaint.MailId">
+          <q-btn
+            :loading="loadingMailId"
+            color="teal"
+            unelevated
+            push
+            square
+            glossy
+            label="Update"
+            @click.stop="updateMailId"
+          >
+            <template v-slot:loading>
+              <q-spinner-hourglass class="on-left" />
+            </template>
+          </q-btn>
+        </template>
+      </q-input>
+    </template>
     <q-separator spaced inset vertical dark />
     <label>Complaint title *</label>
     <q-input
-      outlined
       filled
       square
       v-model="complaint.Title"
@@ -65,16 +69,14 @@
       :rules="[(val) => !!val || 'Source is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined
       filled
       square
     />
     <q-separator spaced inset vertical dark />
-    <label>Contact phone *</label>
+    <label>Phone *</label>
     <q-input
       v-model="complaint.Phone"
       type="text"
-      outlined
       filled
       square
       :rules="[(val) => !!val || 'Address is required']"
@@ -82,13 +84,11 @@
       hide-bottom-space=""
     />
     <q-separator spaced inset vertical dark />
-    <label>Contact email</label>
+    <label>Email</label>
     <q-input
       v-model="complaint.Email"
       type="email"
-      label="Contact email address"
       hide-bottom-space=""
-      outlined
       filled
       square
     >
@@ -98,28 +98,18 @@
       <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6"></div>
     </div>
     <q-separator spaced inset vertical dark />
-    <label>Contact address</label>
-    <q-input
-      v-model="complaint.Address"
-      type="text"
-      hide-bottom-space=""
-      outlined
-      filled
-      square
-    />
-    <q-separator spaced inset vertical dark />
     <label>Company name</label>
-    <q-input outlined filled square v-model="complaint.CoyName" type="text" />
+    <q-input filled square v-model="complaint.CoyName" type="text" />
     <q-separator spaced inset vertical dark />
-    <label>Company address</label>
-    <q-input outlined filled square v-model="complaint.CoyAddress" type="text">
+    <label>Address</label>
+    <q-input filled square v-model="complaint.Address" type="text">
       <q-btn
         unelevated
         glossy
         color="teal"
         :label="$q.screen.gt.xs ? 'Validate' : ''"
-        @click="onValidateAddress(complaint.CoyAddress)"
-        v-if="complaint.CoyAddress"
+        @click="onValidateAddress(complaint.Address)"
+        v-if="complaint.Address"
       />
       <template v-slot:prepend>
         <q-btn
@@ -133,22 +123,10 @@
         />
       </template>
     </q-input>
-    <q-separator spaced inset vertical dark />
-    <label>Company email</label>
-    <q-input outlined filled square v-model="complaint.CoyEmail" type="text" />
-    <q-separator spaced inset vertical dark />
-    <label>Company phone</label>
-    <q-input outlined filled square v-model="complaint.CoyPhone" type="text" />
-
     <div class="q-pl-xs">
       <label
         >Give short details of your complaint
         <q-space />
-        <!--<TextEditor
-            :Text="complaint.Details"
-            :set-text="(v) => (complaint.Details = v)"
-            style="border: 4px solid orange"
-          />-->
         <textarea
           v-model="complaint.Details"
           rows="5"
@@ -160,7 +138,7 @@
     <template v-if="complaint">
       <TableView
         :data="locations"
-        :columns="tableColumns"
+        :columns="locationColumns"
         title="Where are the locations?"
         :onAddItem="showAddLocation"
         :onEditItem="showEditLocation"
@@ -168,19 +146,6 @@
         :onRemoveItem="removeLocation"
         :deletable="true"
         :editable="false"
-      />
-
-      <q-separator spaced inset vertical dark />
-      <label>Attach application letter (pdf)</label>
-      <TableView
-        :editable="false"
-        :deletable="true"
-        :data="attachments"
-        :columns="document_columns"
-        :onAddItem="onAttachLetter"
-        :onRemoveItem="onRemoveAttachment"
-        :onEditItem="onEditAttachment"
-        :onViewItem="onViewAttachment"
       />
     </template>
     <q-dialog v-model="locationPopupModel">
@@ -205,19 +170,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <FileViewerDialog
-      :docTitle="docTitle"
-      :fileSource="fileSource"
-      :model="fileViewerDialogModel"
-      :set-model="(v) => (fileViewerDialogModel = v)"
-    />
-    <UploadDialog
-      :accept="fileTypes"
-      v-on:doc-uploaded="onAttachmentUploaded"
-      title="Application Letter"
-      :model="uploadDialogModel"
-      :set-model="(v) => (uploadDialogModel = v)"
-    />
     <q-dialog v-model="previewMap" class="full-width">
       <q-card flat class="full-width">
         <GoogleGeoViewer :data="geoData.data" />
@@ -229,39 +181,21 @@
 <script setup>
 import { Notify, Dialog as dialog } from "quasar";
 import { useDefaultStore } from "src/stores/store";
-import {
-  computed,
-  onMounted,
-  onBeforeUnmount,
-  unref,
-  ref,
-  watch,
-  provide,
-} from "vue";
+import { computed, onMounted, onBeforeUnmount, provide, ref } from "vue";
 import LocationForm from "src/components/forms/LocationForm.vue";
 import TableView from "src/components/TableView.vue";
 import {
   onAddDocument,
   onDeleteDocument,
-  onAddAttachment,
   onDeleteAttachment,
   update,
 } from "src/composables/remote";
-import FileViewerDialog from "src/components/FileViewerDialog.vue";
-import UploadDialog from "src/components/UploadDialog.vue";
-//import { onAddAttachment, onDeleteAttachment } from "src/composables/remote";
 import Clipboard from "src/utils/clipboard.js";
-import { useGeolocation } from "src/composables/use-geocation";
-//import CircularProgress from "src/components/CircularProgress.vue";
+import { useGeolocation } from "src/composables/use-fn";
 import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
 //const $q = useQuasar();
 const searchFields = ["Title", "CoyName"];
-const document_columns = [
-  { name: "name", field: "Name", label: "Name", align: "left" },
-  { name: "title", field: "Title", label: "Caption", align: "left" },
-  // { name: "id", field: "id", label: "ID", align: "left" },
-];
-const tableColumns = [
+const locationColumns = [
   {
     name: "Address",
     label: "Address",
@@ -278,13 +212,9 @@ const props = defineProps({
 const geo = useGeolocation();
 const locationFormRef = ref(null);
 const uploadDialogModel = ref(false);
-const fileViewerDialogModel = ref(false);
 const loading = ref(false);
 const previewMap = ref(false);
 const geoData = ref({});
-
-const docTitle = ref("");
-const fileSource = ref("");
 const store = useDefaultStore();
 const fileTypes = ref("");
 const form = ref(null);
@@ -293,9 +223,6 @@ const location = ref({});
 const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn0");
 const loadingMailId = ref(false);
-//const clipboard0 = new Clipboard("#copy_btn0");
-//const clipboard1 = new Clipboard("#copy_btn1");
-//const clipboard2 = new Clipboard("#copy_btn2");
 
 const complaint = computed({
   get: () => props.data || {},
@@ -306,10 +233,10 @@ const locations = computed({
   get: () => complaint.value.Locations || [],
   set: (v) => (complaint.value.Locations = v),
 });
-const attachments = computed({
+/*const attachments = computed({
   get: () => complaint.value.Attachments || [],
   set: (v) => (complaint.value.Attachments = v),
-});
+});*/
 const setLocation = (l) => (lLocation.value = l);
 
 function reset() {
@@ -378,7 +305,7 @@ function copyToClipboard(e, val) {
 }
 async function addLocation(loc) {
   if (!(await locationFormRef.value?.validate())) {
-    Dialog.create({
+    dialog.create({
       message: "Please fill form correctly",
       title: "Validation error",
     });
@@ -416,83 +343,6 @@ function showEditLocation(loc, index) {
   locationPopupModel.value = true;
 }
 
-function onAttachmentUploaded(doc) {
-  //const isLetter = doc.Type === "application/pdf" ? true : false;
-  //console.log(doc);
-  if (complaint.value.Attachments) complaint.value.Attachments.push(doc);
-  else complaint.value.Attachments = [doc];
-  newAttachments.value.push(doc);
-  if (complaint.value.id) {
-    onAddAttachment("Complaints", complaint.value.id, doc)
-      .then(() => {
-        Notify.create({
-          textColor: "teal",
-          message: "Document uploaded",
-          icon: "error",
-          iconColor: "teal",
-          title: "Success",
-        });
-      })
-      .catch((error) => {
-        dialog.create({
-          textColor: "red",
-          message: error.message,
-          icon: "error",
-          iconColor: "red",
-          title: "Error",
-        });
-      });
-  }
-}
-
-function onRemoveAttachment(d) {
-  dialog
-    .create({
-      noBackdropDismiss: true,
-      title: "Delete file",
-      message: "Do you want to delete " + d.Title + "?",
-
-      ok: "Yes Delete",
-      cancel: true,
-    })
-    .onOk(() => {
-      onDeleteAttachment("Complaints", complaint.value.id, d)
-        .then(() => {
-          const index = complaint.value.Attachments?.findIndex(
-            (doc) => doc.id === d.id
-          );
-          complaint.value.Attachments.splice(index, 1);
-          const index2 = newAttachments.value?.findIndex(
-            (doc) => doc.id === d.id
-          );
-          newAttachments.value.splice(index2, 1);
-        })
-        .catch((error) => {
-          Notify.create({
-            textColor: "red",
-            message: error.message,
-            icon: "error",
-            iconColor: "red",
-          });
-        });
-    });
-}
-async function onEditAttachment(d) {
-  //const storage = getStorage();
-  //const path = "http://localhost:3000/upload/" + d.id;
-  //const url = await getDownloadURL(reference(storage, "files/" + d.id));
-  fileSource.value = d.downloadURL;
-  docTitle.value = d.Title;
-  fileViewerDialogModel.value = true;
-}
-async function onViewAttachment(d) {
-  //const storage = getStorage();
-  //const path = "http://localhost:3000/upload/" + d.id;
-  //const url = await getDownloadURL(reference(storage, "files/" + d.id));
-  fileSource.value = d.downloadURL;
-  docTitle.value = d.Title;
-  fileViewerDialogModel.value = true;
-}
 const onPreviewMap = () => {
   const data = {
     name: complaint.value.CoyAddress,
@@ -504,6 +354,7 @@ const onPreviewMap = () => {
   geoData.value = data;
   previewMap.value = true;
 };
+
 const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
@@ -520,6 +371,7 @@ const onValidateAddress = async (address) => {
         message: "Select Location components to use",
         ok: {
           push: true,
+          label: "Accept",
         },
         cancel: {
           push: true,
@@ -543,7 +395,7 @@ const onValidateAddress = async (address) => {
           complaint.value.Lng = lng;
         }
         if (data.includes("address")) {
-          complaint.value.CoyAddress = addr;
+          complaint.value.Address = addr;
         }
         //const country = Comp.find((c) => c.types?.includes("country"));
         if (country) complaint.value.Country = country.long_name;
@@ -569,14 +421,7 @@ const onValidateAddress = async (address) => {
     loading.value = false;
   }
 };
-/*watch(
-  complaint,
-  (val) => {
-    if (val && !complaint.value.Source) {
-    }
-  },
-  { immediate: true }
-);*/
+
 defineExpose({
   reset,
   validate,

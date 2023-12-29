@@ -27,7 +27,13 @@ import {
   signInWithCredential,
   signInWithPopup,
 } from "firebase/auth";
-import { getUserEmail } from "./functions";
+import {
+  //getUserEmail,
+  getUser,
+  getStaffById,
+  getuserByemail,
+  getuserByPhonenumber,
+} from "./functions";
 
 const db = getFirestore(app);
 
@@ -140,19 +146,11 @@ export const registerUserWithEmailAndPassword = (username, password, role) => {
     });
 };
 
-export const loginUserWithEmailAndPassword = (email, password) => {
+export const loginUserWithEmailAndPassword = async (email, password) => {
   const auth = getAuth(app);
-  return signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // Signed in
-      const user = userCredential.user;
-      return Promise.resolve(user);
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      Promise.reject(error);
-    });
+  let userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  return user;
 };
 
 export const logOut = async () => {
@@ -167,7 +165,7 @@ export const logOut = async () => {
     throw error;
   }
 };
-export const signInWithEmail = async (email, password) => {
+export const signInWithEmailAndPasswrd = async (email, password) => {
   const auth = getAuth(app);
   const userCredential = await signInWithEmailAndPassword(
     auth,
@@ -177,15 +175,33 @@ export const signInWithEmail = async (email, password) => {
   const user = userCredential.user;
   return { user };
 };
-export const signInWithStaffId = async (id, password) => {
-  const email = await getUserEmail({ id, role: "Staff" });
-  return await signInWithEmail(email.data, password);
+export const signInWithEmail = async (email) => {
+  const response = await getuserByemail({ email });
+  return response?.data?.email;
 };
-export const signInWithPhoneLine = async (id, password) => {
-  const email = await getUserEmail({ id, role: "IPO" });
-  return await signInWithEmail(email.data, password);
+export const signInWithStaffId = async (id) => {
+  const response = await getStaffById({ staffId: id });
+  console.log(response);
+  return response?.data?.Email;
 };
-
+export const signInWithPhoneLine = async (id) => {
+  const response = await getuserByPhonenumber({ phone: id });
+  return response?.data?.email;
+};
+/**
+ *
+ * @param {*} id User Email, Phone number or Staff ID
+ * @returns User
+ */
+export const getAuthUser = async (id) => {
+  if (isEmail(id)) return await signInWithEmail(id);
+  if (isPhoneNumber(id)) return await signInWithPhoneLine(id);
+  else if (isStaffNumber(id)) return await signInWithStaffId(id);
+  else
+    throw {
+      message: "Invalid User ID, must be email, phone number or staff ID",
+    };
+};
 export const signIn = async (id, password) => {
   if (isEmail(id)) return await signInWithEmail(id, password);
   if (isPhoneNumber(id)) return await signInWithPhoneLine(id, password);

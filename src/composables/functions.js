@@ -5,11 +5,11 @@ const functions = getFunctions(app);
 
 export const createUser = httpsCallable(functions, "register");
 export const listUsers = httpsCallable(functions, "listusers");
-export const getUser = httpsCallable(functions, "getuser");
 export const deleteUsers = httpsCallable(functions, "deleteusers");
-export const getUserEmail = httpsCallable(functions, "getuseremail");
-export const getuserbyemail = httpsCallable(functions, "getuserbyemail");
-export const getuserbyphonenumber = httpsCallable(
+export const getUser = httpsCallable(functions, "getuser");
+export const getStaffById = httpsCallable(functions, "getstaffbyid");
+export const getuserByemail = httpsCallable(functions, "getuserbyemail");
+export const getuserByPhonenumber = httpsCallable(
   functions,
   "getuserbyphonenumber"
 );

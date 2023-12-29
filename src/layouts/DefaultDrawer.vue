@@ -4,164 +4,87 @@
     v-model="leftDrawerOpen"
     show-if-above=""
     :mini="miniMode"
-    :mini-width="$q.screen.lt.md ? 100 : 100"
+    :mini-width="80"
     :behavior="$q.screen.gt.xs ? 'desktop' : 'mobile'"
     :elevated="false"
-    :width="380"
+    :breakpoint="500"
+    :width="$q.screen.width > 500 ? 240 : $q.screen.width"
     style="letter-spacing: 1.2px; overflow: hidden"
-    class="text-grey-1"
+    class="text-grey-1 exortic-bg"
   >
-    <div class="fits">
-      <q-item class="window-height bg-teal" style="padding: 0">
-        <q-item-section top avatar class="bg-teal-8" style="padding: 0">
-          <q-tabs
-            v-model="store.tabModel"
-            vertical=""
-            indicator-color="amber"
-            active-bg-color=""
-            class="text-lime-2 text-bold bg-"
-          >
-            <q-tab icon="home" label="Home" @click="goHome" />
-            <q-route-tab
-              to="search"
-              icon="search"
-              label="Search"
-              @click="removeHash"
-            />
-            <q-tab icon="edit" label="Editor" @click="goBack" />
-            <q-route-tab
-              to="dashboard"
-              icon="dashboard"
-              label="Analyse"
-              @click="removeHash"
-            />
-          </q-tabs>
-        </q-item-section>
-        <q-item-section top class="bg-teal-9">
-          <q-scroll-area class="fits">
-            <q-list>
-              <q-item
-                v-for="link in sidelinks"
-                clickable
-                v-ripple
-                :to="link.path"
-                :key="link.title"
-                :v-bind="link"
-                active-class="bg-teal-4"
-                class="q-mb-s"
-              >
-                <q-item-section
-                  v-if="link.icon"
-                  thumbnail=""
-                  class="q-pl-md text-grey-2"
-                >
-                  <q-icon :name="link.icon" />
-                </q-item-section>
-
-                <q-item-section class="text-uppercase">
-                  <q-item-label>{{ link.title }}</q-item-label>
-                </q-item-section>
-              </q-item>
-              <!--<q-item
-              clickable
-              v-ripple
-              active-class="bg-teal-4"
-              class="q-mb-s"
-              @click="() => (store.dashboard = true)"
-            >
-              <q-item-section thumbnail="" class="text-white q-pl-md">
-                <q-icon name="dashboard" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label class="text-">Dashboard</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-ripple
-              active-class="bg-teal-4"
-              class="q-mb-s"
-              @click="() => (store.dashboard = false)"
-            >
-              <q-item-section thumbnail="" class="text-white q-pl-md">
-                <q-icon name="edit" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label class="text-">Editor</q-item-label>
-              </q-item-section>
-            </q-item>-->
-              <q-item
-                clickable
-                v-ripple
-                active-class="bg-secondary"
-                class="q-mb-s"
-                @click="logout"
-              >
-                <q-item-section thumbnail="" class="text-white q-pl-md">
-                  <q-icon name="lock" />
-                </q-item-section>
-
-                <q-item-section>
-                  <q-item-label class="text-">Logout</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-scroll-area>
-        </q-item-section>
-      </q-item>
-    </div>
-    <q-item>
-      <q-item-section class="text-grey-5">
-        {{ pkg.productName }}
+    <q-item style="" :class="store.theme.bg.normal">
+      <q-item-section class="text-grey-1 q-pl-md">
+        <q-item-label>
+          {{ store.user?.displayName || store.user?.email }}
+        </q-item-label>
       </q-item-section>
 
-      <q-item-section avatar="">
+      <q-item-section side="" :class="miniMode ? 'q-mr-md' : 'q-ml-xl'">
         <q-btn
           flat
-          color=""
-          :icon="miniMode && $q.screen.gt.xs ? 'arrow_right' : 'arrow_left'"
-          :class="miniMode ? 'q-mr-md' : 'q-ml-md'"
+          dense
+          align="left"
+          :color="store.settings.themeColor + '-1'"
+          :icon="miniMode && $q.screen.gt.xs ? 'apps' : 'close'"
           class="full-width"
           @click="$q.screen.gt.xs ? toggleLeftMini() : toggleLeftDrawer()"
         />
       </q-item-section>
     </q-item>
-    <!--<q-item>
-      <q-item-section class="text-grey-5">
-        {{ pkg.productName }} v {{ pkg.version }}
-      </q-item-section>
+    <q-scroll-area
+      :class="$q.dark.isActive ? 'bg-grey-9' : store.theme.bg.dark"
+      style="width: 100%; height: calc(100vh - 80px); opacity: 0.9"
+    >
+      <q-list>
+        <q-item
+          v-for="link in links"
+          clickable
+          v-ripple
+          :to="link.path"
+          :key="link.title"
+          :v-bind="link"
+          :active-class="
+            $q.dark.isActive
+              ? store.theme.bg.dark + ' border-right'
+              : store.theme.bg.light + ' border-right'
+          "
+        >
+          <q-item-section
+            v-if="link.icon"
+            thumbnail=""
+            class="q-pl-md text-grey-2"
+          >
+            <q-icon :name="link.icon" />
+          </q-item-section>
 
-      <q-item-section avatar="" top>
-        <q-btn
-          flat
-          dense
-          round
-          color=""
-          :icon="miniMode && $q.screen.gt.xs ? 'arrow_right' : 'arrow_left'"
-          :class="miniMode ? 'q-mr-md' : 'q-ml-md'"
-          @click="$q.screen.gt.xs ? toggleLeftMini() : toggleLeftDrawer()"
-        />
-      </q-item-section>
-    </q-item>-->
+          <q-item-section style="font-variant: small-caps; font-size: large">
+            <q-item-label>{{ link.title }}</q-item-label>
+          </q-item-section>
+          <q-item-section side top class="text-amber">
+            <!--<q-icon name="star" />-->
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-scroll-area>
   </q-drawer>
 </template>
 <script setup>
 import { useQuasar } from "quasar";
 import { useDefaultStore } from "src/stores/store";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { logOut } from "src/composables/auth";
-import { sidelinks, links } from "src/composables/links";
-import pkg from "../../package.json";
+//import { logOut } from "src/composables/authentication";
+import { links } from "src/composables/links";
+//import pkg from "../../package.json";
+//import { useTheme } from "src/composables/use-fn";
 
 const store = useDefaultStore();
 const $q = useQuasar();
 const router = useRouter();
 const route = useRoute();
 const miniMode = ref(false);
-
+//store.tabModel = "search";
+//const theme = ref(store.theme);
 const leftDrawerOpen = computed({
   get: () => store.leftDrawerOpen,
   set: (v) => (store.leftDrawerOpen = v),
@@ -172,34 +95,23 @@ const toggleLeftDrawer = () => {
 const toggleLeftMini = () => {
   miniMode.value = !miniMode.value;
 };
-function removeHash() {
-  window.location.hash = "";
-}
-async function logout() {
-  $q.dialog({
-    title: "Sign out?",
-    message: "You will be signed out",
-    color: "negative",
-    ok: true,
-    cancel: true,
-  }).onOk(async () => {
-    await logOut();
-    store.user = {};
-    router.push({ name: "Login" });
-  });
-}
-function goHome() {
-  router.push("/");
-}
-function goBack() {
-  let param = route.params;
-  if (!route.params.document) return;
-  //console.log(route.params.document);
-  router.push("/" + route.params.document + "/");
-}
+watch(
+  () => route.path,
+  async (p) => {
+    //console.log(p);
+    if (p) store.tabModel = "edit";
+  },
+  { immediate: true }
+);
 </script>
 <style>
 .fits {
-  height: calc(100vh - 132px);
+  height: calc(100vh - 60px);
+}
+.active {
+  border: 2px solid black;
+}
+.border-right {
+  border-right: 2px solid yellow;
 }
 </style>

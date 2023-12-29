@@ -6,18 +6,15 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
   >
-    <DestructionApplication
-      ref="form"
-      :data="destruction"
-      :setData="setDocument"
-    />
+    <DestructionForm ref="form" :data="destruction" :setData="setDocument" />
   </FormCard>
 </template>
 <script setup>
 //import { Notify, Dialog } from "quasar";
 import { ref, provide } from "vue";
 import FormCard from "src/components/FormCard.vue";
-import DestructionApplication from "src/components/forms/DestructionForm.vue";
+import DestructionForm from "src/components/forms/DestructionForm.vue";
+//import ApplicationView from "src/views/ApplicationView.vue";
 
 const form = ref(null);
 const updateFields = [];

@@ -22,7 +22,7 @@
 <script setup>
 //import { useQuasar, Notify, Dialog } from "quasar";
 import { ref, computed } from "vue";
-//import { useRoute } from "vue-router";
+import SearchPanel from "src/components/SearchPanel.vue";
 import { useDefaultStore } from "src/stores/store.js";
 
 const store = useDefaultStore();

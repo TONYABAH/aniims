@@ -4,8 +4,15 @@
       <q-card-section class="items-center bg-primary text-white">
         <q-avatar icon="folder_open" color="red" text-color="white" />
         <span class="q-ml-sm">Upload Document</span>
+        <q-btn
+          noCaps=""
+          unelevated=""
+          icon="close"
+          color="primary"
+          class="float-right"
+          @click="handleCancel"
+        />
       </q-card-section>
-
       <q-card-section class="items-center">
         <q-file
           ref="fileRef"
@@ -15,7 +22,7 @@
           outlined=""
           v-model="fileModel"
           :accept="accept"
-          :max-file-size="maxSize"
+          :max-file-size="maxFileSize"
           :multiple="false"
         >
           <template v-slot:prepend>
@@ -28,16 +35,8 @@
               class="cursor-pointer"
             />
           </template>
-
           <template v-slot:hint> File size </template>
         </q-file>
-        <q-linear-progress
-          :value="progress"
-          rounded
-          color="purple"
-          track-color="orange"
-          class="q-mt-sm"
-        />
       </q-card-section>
       <q-card-section class="items-center">
         <q-input
@@ -48,51 +47,56 @@
           outlined=""
         />
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions>
         <q-btn
           noCaps=""
           unelevated=""
           label="Upload"
           icon="cloud_upload"
-          color="primary"
+          color="pink"
+          :loading="loading"
+          :percentage="progress"
+          class="full-width"
           @click="handleUpload"
           v-if="fileModel && docTitle"
-        />
-        <q-btn
-          noCaps=""
-          unelevated=""
-          label="Cancel"
-          icon="close"
-          color="primary"
-          @click="handleCancel"
-        />
+        >
+          <template v-slot:loading>
+            <q-spinner-hourglass class="on-left" />
+            Uploading...
+          </template>
+        </q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useDefaultStore } from "src/stores/store";
+import { ref, computed, onMounted, onBeforeMount } from "vue";
+//import { useDefaultStore } from "src/stores/store";
 import { Notify } from "quasar";
 import { uploadFile } from "../composables/remote";
 
 const emits = defineEmits(["doc-uploaded"]);
 
 const fileRef = ref(null);
-const store = useDefaultStore();
+//const store = useDefaultStore();
 const fileModel = ref(null);
 const progress = ref(0);
 var uploadTask = null;
+const _maxsize = ref(2113568); // 2MB
+const loading = ref(false);
 
 const props = defineProps({
   accept: {
     type: String,
-    default: () => [".pdf", ".jpg", ".png", ".jpeg,.mp4"].join(","),
+    default: () => [".pdf", ".jpg", ".png", ".jpeg"].join(","),
   },
-  title: String,
+  title: {
+    type: String,
+    default: "Attachment",
+  },
   maxSize: {
     type: Number,
-    default: 21135680, // 20MB
+    default: 2113568 * 10, // 20MB
   },
   position: {
     type: String,
@@ -100,6 +104,10 @@ const props = defineProps({
   },
   model: Boolean,
   setModel: Function,
+});
+const maxFileSize = computed({
+  get: () => _maxsize.value,
+  set: (v) => (_maxsize.value = v),
 });
 const dialogModel = computed({
   get: () => props.model,
@@ -115,11 +123,13 @@ const handleCancel = () => {
 };
 
 function handleUpload() {
+  loading.value = true;
   const file = fileModel.value;
   //store.downloadURL = null;
   uploadFile(file, uploadTask, progress, (error, downloadURL, id) => {
     if (error) {
       //console.log(error);
+      loading.value = false;
       Notify.create({
         timeout: 3000,
         closeBtn: true,
@@ -138,6 +148,7 @@ function handleUpload() {
       });
       //store.downloadURL = downloadURL;
       //store.documentDialogModel = false;
+      loading.value = false;
       props.setModel(false);
       fileModel.value = null;
     }
@@ -155,5 +166,11 @@ function handleUpload() {
   });
   store.documentDialogModel = false;
 }*/
-onMounted(() => (fileModel.value = null));
+onBeforeMount(() => {
+  fileModel.value = null;
+  //maxFileSize.value = props.maxSize
+  if (props.accept.includes(".mp4")) {
+    maxFileSize.value = 21135680; //20MB
+  }
+});
 </script>

@@ -2,14 +2,6 @@ import { defineStore } from "pinia";
 
 export const useDefaultStore = defineStore("default", {
   state: () => ({
-    query: null,
-    refererUrl: "/",
-    chatMode: true,
-    currentCollection: "Mails",
-    units: [],
-    ipos: [],
-    staffList: [],
-    locations: ["Lagos", "Kaduna", "Asaba", "Abuja"],
     productCategories: [
       "Food",
       "Water",
@@ -27,6 +19,14 @@ export const useDefaultStore = defineStore("default", {
       "Inceneration",
       "Other",
     ],
+    query: null,
+    refererUrl: "/",
+    chatMode: true,
+    currentCollection: "Mails",
+    units: [],
+    ipos: [],
+    staffList: [],
+    locations: ["Lagos", "Kaduna", "Asaba", "Abuja"],
     assignDialogModel: false,
     documentDialogModel: false,
     fileViewerDialogModel: false,
@@ -39,25 +39,42 @@ export const useDefaultStore = defineStore("default", {
     unit: {},
     searchObject: {},
     isDark: true,
-    /*raidModel: false,
-    caseModel: false,
-    productModel: false,
-    complaintModel: false,
-    teamDialogModel: false,
-    productDialogModel: false,
-    locationDialogModel: false,
-    surveuillancewModel: false,*/
     history: [],
     minutes: [],
-    tabModel: "form",
+    tabModel: "search",
+    fn: {},
+    settings: {
+      themeColor: "cyan",
+      keepLogin: true,
+    },
+    //settingDialog: false,
   }),
 
   getters: {
     // doubleCount: (state) => state.counter * 2,
+    theme: (state) => {
+      const _themeColor = state.settings?.themeColor || "cyan";
+      const color = {
+        normal: _themeColor + "-9",
+        light: _themeColor + "-8",
+        dark: _themeColor + "-10",
+        default: _themeColor,
+      };
+      const bg = {
+        normal: "bg-" + _themeColor + "-9",
+        light: "bg-" + _themeColor + "-8",
+        dark: "bg-" + _themeColor + "-10",
+        default: "bg-" + _themeColor,
+      };
+      return {
+        color,
+        bg,
+      };
+    },
   },
 
   actions: {
-    setRaid(d) {
+    /*setRaid(d) {
       this.raidData = d;
     },
     setSurveuillance(d) {
@@ -80,67 +97,6 @@ export const useDefaultStore = defineStore("default", {
     },
     setUser(u) {
       this.user = u;
-    },
-    /*
-    async submit({ path, data },) {
-      let res = null
-      if (data.id) {
-        res = await api.patch(path + "/" + data.id, data)
-      } else {
-        res = await api.post(path, data)
-      }
-      return data.id ? res.data.affectedRows : res.data.insertId
-    },
-    async remove({ path, data }) {
-      return await api.delete(path + '/' + data.id || data)
-    },
-    async submitLocation() {
-      const path = 'locations'
-      let response = this.submit({
-        path, data: this.location
-      })
-      if (!response) return
-      if (this.location.id) {
-        // this.location = data
-      } else {
-        //data.id = response
-        this.location.id = response
-        this.locations.push(this.location)
-      }
-    },
-    async removeLocation() {
-      const path = 'locations'
-      let response = this.remove({
-        path, data: this.location
-      })
-      if (!response) return
-      let index = this.locations.findIndex((loc) => loc.id === this.location.id)
-      this.locations.splice(index, 1)
-      this.location = {}
-    },
-    async submitProduct() {
-      const path = 'products'
-      let response = this.submit({
-        path, data: this.product
-      })
-      if (!response) return
-      if (this.product.id) {
-        // this.location = data
-      } else {
-        //data.id = response
-        this.product.id = response
-        this.products.push(this.product)
-      }
-    },
-    async removeProduct() {
-      const path = 'products'
-      let response = this.remove({
-        path, data: this.product
-      })
-      if (!response) return
-      let index = this.products.findIndex((p) => p.id === this.product.id)
-      this.products.splice(index, 1)
-      this.product = {}
-    }*/
+    },*/
   },
 });

@@ -12,6 +12,7 @@
     :handle-search="handleSearch"
     :on-add="create"
     :on-save="save"
+    :loading="loading"
   >
     <q-form ref="form" class="q-gutter-sm">
       <q-separator spaced inset vertical dark />
@@ -20,7 +21,6 @@
         v-model="unit.Name"
         type="text"
         outlined
-        filled
         dense
         :rules="[(val) => !!val || 'Name is required']"
         lazy-rules="ondemand"
@@ -31,7 +31,6 @@
       <q-input
         v-model="unit.Abbrev"
         outlined
-        filled
         dense
         type="text"
         :rules="[(val) => !!val || 'Abbreviation is required']"
@@ -43,7 +42,6 @@
       <q-select
         v-model="unit.Location"
         outlined
-        filled
         dense
         options-dense=""
         :options="store.locations"
@@ -58,7 +56,6 @@
         :options="STATUS_OPTIONS"
         options-dense=""
         outlined
-        filled
         dense
       >
         <template v-slot:append>
@@ -112,7 +109,7 @@ const unit = computed({
     _unit.value = val;
   },
 });
-
+const loading = ref(false);
 const status = computed({
   get: () => unit.value.Status || "Active",
   set: (v) => (unit.value.Status = v),
@@ -137,7 +134,7 @@ watch(
 );
 async function save() {
   if (!unit.value.id) return;
-  store.loading = true;
+  loading.value = true;
   update(unit.value.id, { Status: status.value }, "Units")
     .then(() => {
       updateBtn.value = false;
@@ -159,12 +156,12 @@ async function save() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 async function create() {
   if (!(await validate())) return;
-  store.loading = true;
+  loading.value = true;
   try {
     const _fields = ["Name", "Abbrev"].map((f) => unit.value[f]);
     const meta = {
@@ -191,12 +188,12 @@ async function create() {
       color: "red",
     });
   } finally {
-    store.loading = false;
+    loading.value = false;
   }
 }
 
 const handleSearch = debounce(async (d) => {
-  store.loading = true;
+  loading.value = true;
   lifeSearch("Units", { searchText: d, limits: 100 })
     .then((_units) => {
       units.value = _units;
@@ -211,10 +208,10 @@ const handleSearch = debounce(async (d) => {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }, 500);
-
+handleSearch();
 defineExpose({
   reset,
   validate,

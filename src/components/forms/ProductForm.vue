@@ -2,7 +2,7 @@
   <q-form ref="form" class="q-gutter-sm">
     <q-input
       dense
-      filled
+
       v-model="product.Name"
       type="text"
       label="Product name"
@@ -15,7 +15,7 @@
     <q-separator spaced inset vertical dark />
     <q-input
       dense
-      filled
+
       v-model="product.Manufacturer"
       type="text"
       label="Manufacturer"
@@ -23,7 +23,7 @@
     <q-separator spaced inset vertical dark />
     <q-input
       dense
-      filled
+
       v-model="product.ManAddress"
       type="text"
       label="Manufacturer address"
@@ -31,7 +31,7 @@
     <q-separator spaced inset vertical dark />
     <q-select
       dense
-      filled=""
+
       v-model="product.Country"
       :options="countries"
       options-dense=""
@@ -40,7 +40,7 @@
     <q-separator spaced inset vertical dark />
     <q-select
       dense
-      filled
+
       v-model="product.Category"
       :options="categories"
       options-dense
@@ -53,13 +53,12 @@
       :options="pharm_class"
       options-dense=""
       label="Pharmacological class"
-      filled=""
       dense
     />
     <q-separator spaced inset vertical dark />
     <q-input
       dense
-      filled
+
       v-model="product.Batch"
       type="text"
       label="Batch"
@@ -67,7 +66,7 @@
     />
     <q-input
       dense
-      filled
+
       v-model="product.PackSize"
       type="text"
       label="Pack Size"
@@ -76,7 +75,7 @@
     <q-separator spaced inset vertical dark />
     <q-input
       dense
-      filled
+
       v-model="product.NAFDACNumber"
       type="text"
       label="NAFDAC number"
@@ -85,7 +84,7 @@
     <q-separator spaced inset vertical dark />
     <q-input
       dense
-      filled
+
       v-model="product.Quantity"
       type="text"
       label="Quantity"
@@ -95,14 +94,14 @@
     <label>Manufaturing date</label>
     <q-input
       dense
-      filled
+
       v-model="product.ManufactureDate"
       type="date"
       label=""
     />
     <q-separator spaced inset vertical dark />
     <label>Expiry date (Best Before)</label>
-    <q-input dense filled v-model="product.ExpiryDate" type="date" label="" />
+    <q-input dense  v-model="product.ExpiryDate" type="date" label="" />
     <!--
     <div class="row q-mt-xs">
       <label class="q-ml-sm"><i>Action on product</i></label>

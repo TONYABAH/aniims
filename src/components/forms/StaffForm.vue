@@ -12,13 +12,14 @@
     :on-add="create"
     :on-save="save"
     icon-name="perm_identity"
+    :loading="loading"
   >
     <q-form class="q-pb-sm q-gutter-sm" ref="form">
       <!--<q-input
         v-model="searchText"
         type="text"
         label="Search name, email, location..."
-        outlined filled dense
+        outlined  dense
         rounded
       >
         <template v-slot:append>
@@ -26,26 +27,26 @@
         </template>
       </q-input>-->
       <q-separator spaced inset vertical dark />
+
       <label>Title *</label>
       <q-select
         v-model="staff.Title"
         :options="TITLE_OPTIONS"
         options-dense=""
         outlined
-        filled
         name="title"
         :rules="[validation.required]"
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
       <q-separator spaced inset vertical dark />
+
       <label>Full name *</label>
       <q-input
         v-model="staff.Name"
         type="text"
         input-class="text-input"
         outlined
-        filled
         name="name"
         :rules="[validation.required]"
         lazy-rules="ondemand"
@@ -56,10 +57,10 @@
         </template>
       </q-input>
       <q-separator spaced inset vertical dark />
+
       <label>Phone *</label>
       <q-input
         outlined
-        filled
         v-model="staff.Phone"
         type="text"
         name="phone"
@@ -72,10 +73,10 @@
         </template>
       </q-input>
       <q-separator spaced inset vertical dark />
+
       <label>Email *</label>
       <q-input
         outlined
-        filled
         v-model="staff.Email"
         type="email"
         name="email"
@@ -88,10 +89,10 @@
         </template>
       </q-input>
       <q-separator spaced inset vertical dark />
+
       <label>Staff Number *</label>
       <q-input
         outlined
-        filled
         v-model="StaffId"
         type="text"
         name="staffnumber"
@@ -101,10 +102,10 @@
       >
       </q-input>
       <q-separator spaced inset vertical dark />
+
       <label>Rank *</label>
       <q-input
         outlined
-        filled
         v-model="staff.Rank"
         type="text"
         name="rank"
@@ -113,92 +114,10 @@
         hide-bottom-space=""
       />
       <q-separator spaced inset vertical dark />
-      <label>Location *</label>
-      <q-select
-        v-model="staff.Location"
-        options-dense=""
-        :options="store.locations"
-        outlined
-        filled
-        name="location"
-        :rules="[validation.required]"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Units *</label>
-      <q-select
-        v-if="staff.Role !== 'Director'"
-        outlined
-        filled
-        v-model="staff.Units"
-        :options="store.units"
-        option-value="Abbrev"
-        option-label="Abbrev"
-        multiple
-        emit-value
-        map-options
-        options-=""
-        options-dense=""
-        name="units"
-        :use-chips="false"
-        :rules="[validation.required]"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-      >
-        <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
-          <q-item dense v-bind="itemProps">
-            <q-item-section thumbnail="">
-              <q-checkbox
-                left-label
-                :model-value="selected"
-                @update:model-value="toggleOption(opt)"
-                size="xs"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ opt.Abbrev }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-select>
-      <q-separator spaced inset vertical dark />
-      <label>Divisions Headed (if any)</label>
-      <q-select
-        outlined
-        filled
-        v-model="staff.Heads"
-        :options="staff.Units"
-        multiple
-        emit-value
-        map-options
-        options-=""
-        name="heads"
-        options-dense=""
-        :use-chips="false"
-      >
-        <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
-          <q-item dense v-bind="itemProps">
-            <q-item-section thumbnail="">
-              <q-checkbox
-                left-label
-                :model-value="selected"
-                @update:model-value="toggleOption(opt)"
-                size="xs"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ opt }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-select>
-      <q-separator spaced inset vertical dark />
+
       <label>Role *</label>
       <q-select
         outlined
-        filled
-        Disabled
         v-model="staff.Role"
         :options="roleOptions"
         options-dense=""
@@ -207,13 +126,96 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
+      <q-separator spaced inset vertical dark />
+
+      <label>Location *</label>
+      <q-select
+        v-model="staff.Location"
+        options-dense=""
+        :options="store.locations"
+        outlined
+        name="location"
+        :rules="[validation.required]"
+        lazy-rules="ondemand"
+        hide-bottom-space=""
+      />
+
+      <q-separator spaced inset vertical dark />
+
+      <template v-if="staff.Role !== 'Director'">
+        <label>Divisions or Units *</label>
+        <q-select
+          outlined
+          v-model="staff.Units"
+          :options="store.units"
+          option-value="Abbrev"
+          option-label="Abbrev"
+          multiple
+          emit-value
+          map-options
+          options-=""
+          options-dense=""
+          name="units"
+          :use-chips="false"
+          :rules="[validation.required]"
+          lazy-rules="ondemand"
+          hide-bottom-space=""
+        >
+          <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+            <q-item dense v-bind="itemProps">
+              <q-item-section thumbnail="">
+                <q-checkbox
+                  left-label
+                  :model-value="selected"
+                  @update:model-value="toggleOption(opt)"
+                  size="xs"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ opt.Abbrev }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+        <q-separator spaced inset vertical dark />
+
+        <label>Divisions or Units Headed (optional)</label>
+        <q-select
+          outlined
+          v-model="staff.Heads"
+          :options="staff.Units"
+          multiple
+          emit-value
+          map-options
+          options-=""
+          name="heads"
+          options-dense=""
+          :use-chips="false"
+        >
+          <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+            <q-item dense v-bind="itemProps">
+              <q-item-section thumbnail="">
+                <q-checkbox
+                  left-label
+                  :model-value="selected"
+                  @update:model-value="toggleOption(opt)"
+                  size="xs"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ opt }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+      </template>
+
       <q-select
         v-model="status"
         :options="STATUS_OPTIONS"
         options-dense=""
         label="Status"
         outlined
-        filled
       >
         <template v-slot:append>
           <q-btn
@@ -266,12 +268,15 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useDefaultStore } from "src/stores/store";
 import { createUser } from "src/composables/functions";
 import { update } from "src/composables/remote";
-import { validation } from "src/composables/use";
+import { useValidation } from "src/composables/use-fn";
 import AdminViewer from "src/views/AdminViewer.vue";
 import { addSearch, lifeSearch } from "src/composables/searchProvider";
 
 const form = ref(null);
 const store = useDefaultStore();
+const validation = useValidation();
+const loading = ref(false);
+
 const roleOptions = [
   "Director",
   "Head Location",
@@ -324,7 +329,7 @@ const isAdmin = computed({
 });
 async function onAdminStatusChanged() {
   if (!staff.value.id) return;
-  store.loading = true;
+  loading.value = true;
   update(staff.value.id, { IsAdmin: isAdmin.value }, "Users")
     .then(() => {
       Notify.create({
@@ -346,12 +351,12 @@ async function onAdminStatusChanged() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 async function onStatusChanged() {
   if (!staff.value.id) return;
-  store.loading = true;
+  loading.value = true;
   update(staff.value.id, { Status: status.value }, "Users")
     .then(() => {
       Notify.create({
@@ -372,12 +377,12 @@ async function onStatusChanged() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 async function save() {
   if (!staff.value.id) return;
-  store.loading = true;
+  loading.value = true;
   update(
     staff.value.id,
     {
@@ -413,12 +418,12 @@ async function save() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 async function create() {
   if (!(await validate())) return;
-  store.loading = true;
+  loading.value = true;
   const _fields = ["Name", "StaffId", "Rank"].map((f) => staff.value[f]);
   const meta = {
     search: addSearch(_fields),
@@ -445,7 +450,7 @@ async function create() {
       });
     })
     .finally(() => {
-      store.loading = false;
+      loading.value = false;
     });
 }
 /*function filter(val) {
@@ -471,8 +476,9 @@ const validate = async () => await form.value?.validate(true);
 
 //watch(searchText, (val) => filter(val), { immediate: true });
 
-const handleSearch = debounce(async (d) => {
+const handleSearch = debounce(async (d, active) => {
   const whereFilters = [["Level", "==", 3]];
+  if (active) whereFilters.push(["Status", "==", "Active"]);
   const _users = await lifeSearch("Users", {
     searchText: d,
     whereFilters,
@@ -492,6 +498,7 @@ onMounted(async () => {
   if (staff.value.IsAdmin === undefined) {
     staff.value.IsAdmin = false;
   }
+  handleSearch("", true);
 });
 </script>
 

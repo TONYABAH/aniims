@@ -1,38 +1,40 @@
 <template>
-  <q-header class="bg-teal-7 q-pa-sm">
-    <q-bar class="bg-teal q-py-sm">
+  <q-header class="text-white">
+    <q-bar :class="store.theme.bg.light">
       <q-btn
         flat
         dense
         icon="menu"
         aria-label="Menu"
         @click="toggleLeftDrawer"
+        v-if="$route.name !== 'Home'"
       />
       <q-btn flat dense to="/" :label="pkg.productName" />
       <q-toolbar-title></q-toolbar-title>
       <q-btn
         flat
+        dense
         no-caps=""
-        color="white"
         icon-right="person"
-        :label="
-          $q.screen.lt.sm ? '' : store.user?.displayName || store.user?.email
-        "
+        :label="online ? 'Online' : 'Offline'"
+        :color="online ? 'amber' : 'white'"
       >
         <q-menu dark square="" class="q-pa-sm bg-blue-grey-9 shadow-0">
           <q-list dense style="min-width: 220px">
-            <!--<q-item clickable v-close-popup to="/profile">
+            <q-item v-close-popup>
               <q-item-section avatar top
                 ><q-icon name="person"
               /></q-item-section>
-              <q-item-section>Profile</q-item-section>
+              <q-item-section>{{
+                store.user?.displayName || store.user?.email
+              }}</q-item-section>
             </q-item>
-            <q-item clickable v-close-popup to="/user">
-                <q-item-section avatar top
-                  ><q-icon name="person"
-                /></q-item-section>
-                <q-item-section>User account</q-item-section>
-              </q-item>-->
+            <!--<q-item clickable v-close-popup to="/user">
+              <q-item-section avatar top
+                ><q-icon name="person"
+              /></q-item-section>
+              <q-item-section>User account</q-item-section>
+            </q-item>-->
             <q-separator />
             <q-item clickable v-close-popup @click="sendPasswordReset">
               <q-item-section avatar top><q-icon name="key" /></q-item-section>
@@ -48,6 +50,7 @@
       </q-btn>
       <q-btn
         flat
+        dense
         size="sm"
         :icon="darkIcon"
         @click="toggleDark"
@@ -60,6 +63,37 @@
         @click="$q.fullscreen.toggle()"
         :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
       ></q-btn>
+      <SettingDialog />
+    </q-bar>
+    <q-bar :class="store.theme.bg.light" v-if="isDefaultRoute">
+      <q-tabs
+        align="left"
+        shrink=""
+        outside-arrows=""
+        narrow-indicator=""
+        indicator-color="amber"
+        v-model="store.tabModel"
+        inline-label=""
+        dense
+      >
+        <q-tab
+          name="search"
+          icon="search"
+          label="Search"
+          @click="removeHash('search')"
+        />
+        <q-tab name="edit" icon="edit" label="Editor" />
+        <q-tab
+          name="dashboard"
+          icon="dashboard"
+          label="Analyse"
+          @click="removeHash('dashboard')"
+        />
+      </q-tabs>
+      <q-toolbar-title class="text-right">
+        {{ isDefaultRoute ? store.currentCollection : "" }}
+      </q-toolbar-title>
+      <q-btn flat round dense icon="more_vert" />
     </q-bar>
   </q-header>
 </template>
@@ -68,18 +102,27 @@
 import { useQuasar } from "quasar";
 import { useDefaultStore } from "src/stores/store";
 import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
-import { logOut } from "src/composables/auth";
+import { useRouter, useRoute } from "vue-router";
+import { logOut } from "src/composables/authentication";
 import { resetPassword } from "src/composables/functions";
 import pkg from "../../package.json";
+import SettingDialog from "src/components/SettingDialog.vue";
+//import { useTheme } from "src/composables/use-fn";
 
 const $q = useQuasar();
 const router = useRouter();
+const route = useRoute();
 const store = useDefaultStore();
 const seconds = ref(5);
+const online = ref(window?.navigator?.onLine);
+
 const darkIcon = computed(() =>
   $q.dark.isActive ? "brightness_5" : "nightlight"
 );
+function removeHash(p) {
+  window.location.hash = "";
+  //store.currentDocument = {}
+}
 function toggleDark() {
   $q.dark.toggle();
   // darkIcon.value = $q.dark.isActive ? "brightness_5" : "nightlight"
@@ -87,7 +130,14 @@ function toggleDark() {
 const toggleLeftDrawer = () => {
   store.leftDrawerOpen = !store.leftDrawerOpen;
 };
-
+const isDefaultRoute = computed(() => {
+  return (
+    route.name !== "Home" &&
+    route.name !== "Cases" &&
+    route.path.indexOf("/admin") === -1 &&
+    route.path.indexOf("/applications") === -1
+  );
+});
 async function logout() {
   setInterval(() => {
     seconds.value = Number(seconds.value) + 1;
@@ -168,4 +218,13 @@ async function sendPasswordReset() {
       });
   });
 }
+window.addEventListener("offline", (e) => {
+  console.log("offline");
+  online.value = false;
+});
+
+window.addEventListener("online", (e) => {
+  console.log("online");
+  online.value = true;
+});
 </script>

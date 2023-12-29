@@ -1,18 +1,11 @@
 <template>
   <q-select
     v-model="_model"
-    clearable
-    clear-icon="close"
     use-input
-    options-dense=""
-    input-debounce="500"
-    :fill-input="false"
-    :label="label"
-    :options="_options"
-    :placeholder="placeholder"
-    :use-chips="false"
     autocomplete=""
-    @filter="(val, update, abort) => filterFn(val, update, abort)"
+    options-dense=""
+    :options="_options"
+    @filter="filterFn"
     @filter-abort="abortFilterFn"
   >
     <template v-slot:no-option>
@@ -20,7 +13,7 @@
         <q-item-section> No results </q-item-section>
       </q-item>
     </template>
-    <template v-slot:prepend v-if="icon">
+    <template v-slot:append v-if="icon">
       <q-icon :name="icon" />
     </template>
   </q-select>
@@ -28,25 +21,16 @@
 
 <script setup>
 import { ref, computed } from "vue";
-const emits = defineEmits(["serach-model"]);
-const _options = ref([]);
+//const emits = defineEmits(["serach-model"]);
 
 const props = defineProps({
-  options: {
-    type: Array,
-    default: () => [],
-  },
-  autoSelect: {
-    type: Boolean,
-    default: true,
-  },
   minChars: {
     type: Number,
     efault: 1,
   },
-  placeholder: {
+  icon: {
     type: String,
-    default: "",
+    default: "search",
   },
   label: {
     type: String,
@@ -67,13 +51,18 @@ const props = defineProps({
       //console.log(v);
     },
   },
+  options: {
+    type: Array,
+    default: (v) => [],
+  },
   icon: {
     type: String,
-    default: undefined,
+    default: "search",
   },
 });
+const _options = ref(props.options || []);
 const _model = computed({
-  get: () => props.model || "",
+  get: () => props.model || null,
   set: (v) => {
     props.setModel(v);
   },
@@ -81,19 +70,23 @@ const _model = computed({
 const filterFn = (val, update, abort) => {
   // call abort() at any time if you can't retrieve data somehow
   if (!val || val.length < props.minChars) {
-    abort();
+    if (props.minChars > 0) {
+      abort();
+    } else {
+      _options.value = props.options;
+    }
     return;
   }
   setTimeout(() => {
     update(
       () => {
-        _options.value = props.filter(val);
-        /*if (!val || val === "") {
+        //_options.value = props.filter(val);
+        if (!val || val === "") {
           _options.value = props.options;
         } else {
-          //const needle = val.toLowerCase();
-          _options.value = props.filter(val);
-        }*/
+          const needle = val.toLowerCase().trim();
+          _options.value = props.filter(needle);
+        }
       },
 
       // "ref" is the Vue reference to the QSelect
@@ -104,7 +97,7 @@ const filterFn = (val, update, abort) => {
         }
       }
     );
-  }, 300);
+  }, 100);
 };
 
 const abortFilterFn = () => {

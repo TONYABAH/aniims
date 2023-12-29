@@ -4,7 +4,7 @@
     <label>Case Number</label>
     <q-input
       outlined
-      filled
+
       v-model="payment.CaseNumber"
       type="number"
       lazy-rules="ondemand"
@@ -15,7 +15,7 @@
     <label>Invoice Number (payment advice) *</label>
     <q-input
       outlined
-      filled
+
       v-model="payment.InvoiceId"
       type="text"
       :rules="[(val) => !!val || 'RRR is required']"
@@ -54,7 +54,7 @@
     <label>Receipt Number</label>
     <q-input
       outlined
-      filled
+
       v-model="payment.ReceiptId"
       type="text"
       :rules="[(val) => !!val || 'RRR is required']"
@@ -93,7 +93,7 @@
     <label>Remita Reference (RRR)</label>
     <q-input
       outlined
-      filled
+
       v-model="payment.RRR"
       type="text"
       lazy-rules="ondemand"
@@ -103,7 +103,7 @@
         <q-btn
           flat
           dense
-          filled
+
           no-caps
           unelevated
           color="secondary"
@@ -137,7 +137,7 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined=""
-      filled
+
     />
     <q-separator spaced inset vertical dark />
     <label>Payee Name *</label>
@@ -148,7 +148,7 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined=""
-      filled
+
     />
     <q-separator spaced inset vertical dark />
     <label>Payee Email *</label>
@@ -159,7 +159,7 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined=""
-      filled
+
     />
     <q-separator spaced inset vertical dark />
     <label>Payee phone number *</label>
@@ -170,7 +170,7 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       outlined=""
-      filled
+
     />
     <div class="row">
       <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
@@ -186,7 +186,7 @@
           lazy-rules="ondemand"
           hide-bottom-space=""
           outlined
-          filled
+
         />
       </div>
       <div class="col col-xs-6 col-sm-4 col-md-4 col-lg-4 q-pr-xs">
@@ -199,7 +199,7 @@
           lazy-rules="ondemand"
           hide-bottom-space
           outlined=""
-          filled
+
         />
       </div>
       <div class="col col-xs-6 col-sm-2 col-md-2 col-lg-2">
@@ -213,7 +213,7 @@
           lazy-rules="ondemand"
           hide-bottom-space
           outlined=""
-          filled
+
         />
       </div>
     </div>

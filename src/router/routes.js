@@ -18,8 +18,8 @@ const routes = [
         component: () => import("../components/forms/MailForm.vue"),
       },
       {
-        path: "cases",
-        name: "Cases",
+        path: "investigations",
+        name: "Investigations",
         component: () => import("../views/CaseView.vue"),
       },
       {
@@ -58,15 +58,39 @@ const routes = [
     path: "/applications",
     meta: { requiresAuth: true },
     name: "Applications",
-    component: () => import("src/layouts/MainLayout.vue"),
+    component: () => import("src/layouts/CompanyLayout.vue"),
     children: [
       {
-        path: "",
+        path: "destructions",
         meta: { requiresAuth: true },
         name: "Applications",
         component: () => import("src/pages/ApplicationHome.vue"),
       },
+      {
+        path: "petitions",
+        meta: { requiresAuth: true },
+        name: "Petitions",
+        component: () => import("src/pages/PetitionHome.vue"),
+      },
+      {
+        path: "destruction/:id(.*)",
+        meta: { requiresAuth: true },
+        name: "Application",
+        component: () => import("src/views/ApplicationView.vue"),
+      },
+      {
+        path: "petitions/:id(.*)",
+        meta: { requiresAuth: true },
+        name: "Petition",
+        component: () => import("src/views/PetitionView.vue"),
+      },
     ],
+  },
+  {
+    path: "/petitions",
+    meta: { requiresAuth: false },
+    name: "CustomerComplaint",
+    component: () => import("src/pages/PetitionPage.vue"),
   },
   {
     path: "/admin",
@@ -74,11 +98,6 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import("../layouts/AdminLayout.vue"),
     children: [
-      {
-        path: "",
-        name: "AdminHome",
-        component: () => import("../pages/AdminLanding.vue"),
-      },
       {
         path: "ipo",
         name: "IPO",
@@ -126,6 +145,12 @@ const routes = [
     component: () => import("src/pages/PasswordReset.vue"),
   },
   {
+    path: "/Cases",
+    name: "Cases",
+    meta: { requiresAuth: true },
+    component: () => import("src/pages/CasePage.vue"),
+  },
+  /* {
     path: "/:document/search",
     component: () => import("src/layouts/DefaultLayout.vue"),
     meta: { requiresAuth: true },
@@ -152,7 +177,7 @@ const routes = [
         name: "Dashboard",
       },
     ],
-  },
+  },*/
   // Always leave this as last one,
   // but you can also remove it
   {

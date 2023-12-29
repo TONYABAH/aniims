@@ -3,6 +3,8 @@
 </template>
 
 <script setup>
+//import { Dark } from "quasar";
+import { onBeforeMount } from "vue";
 import { watch } from "vue";
 import { useCollection } from "vuefire";
 import { collection, query, where } from "firebase/firestore";
@@ -11,27 +13,11 @@ import { useDefaultStore } from "./stores/store";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./composables/firebase";
 import { useRouter } from "vue-router";
-//import { Dark } from "quasar";
-//import { getUserToken } from "./composables/auth";
-//import { api } from "./boot/axios";
+
 const store = useDefaultStore();
 const router = useRouter();
 const db = firestore;
-const unitDataSource = collection(db, "Units");
-const userCollection = collection(db, "Users");
-const staffDataSource = query(
-  userCollection,
-  where("Level", "==", 3)
-  //where("Active", "==", true)
-);
-const policeDataSource = query(
-  userCollection,
-  where("Level", "==", 2)
-  //where("Active", "==", true)
-);
-//const router = useRouter();
-//const currentDataSource = computed(() => store.query);
-//store.searchResults = useCollection(currentDataSource);
+
 function getParameterByName(param, level) {
   if (level && level < 2) {
     return "/applications";
@@ -40,24 +26,39 @@ function getParameterByName(param, level) {
   const paramsString = location.search;
   const searchParams = new URLSearchParams(paramsString);
   let path = searchParams.get(param);
-  //console.log(path);
   if (!path) {
-    return "/";
+    return null;
   }
   return path;
 }
 onAuthStateChanged(auth, async (user) => {
   //Check for user status
   if (user) {
+    const unitDataSource = collection(db, "Units");
+    const userCollection = collection(db, "Users");
+    const staffDataSource = query(userCollection, where("Level", "==", 3));
+    const policeDataSource = query(userCollection, where("Level", "==", 2));
     let d = Object.assign({}, user);
     const idTokenResult = await user.getIdTokenResult();
     d.claims = idTokenResult.claims;
     store.user = d;
-    //const { get } = await import("./composables/remote");
-    //store.currentStaff = await get(d.uid, "Users");
-    //Confirm the user is an Admin.
+
+    let { getSettings } = await import("./composables/remote");
+    getSettings(user)
+      .then((s) => {
+        if (s) store.settings = s;
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+
+    store.units = useCollection(unitDataSource);
+    store.ipos = useCollection(policeDataSource);
+    store.staffList = useCollection(staffDataSource);
+
     const fullpath = getParameterByName("redirect", d.claims?.level || 0);
-    router.push(fullpath);
+
+    if (fullpath) router.replace(fullpath);
     if (!!idTokenResult.claims.admin) {
       // Show admin UI. // console.log(user, idTokenResult.claims);
     } else {
@@ -68,14 +69,14 @@ onAuthStateChanged(auth, async (user) => {
 
 watch(
   () => store.user,
-  async (u) => {
-    if (u) {
-      store.units = useCollection(unitDataSource);
-      store.ipos = useCollection(policeDataSource);
-      store.staffList = useCollection(staffDataSource);
-    }
-  }
+  () => {}
 );
+
+onBeforeMount(async () => {
+  //nextTick(())
+  //setTimeout(async () => {
+  //}, 0);
+});
 //Dark.set("auto");
 /**
 Mongo Relm Connection Sample
@@ -88,4 +89,3 @@ client.connect(err => {
   client.close();
 });*/
 </script>
-<style></style>

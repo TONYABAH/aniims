@@ -4,7 +4,6 @@
     <label>Case Number *</label>
     <q-input
       outlined
-      filled
       square=""
       v-model="sample.CaseId"
       type="number"
@@ -17,7 +16,6 @@
     <label>Product name *</label>
     <q-input
       outlined
-      filled
       square
       v-model="sample.Name"
       type="text"
@@ -27,15 +25,14 @@
     />
     <q-separator spaced inset vertical dark />
     <label>Manufacturer *</label>
-    <q-input outlined filled square v-model="sample.Manufacturer" type="text" />
+    <q-input outlined square v-model="sample.Manufacturer" type="text" />
     <q-separator spaced inset vertical dark />
     <label>Manufacturer address*</label>
-    <q-input outlined filled square v-model="sample.ManAddress" type="text" />
+    <q-input outlined square v-model="sample.ManAddress" type="text" />
     <q-separator spaced inset vertical dark />
     <label>Country of origin</label>
     <q-select
       outlined
-      filled
       square=""
       v-model="sample.Country"
       :options="countries"
@@ -47,7 +44,6 @@
     <label>Category</label>
     <q-select
       outlined
-      filled
       square
       v-model="sample.Category"
       :options="categories"
@@ -63,23 +59,21 @@
       :options="pharm_class"
       options-dense=""
       outlined
-      filled
       square=""
     />
     <q-separator spaced inset vertical dark />
     <label>Batch</label>
-    <q-input outlined filled square v-model="sample.Batch" type="text" />
+    <q-input outlined square v-model="sample.Batch" type="text" />
     <q-separator spaced inset vertical dark />
     <label>Pack size</label>
-    <q-input outlined filled square v-model="sample.PackSize" type="text" />
+    <q-input outlined square v-model="sample.PackSize" type="text" />
     <q-separator spaced inset vertical dark />
     <label>NAFDAC Number</label>
-    <q-input outlined filled square v-model="sample.NAFDACNumber" type="text" />
+    <q-input outlined square v-model="sample.NAFDACNumber" type="text" />
     <q-separator spaced inset vertical dark />
     <label>Quantity *</label>
     <q-input
       outlined
-      filled
       square
       v-model="sample.Quantity"
       type="text"
@@ -93,7 +87,6 @@
         <label>Manufaturing date</label>
         <q-input
           outlined
-          filled
           square
           v-model="sample.ManDate"
           type="date"
@@ -104,7 +97,6 @@
         <label>Expiry date (Best Before date)</label>
         <q-input
           outlined
-          filled
           square
           v-model="sample.ExpiryDate"
           type="date"
@@ -118,7 +110,6 @@
         <label>Date sent to Lab</label>
         <q-input
           outlined
-          filled
           square
           name="sentDate"
           v-model="sample.SentDate"
@@ -145,7 +136,6 @@
         <label>Date report received from Lab *</label>
         <q-input
           outlined
-          filled
           square=""
           name="reportDate"
           v-model="sample.ReportDate"
@@ -173,7 +163,6 @@
           options-dense
           :options="LAB_REPORT_OPTIONS"
           outlined
-          filled
           square
         />
       </div>
@@ -187,8 +176,7 @@
       :rules="[(val) => !!val || 'Submitting officer is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined
-      filled=""
+      outlined=""
     />
   </q-form>
 </template>

@@ -13,7 +13,7 @@
     "dev": "quasar dev",
     "build": "quasar build -m spa",
     "build:pwa": "quasar build -m pwa",
-    "start": "firebase emulators:start --import BACKUP",
+    "start": "firebase emulators:start",
     "start-up": "./start-up.bat"
   },
   "dependencies": {

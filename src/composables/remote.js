@@ -1,4 +1,4 @@
-import { app, firestore } from "./firebase";
+import { app, firestore, database } from "./firebase";
 import {
   getStorage,
   ref as reference,
@@ -35,7 +35,7 @@ import {
 //import { updateDocument, createDocument } from "./functions";
 import { addSearch, generateId } from "./searchProvider";
 import { useDefaultStore } from "src/stores/store";
-//import { timestamp } from "rxjs";
+import { child, set, get, ref as databseRef } from "firebase/database";
 
 const db = firestore;
 const storage = getStorage(app);
@@ -146,6 +146,7 @@ export async function addChildDocument(
   //const logRef = doc(db, "applogs", generateId());
   const childId = generateId();
   const docRef = doc(db, collectionName, docId, subCollection, childId);
+  data.id = childId;
   await runTransaction(db, async (t) => {
     t.set(docRef, data);
     //t.set(logRef, { op, time, coll, docId, uid, user, ...data });
@@ -169,7 +170,7 @@ export const addComment = async (
   const user = store.user;
   const commentsData = {
     from: user.displayName,
-    to: user.displayName,
+    to: to.Name,
     comment: comment,
     time: Date.now(),
     unit,
@@ -213,6 +214,7 @@ export const addComment = async (
  * @param {Map} data Document to save to firestore.
  * @param {Number} collectionName Name of collection to save document to.
  * @param  {...String} searchFields Array of strings to search.
+ * @returns Promise reolved to id.
  */
 export const create = async (data, collectionName, searchFields = []) => {
   //const user = getAuth().currentUser;
@@ -227,7 +229,7 @@ export const create = async (data, collectionName, searchFields = []) => {
   });
 
   data.meta.search = addSearch(_fields);
-  // Server side creation
+  //Server side creation
   /*return await createDocument({
     payload: data,
     collection: collectionName,
@@ -235,10 +237,10 @@ export const create = async (data, collectionName, searchFields = []) => {
     historyId: generateId(),
     user: store.user.displayName,
   });*/
-
   // We set the id manually here to ensure ordering
   let id = generateId();
   data.id = id;
+
   const docRef = doc(db, collectionName, id);
   await runTransaction(db, async (t) => {
     t.set(docRef, data);
@@ -347,40 +349,53 @@ export const onDeleteAttachment = async (collectionName, documentId, data) => {
       }
     });
 };
-export async function onAssign(comment, staff, unit, docId) {
-  await update(
+export async function onAssign(comment, to, unit, docId, action = "Submit") {
+  /*await update(
     docId,
     {
-      "meta.To": staff.uid,
+      "meta.To": to.uid,
       "meta.From": store.user.uid,
       "meta.Unit": unit,
       "meta.Time": Date.now(),
       "meta.Status": "Assigned",
-      "meta.Location": staff.Location,
+      "meta.Location": to.Location,
     },
     store.currentCollection,
     false
   );
 
   return await addComment(store.currentCollection, docId, comment, staff, unit);
+  */
+  return onSubmit(comment, to, unit, docId, action);
 }
-export async function onSubmit(comment, to, unit, docId) {
-  store.currentDocument.Status = "Submitted";
-  if (docId) {
+export async function onSubmit(comment, to, unit, docId, action = "Submit") {
+  if (store.currentDocument) {
     if (!to) {
       throw {
-        message: "No superior to submit document to. Please add a superior.",
+        message:
+          "No user with the given identifier. Please provide the user ID",
       };
     }
-    const meta = {
+    const data = {
       "meta.To": to.uid,
       "meta.From": store.user.uid,
       "meta.Unit": unit || "",
       "meta.Time": Date.now(),
-      "meta.Status": "Submitted",
       "meta.Location": to.Location,
     };
-    await update(docId, meta, store.currentCollection, false);
+    let status = "Submitted";
+    if (action === "Return") {
+      status = "Returned";
+    } else if (action === "Assign") {
+      status = "Assigned";
+      data["meta.Assigned"] = true;
+    } else {
+      data["meta.Submitted"] = true;
+    }
+    data["meta.Status"] = status;
+    store.currentDocument.Status = status;
+
+    await update(docId, data, store.currentCollection, false);
     await addComment(store.currentCollection, docId, comment, to, unit);
   } else {
     throw { message: "No document loaded" };
@@ -449,7 +464,7 @@ export function uploadFile(f, uploadTask, progress, callback) {
   );
 }
 
-export const get = async (id, collectionName) => {
+export const getById = async (id, collectionName) => {
   const docRef = doc(db, collectionName, id);
   const documentSnapshot = await getDoc(docRef);
   if (!documentSnapshot || !documentSnapshot.data()) return null;
@@ -501,4 +516,16 @@ export async function generateCaseId() {
     caseId = querySnapshot.docs[0].data().CaseID;
   }
   return caseId ? caseId + 1 : 1;
+}
+
+export async function getSettings(user) {
+  let dbRef = databseRef(database, "settings/" + user.uid);
+  let result = await get(dbRef);
+  return result ? result.val() : null;
+}
+
+export async function saveSettings(data) {
+  //const { child, set } = await import("firebase/database");
+  let dbRef = databseRef(database, "settings/" + store.user.uid);
+  await set(dbRef, data);
 }

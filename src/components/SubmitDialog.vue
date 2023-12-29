@@ -79,19 +79,20 @@
 <script setup>
 import { ref, reactive, computed, inject } from "vue";
 import { useDefaultStore } from "src/stores/store";
-//import { onSubmit } from "../composables/remote";
+import { onSubmit } from "../composables/remote";
 import { Notify } from "quasar";
 
 const store = useDefaultStore();
 const assigned = ref("");
 const location = ref("");
 const unit = ref("");
-const comment = inject("comment");
-const onSubmit = inject("on-submit");
+//const comment = inject("comment");
+//const onSubmit = inject("on-submit");
 
 const formRef = ref(null);
 
 const props = defineProps({
+  comment: String,
   onSuccess: {
     type: Function,
     required: true,
@@ -116,9 +117,15 @@ const staffList = computed(() => {
 async function submitDocument() {
   if (!formRef.value.validate()) return;
   try {
-    await onSubmit(comment.value, assigned.value, unit.value.Abbrev);
+    await onSubmit(
+      props.comment,
+      assigned.value,
+      unit.value.Abbrev,
+      store.currentDocument.id
+    );
     reset();
-    comment.value = null;
+    //comment.value = null;
+    props.onSuccess();
   } catch (error) {
     console.log(error);
     Notify.create({

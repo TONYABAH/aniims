@@ -200,6 +200,46 @@ export const lifeSearch = async (
   });
   return list;
 };
+export const simpleSearch = async (
+  collectionName,
+  { whereFilters, orderByFilters, start, limits }
+) => {
+  //const store = useDefaultStore();
+  const dbRef = collection(db, collectionName);
+  const _whereFilters = [];
+  const _startAtFilters = [];
+  const _orderByFilters = [];
+  // First we build out all our search constraints
+  const searchConstraints = [];
+  if (start) {
+    _startAtFilters.push(startAt(...start));
+  }
+  if (whereFilters) {
+    whereFilters.forEach((w) => {
+      _whereFilters.push(where(...w));
+    });
+  }
+  if (orderByFilters) {
+    orderByFilters.forEach((o) => {
+      _orderByFilters.push(orderBy(...o));
+    });
+  }
+  const q = query(
+    dbRef,
+    ..._whereFilters,
+    ..._startAtFilters,
+    limit(limits || 25)
+  );
+  const querySnapshot = await getDocs(q);
+
+  const list = [];
+  querySnapshot.forEach((doc) => {
+    const document = doc.data();
+    document.id = doc.id;
+    list.push(document);
+  });
+  return list;
+};
 export const loadDocuments = async (collectionName, staff, limits) => {
   if (!staff) return;
   const store = useDefaultStore();

@@ -4,12 +4,14 @@
       <div class="col col-xs-6 col-sm-6 col-md-6 col-lg-6">
         <q-select
           v-model="location.Country"
-          :options="country_options"
+          :options="[]"
+          model-value="Nigeria"
           option-value="name"
           option-label="name"
           options-dense=""
           label="Country"
           outlined=""
+          :disabled="true"
         />
       </div>
     </div>
@@ -92,10 +94,11 @@ import {
   useStates,
   useCities,
   useCountries,
-} from "src/composables/address-use";
+  useGeolocation,
+} from "src/composables/use-fn";
 //import GoogleMapViewer from "../dashboard/GoogleMapViewer.vue";
 import GoogleGeoViewer from "../dashboard/GoogleGeoViewer.vue";
-import { useGeolocation } from "src/composables/use-geocation";
+//import { useGeolocation } from "src/composables/use-geocation";
 import { Dialog, Notify } from "quasar";
 import CircularProgress from "src/components/CircularProgress.vue";
 

@@ -44,10 +44,10 @@
     ></q-chat-message>
   </template>
 </template>
+
 <script setup>
 import { useDefaultStore } from "src/stores/store";
-//import { inject } from "vue";
-//const minutes = inject("minutes")
+
 const store = useDefaultStore();
 const props = defineProps({
   comments: Array,

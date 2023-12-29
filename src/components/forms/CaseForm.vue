@@ -6,11 +6,9 @@
       type="text"
       color=""
       name="caseNumber"
-      outlined
       filled
       square
       readonly=""
-      style="max-width: 50%"
     >
       <template v-slot:append>
         <q-btn
@@ -28,7 +26,7 @@
     </q-input>
     <q-separator spaced inset vertical dark />
     <label>Complaint ID</label>
-    <q-input v-model="Case.ComplaintId" type="text" outlined filled square />
+    <q-input v-model="Case.ComplaintId" type="text" filled square />
     <q-separator spaced inset vertical dark />
     <label>Case Title *</label>
     <q-input
@@ -37,7 +35,6 @@
       :rules="[(val) => !!val || 'Complaint is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined
       filled
       square
     />
@@ -50,7 +47,6 @@
       :rules="[(val) => !!val || 'Location is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined
       filled
       square=""
     />
@@ -62,7 +58,6 @@
       :rules="[(val) => !!val || 'Division is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined
       filled
       square=""
       options-dense=""
@@ -77,7 +72,6 @@
       :rules="[(val) => !!val || 'IPO is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined
       filled
       square=""
       options-dense=""
@@ -91,7 +85,6 @@
       type="text"
       color=""
       name="fileNumber"
-      outlined
       filled
       square
     >
@@ -110,7 +103,6 @@
     <q-select
       v-model="Case.Status"
       :options="CASE_STATUS_OPTIONS"
-      outlined
       filled
       square
       options-dense=""
@@ -153,13 +145,9 @@
 </template>
 <script setup>
 import { computed, ref, watch, provide } from "vue";
-import { useRouter } from "vue-router";
 import { Dialog as dialog } from "quasar";
 import { useDefaultStore } from "src/stores/store";
-import { useCollection } from "vuefire";
-import { collection, query, where } from "firebase/firestore";
-import { firestore } from "src/composables/firebase";
-import { deleteFile, update, create } from "src/composables/remote";
+import { update } from "src/composables/remote";
 
 import Clipboard from "src/utils/clipboard.js";
 
@@ -249,7 +237,7 @@ const units = computed(() => {
     : store.units;
 });
 
-const suspectyQuery = computed(() =>
+/*const suspectyQuery = computed(() =>
   query(
     collection(firestore, "Suspects"),
     where("Cases", "array-contains", Case.value.CaseNumber || 0)
@@ -260,7 +248,7 @@ const raidQuery = computed(() =>
     collection(firestore, "Raids"),
     where("CaseNumber", "==", Case.value.CaseNumber || 0)
   )
-);
+);*/
 watch(
   () => Case.value.FileNumber,
   (newValue) => {

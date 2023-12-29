@@ -45,14 +45,14 @@
 import { useDefaultStore } from "src/stores/store";
 import { computed, onMounted, provide, ref, watch } from "vue";
 import ProductForm from "src/components/forms/ProductForm.vue";
-import TableView from "src/components/TableView.vue";
-import TextEditor from "src/components/TextEditor.vue";
+//import TableView from "src/components/TableView.vue";
+//import TextEditor from "src/components/TextEditor.vue";
 import FormCard from "src/components/FormCard.vue";
 import RaidForm from "src/components/forms/RaidForm.vue";
 import { onAddDocument, onDeleteDocument } from "src/composables/remote";
-import { useStates, useCities } from "src/composables/address-use";
+import { useStates, useCities, useGeolocation } from "src/composables/use-fn";
 import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
-import { useGeolocation } from "src/composables/use-geocation";
+//import { useGeolocation } from "src/composables/use-fn";
 import { Dialog, Notify } from "quasar";
 
 const RAID_OPTIONS = ["Hawkers raid", "Investigative raid", "Mop up"];

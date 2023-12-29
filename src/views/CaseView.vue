@@ -6,16 +6,22 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
   >
-    <q-toolbar style="padding-left: 0; padding-right: 0">
+    <q-toolbar
+      style="padding-left: 0; padding-right: 0; border-radius: 5px"
+      class="text-white"
+      :class="$q.dark.isActive ? 'grey-9' : store.theme.bg.light"
+    >
       <q-tabs
         v-model="tab"
         dense
-        narrow-indicator=""
         shrink=""
+        narrow-indicator=""
         mobile-arrows=""
         outside-arrows=""
-        :class="$q.dark.isActive ? 'text-grey-1' : 'text-teal-8'"
-        align="left"
+        inline-label=""
+        :switch-indicator="false"
+        indicator-color="white"
+        :class="$q.dark.isActive ? 'text-grey-1' : ''"
       >
         <q-tab name="form" icon="cases" label="View" />
         <q-tab
@@ -24,12 +30,7 @@
           label="Complaint"
           :disable="!Case.ComplaintId && shouldDisable"
         />
-        <q-tab
-          name="raids"
-          icon="raids"
-          label="Raids"
-          :disable="shouldDisable"
-        />
+        <q-tab name="raids" icon="hub" label="Raids" :disable="shouldDisable" />
         <q-tab
           name="samples"
           icon="sample"
@@ -56,13 +57,17 @@
         />
       </q-tabs>
     </q-toolbar>
-
-    <q-tab-panels v-model="tab" animated vertical="" class="bg-transparent">
+    <q-tab-panels
+      v-model="tab"
+      animated
+      vertical=""
+      class="bg-transparent q-mb-xl"
+    >
       <q-tab-panel name="form" style="padding-left: 0; padding-right: 0">
         <CaseForm ref="formRef" :model="Case" :setModel="setDocument" />
       </q-tab-panel>
       <q-tab-panel name="complaint" style="padding-left: 0; padding-right: 0">
-        <ComplaintApplication
+        <ComplaintForm
           ref="complaintFormRef"
           :data="complaint"
           :setData="setComplaint"
@@ -102,16 +107,12 @@
           :addBtn="true"
           title="Reports"
         />
-        <q-form class="q-gutter-md q-mt-md">
-          <q-separator spaced inset vertical dark />
-          <label>Write a report</label>
-          <q-input v-model="report.Title" type="text" label="Report Title" />
-          <TextEditor :Text="report.Text" :setText="setReportText" />
-          <div class="bg-" align="center">
-            <q-btn label="Submit report" color="" flat />
-            <q-btn label="Reset" type="reset" color="" flat class="q-ml-sm" />
-          </div>
-        </q-form>
+        <ReportForm
+          :data="report"
+          :set-data="setReport"
+          :case-id="Case.id"
+          class="q-mt-md"
+        />
       </q-tab-panel>
       <q-tab-panel name="suspects" style="padding-left: 0; padding-right: 0">
         <TableView
@@ -227,25 +228,22 @@
 <script setup>
 import { computed, ref, watch, provide } from "vue";
 import { useRouter } from "vue-router";
-import { Dialog as dialog } from "quasar";
+import { Dialog as dialog, debounce } from "quasar";
 import { useDefaultStore } from "src/stores/store";
 import { useCollection, useDocument } from "vuefire";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
 import FormCard from "src/components/FormCard.vue";
 import SuspectForm from "src/components/forms/SuspectForm.vue";
-import { deleteFile, update, create } from "src/composables/remote";
+import { deleteFile, update, create, getById } from "src/composables/remote";
 import TableView from "src/components/TableView.vue";
 import CaseForm from "src/components/forms/CaseForm.vue";
 import Clipboard from "src/utils/clipboard.js";
-//import ComplaintForm from "./ComplaintForm.vue";
-import ComplaintApplication from "src/pages/ComplaintApplication.vue";
-import TextEditor from "src/components/TextEditor.vue";
-//import LocationForm from "./LocationForm.vue";
-//import SurveillanceForm from "./SurveillanceForm.vue";
-//import SurveillanceView from "./SurveillanceView.vue";
+import ComplaintForm from "src/components/forms/ComplaintForm.vue";
+//import TextEditor from "src/components/TextEditor.vue";
 import RaidForm from "src/components/forms/RaidForm.vue";
-const CASE_STATUS_OPTIONS = ["Open", "Progress", "Closed"];
+import ReportForm from "src/components/forms/ReportForm.vue";
+//const CASE_STATUS_OPTIONS = ["Open", "Progress", "Closed"];
 const props = defineProps({
   onCaseLoaded: Function,
 });
@@ -257,8 +255,8 @@ const Case = ref({});
 const suspectPopupModel = ref(false);
 const raidPopupModel = ref(false);
 const updateFields = ref([]);
-const update_fileNumber = ref(false);
-const update_status = ref(false);
+//const update_fileNumber = ref(false);
+//const update_status = ref(false);
 const suspect = ref({});
 const raid = ref({});
 const suspectFormRef = ref(null);
@@ -268,10 +266,11 @@ const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn");
 const complaint = ref({});
 const report = ref({});
-
+const reportFormRef = ref(null);
+const splitterModel = ref(200);
 const columns = [
-  { name: "Date", field: "Date", label: "Date", align: "left" },
   { name: "Title", field: "Title", label: "Title", align: "left" },
+  { name: "Date", field: "Date", label: "Date", align: "left" },
   // { name: "Address", field: "address", label: "Address", align: "left" },
 ];
 const doc_columns = [
@@ -465,16 +464,29 @@ function showSample(d) {
 function showPayment(d) {
   router.push("/Payments/#" + (d?.id || ""));
 }
+function setReport(v) {
+  report.value = v;
+}
 function setReportText(v) {
   report.value.Text = v;
 }
 function onAddReport() {
   report.value = {};
 }
-
+function onViewReport(item) {
+  report.value = item;
+}
+async function validateReport() {
+  return await reportFormRef.value.validate(true);
+}
 async function addReport() {
+  const valid = await validateReport();
+  if (!valid) return;
+  if (!report.value?.Text) return;
   const { addChildDocument } = await import("src/composables/remote.js");
-  addChildDocument("Cases", Case.value.id, "Reports")
+  const data = report.value;
+  data.Date = new Date().toDateString();
+  addChildDocument("Cases", Case.value.id, "Reports", data)
     .then((id) => {
       report.value.id = id;
       onAddReport();
@@ -486,9 +498,7 @@ async function addReport() {
       });
     });
 }
-function saveComplaint(){
-
-}
+function saveComplaint() {}
 const suspectyQuery = computed(() =>
   query(
     collection(firestore, "Suspects"),
@@ -508,7 +518,10 @@ const sampleQuery = computed(() =>
   )
 );
 const reportQuery = computed(() =>
-  query(collection(firestore, `Cases/${Case.value.id}/Reports`))
+  query(
+    collection(firestore, `Cases/${Case.value.id}/Reports`),
+    orderBy("id", "desc")
+  )
 );
 
 var suspects = useCollection(suspectyQuery);
@@ -527,25 +540,28 @@ watch(
     update_status.value = newValue ? true : false;
 v  }.;/
 );*/
+const loadComplaint = debounce(() => {
+  const cid = Case.value.ComplaintId;
+  if (cid)
+    getById(cid, "Complaints")
+      .then((d) => {
+        complaint.value = d || {};
+        Case.value.Title = d.Title;
+      })
+      .catch((e) => console.log(e));
+}, 500);
 watch(
   () => Case.value.ComplaintId,
   async (newId) => {
     if (!newId) return;
-    const { get } = await import("src/composables/remote.js");
-    const cid = Case.value.ComplaintId;
-    if (cid)
-      get(cid, "Complaints")
-        .then((d) => {
-          complaint.value = d || {};
-          Case.value.Title = d.Title;
-        })
-        .catch((e) => console.log(e));
+    loadComplaint();
   }
 );
 // const caseDateRef = ref(null)
 
 function reset() {
   formRef.value?.reset();
+  report.value = {};
 }
 const validate = async () => await formRef.value?.validate();
 provide("iconName", "cases");
