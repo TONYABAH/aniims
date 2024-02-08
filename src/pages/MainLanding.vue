@@ -2,13 +2,7 @@
   <q-page padding="" class="exortic-bg" style="padding: 0">
     <div
       class="overlay"
-      style="
-        width: 100%;
-        height: 100vh;
-        opacity: 0.9;
-        margin-top: -16px;
-        opacity: 0.82;
-      "
+      style="width: 100%; height: 100vh; margin-top: -16px; opacity: 0.9"
       :class="store.theme.bg.dark"
     >
       <q-toolbar class="q-mt-md">
@@ -27,25 +21,31 @@
           >
             <q-card
               flat
-              class="bg-transparent full-width full-height text-white"
+              dark
+              class="full-width full-height"
+              :class="$q.screen.lt.sm ? 'transparent' : store.theme.bg.normal"
             >
               <q-item
                 dense
                 clickable
                 v-ripple
-                @click.stop="navigateTo(item.path)"
-                :class="$q.screen.gt.xs ? 'q-py-md' : 'q-py-xs'"
+                @click.stop="navigateTo(item)"
+                class="q-py-sm"
+                :class="$q.screen.lt.sm ? 'q-py-' : 'q-py-md'"
               >
                 <q-item-section avatar>
-                  <q-avatar
-                    size="36px"
-                    font-size="24px"
-                    color=""
+                  <DashboardChip
+                    :collectionName="item.name"
                     :icon="item.icon"
-                    style="text-shadow: 1px 1px 7px 3px"
+                    bg-color="amber-10"
+                    dense
+                    ref="dashboardRef"
                   />
                 </q-item-section>
-                <q-item-section class="text-h6">{{ item.name }}</q-item-section>
+                <q-item-section class="text-h6" style="font-weight: 300">{{
+                  item.name
+                }}</q-item-section>
+                <q-item-section avatar></q-item-section>
               </q-item>
             </q-card>
           </div>
@@ -72,6 +72,7 @@ import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { links } from "src/composables/links";
 import { useQuasar } from "quasar";
+import DashboardChip from "src/components/dashboard/DashboardChip.vue";
 //import { useTheme } from "src/composables/use-fn";
 //import CaseDetails from "src/components/CaseDetails.vue";
 //import ComplaintForm from "src/components/ComplaintForm.vue";
@@ -82,16 +83,21 @@ const $q = useQuasar();
 const router = useRouter();
 const loading = ref(false);
 const store = useDefaultStore();
-const theme = store.theme;
+//const theme = store.theme;
+const dashboardRef = ref(null);
 
-function navigateTo(to) {
-  if (router.currentRoute.value.path !== to) {
+function navigateTo(link) {
+  if (router.currentRoute.value.path !== link.path) {
     setTimeout(() => {
       loading.value = false;
     }, 15000);
     loading.value = true;
+    //store.currentCollection = link.name;
     router
-      .push(to)
+      .push(link.path)
+      .then(() => {
+        //store.searchResults = dashboardRef.value;
+      })
       .catch((e) => {
         console.log(e.message);
         $q.notify({
@@ -99,7 +105,8 @@ function navigateTo(to) {
           message: "Admin right required",
           color: "red",
           textColor: "white",
-          position: "left",
+          position: "center",
+          icon: "error",
         });
       })
       .finally(() => (loading.value = false));

@@ -22,6 +22,7 @@
     "@vueuse/rxjs": "^9.11.1",
     "aos": "^2.3.4",
     "axios": "^1.2.2",
+    "billboard.js": "^3.10.3",
     "chart.js": "^4.4.0",
     "firebase": "^9.17.2",
     "firebase-functions": "^4.2.1",
@@ -55,7 +56,7 @@
     "workbox-strategies": "^6.5.0"
   },
   "engines": {
-    "node": "^18 || ^16 || ^14.19",
+    "node": "^20 || ^18 || ^16 || ^14.19",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   },

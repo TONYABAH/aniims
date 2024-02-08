@@ -6,8 +6,6 @@
     :set-model="setModel"
     :options="states"
     :input-debounce="400"
-    option-label=""
-    option-value=""
     label="State"
   />
 </template>

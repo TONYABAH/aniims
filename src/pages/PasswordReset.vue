@@ -3,112 +3,100 @@
     id="q-app"
     class="window-height window-width row justify-center items-center bg-blue-grey-1"
   >
-    <div class="row">
-      <q-card
-        v-if="success"
-        class="my-card bg-teal text-white q-pa-md"
-        style="width: 450px; height: auto; border-radius: 8px"
-        square=""
-      >
-        <q-card-section class="bg-blue-grey-9" align="center">
-          <q-avatar
-            size="60px"
-            font-size="42px"
-            color="teal-5"
-            text-color="white"
-            icon="check"
-          />
-          <div class="text-subheading2 text-grey-4 q-my-lg">
-            Password reset email has been sent to your mailbox. Follow the
-            instructions to reset your password.
-          </div>
-        </q-card-section>
-        <q-card-actions align="center">
-          <q-btn
-            rounded=""
-            color="secondary"
-            label="Login"
-            glossy=""
-            size="md"
-            to="login"
-            icon=""
-            icon-right=""
-          />
-        </q-card-actions>
-      </q-card>
-      <q-card
-        v-else
-        square
-        class="shadow-24"
-        style="width: 380px; height: auto"
-      >
-        <q-card-section class="bg-purple-7">
-          <q-avatar
-            size="44px"
-            font-size="36px"
-            color=""
-            text-color="white"
-            icon="key"
-          />
-          <span class="text-h6 text-white q-ml-md">Reset password</span>
-        </q-card-section>
-        <q-card-section>
-          <q-form
-            ref="form"
-            class="q-px-sm q-pt-xs q-gutter-sm"
-            :autofocus="false"
-            :greedy="false"
+    <q-card
+      v-if="success"
+      class="my-card text-white q-pa-md"
+      :class="store.theme.bg.normal"
+      style="width: 450px; height: auto; border-radius: 8px"
+      square=""
+    >
+      <q-card-section class="bg-blue-grey-9" align="center">
+        <q-avatar
+          size="60px"
+          font-size="42px"
+          color="teal-5"
+          text-color="white"
+          icon="check"
+        />
+        <div class="text-subheading2 text-grey-4 q-my-lg">
+          Password reset email has been sent to your mailbox. Follow the
+          instructions to reset your password.
+        </div>
+      </q-card-section>
+      <q-card-actions align="center">
+        <q-btn
+          rounded=""
+          :color="store.theme.color.normal"
+          label="Login"
+          glossy=""
+          size="md"
+          to="login"
+          icon=""
+          icon-right=""
+        />
+      </q-card-actions>
+    </q-card>
+    <q-card v-else square class="shadow-24" style="width: 380px; height: auto">
+      <q-card-section :class="store.theme.bg.normal">
+        <q-avatar
+          size="44px"
+          font-size="36px"
+          color=""
+          text-color="white"
+          icon="key"
+        />
+        <span class="text-h6 text-white q-ml-md">Reset password</span>
+      </q-card-section>
+      <q-card-section>
+        <q-form
+          ref="form"
+          class="q-px-sm q-pt-xs q-gutter-sm"
+          :autofocus="false"
+          :greedy="false"
+        >
+          <label>Enter your account email</label>
+          <q-input
+            outlined=""
+            v-model="email"
+            lazy-rules="ondemand"
+            :rules="[required, isEmail]"
+            type="email"
+            label="Email"
+            placeholder=""
+            hide-bottom-space=""
+            clear-icon="close"
           >
-            <label>Enter your account email</label>
-            <q-input
-              outlined=""
-              v-model="email"
-              lazy-rules="ondemand"
-              :rules="[required, isEmail]"
-              type="email"
-              label="Email"
-              placeholder=""
-              hide-bottom-space=""
-              clear-icon="close"
-            >
-            </q-input>
-          </q-form>
-        </q-card-section>
+          </q-input>
+        </q-form>
+      </q-card-section>
 
-        <q-card-actions class="q-px-lg" align="center" vertical>
-          <q-spinner
-            color="primary"
-            size="1.5rem"
-            :thickness="5"
-            v-if="loading"
-          />
-          <q-btn
-            unelevated
-            no-caps
-            size="md"
-            color="primary"
-            icon=""
-            icon-right=""
-            label="Submit"
-            rounded
-            class="text-white q-my-xs"
-            @click="submit"
-          />
-          <q-separator spaced inset vertical dark />
-          <q-btn
-            no-caps
-            flat
-            unelevated
-            icon=""
-            icon-right=""
-            size="md"
-            to="login"
-            class=""
-            >Or Login</q-btn
-          >
-        </q-card-actions>
-      </q-card>
-    </div>
+      <q-card-actions class="q-px-" align="center">
+        <q-btn
+          unelevated
+          no-caps
+          size="md"
+          :color="store.theme.color.normal"
+          icon=""
+          icon-right=""
+          label="Submit"
+          :loading="loading"
+          class="text-white q-my-xs"
+          @click="submit"
+        />
+        &nbsp;
+        <q-btn
+          no-caps
+          unelevated
+          flat
+          icon=""
+          icon-right=""
+          size="md"
+          to="login"
+          color="grey-8"
+          >or Login</q-btn
+        >
+      </q-card-actions>
+    </q-card>
   </div>
 </template>
 
@@ -120,7 +108,7 @@ import { useDefaultStore } from "src/stores/store";
 //import { createUser } from "../composables/functions";
 //import { decodeMessage } from "../composables/decodeErrorMessage";
 const $q = useQuasar();
-//const store = useDefaultStore();
+const store = useDefaultStore();
 const loading = ref(false);
 const form = ref(null);
 const success = ref(false);

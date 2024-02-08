@@ -14,7 +14,7 @@ export const getuserByPhonenumber = httpsCallable(
   "getuserbyphonenumber"
 );
 export const updateUser = httpsCallable(functions, "updateuser");
-export const recoverEmail = httpsCallable(functions, "recoveremail");
+//export const recoverEmail = httpsCallable(functions, "recoveremail");
 export const resetPassword = httpsCallable(functions, "resetpassword");
 export const setUserRights = httpsCallable(functions, "setuserrights");
 export const sendSMS = httpsCallable(functions, "sendtextmessage");

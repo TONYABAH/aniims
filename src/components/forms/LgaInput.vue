@@ -6,8 +6,6 @@
     :set-model="setModel"
     :options="cities"
     :input-debounce="400"
-    option-label=""
-    option-value=""
     label="LGA"
   />
 </template>

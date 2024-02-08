@@ -9,22 +9,22 @@
         v-model="expanded"
         dense=""
         dense-toggle=""
-        style="border-radius: 2px 2px; border: 1px solid #888"
+        style="border-radius: 2px 2px"
       >
         <template v-slot:header>
-          <q-toolbar dark>
+          <q-toolbar class="full-width">
             <q-icon name="comment" />
             <q-toolbar-title>Minutes</q-toolbar-title>
             <q-checkbox
               left-label
               v-model="store.chatMode"
               label="Conversational"
+              color="orange"
             />
             <!--<q-toggle v-model="store.chatMode" color="primary" label="Chat" />-->
           </q-toolbar>
         </template>
         <CommentsWidget :comments="store.minutes" />
-        <template v-slot:append></template>
       </q-expansion-item>
     </div>
     <div v-else class="full-width">

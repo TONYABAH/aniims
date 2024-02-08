@@ -1,5 +1,5 @@
 <template>
-  <q-card flat class="my-card bg-transparent">
+  <q-card flat class="my-card">
     <!--<q-bar class="transparent">
       <q-icon name="history" size="sm" class="q-mr-md" />
       <span class="text-bold"> {{ store.currentCollection }} / History</span>
@@ -14,7 +14,7 @@
           v-for="(h, i) of store.history"
           :key="i"
           :title="h.op"
-          :subtitle="new Date(h.date).toLocaleDateString('en-GB')"
+          :subtitle="new Date(h.date).toLocaleString('en-GB')"
         >
           <div>By: {{ h.user }}</div>
           <div v-if="h.op === 'Minuted'">To: {{ h.to }}</div>
@@ -36,16 +36,15 @@ watch(
   () => store.currentDocument,
   async (doc) => {
     if (doc?.id) {
+      //console.log(store.currentCollection + "/" + doc.id + "/History");
       const histSource = query(
         collection(firestore, store.currentCollection, doc.id, "History"),
-        orderBy("time", "asc")
+        orderBy("date", "asc")
       );
       store.history = useCollection(histSource);
     }
   },
   { immediate: true }
 );
-onMounted(async () => {
-
-});
+onMounted(async () => {});
 </script>

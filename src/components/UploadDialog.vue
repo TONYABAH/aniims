@@ -1,10 +1,11 @@
 <template>
   <q-dialog seamless v-model="dialogModel" persistent :position="position">
     <q-card class="q-ma-md">
-      <q-card-section class="items-center bg-primary text-white">
+      <q-bar class="items-center bg-primary text-white">
         <q-avatar icon="folder_open" color="red" text-color="white" />
-        <span class="q-ml-sm">Upload Document</span>
+        <q-toolbar-title>Upload Document</q-toolbar-title>
         <q-btn
+          dense
           noCaps=""
           unelevated=""
           icon="close"
@@ -12,8 +13,17 @@
           class="float-right"
           @click="handleCancel"
         />
-      </q-card-section>
+      </q-bar>
+
       <q-card-section class="items-center">
+        <q-input
+          v-model="docTitle"
+          name="docTitle"
+          type="text"
+          label="Document title"
+          outlined=""
+        />
+        <q-separator spaced inset vertical dark />
         <q-file
           ref="fileRef"
           label="Attach file"
@@ -38,34 +48,35 @@
           <template v-slot:hint> File size </template>
         </q-file>
       </q-card-section>
-      <q-card-section class="items-center">
-        <q-input
-          v-model="docTitle"
-          name="docTitle"
-          type="text"
-          label="Document title"
-          outlined=""
-        />
-      </q-card-section>
-      <q-card-actions>
+
+      <q-toolbar class="bg-grey-8">
         <q-btn
           noCaps=""
           unelevated=""
           label="Upload"
           icon="cloud_upload"
-          color="pink"
+          color="cyan"
+          glossy
           :loading="loading"
           :percentage="progress"
           class="full-width"
           @click="handleUpload"
-          v-if="fileModel && docTitle"
+          :disable="!fileModel || !docTitle"
         >
           <template v-slot:loading>
             <q-spinner-hourglass class="on-left" />
             Uploading...
           </template>
         </q-btn>
-      </q-card-actions>
+        <q-btn
+          noCaps=""
+          unelevated=""
+          label="Cancel"
+          color="primary"
+          class="float-right q-ml-xs"
+          @click="handleCancel"
+        />
+      </q-toolbar>
     </q-card>
   </q-dialog>
 </template>
@@ -137,6 +148,7 @@ function handleUpload() {
         message: error.message,
         icon: "error",
         iconColor: "negative",
+        position: "right",
       });
     } else {
       emits("doc-uploaded", {
@@ -149,8 +161,9 @@ function handleUpload() {
       //store.downloadURL = downloadURL;
       //store.documentDialogModel = false;
       loading.value = false;
-      props.setModel(false);
       fileModel.value = null;
+      docTitle.value = null;
+      props.setModel(false);
     }
   });
 }

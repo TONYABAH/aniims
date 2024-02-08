@@ -7,7 +7,6 @@
     :set-model="setModel"
     :filter="filter"
     :input-debounce="400"
-    placeholder="Enter name"
     icon="search"
     option-value="Abbrev"
     option-label="Name"
@@ -27,17 +26,13 @@ const props = defineProps({
     type: Function,
     required: true,
   },
-  status: {
-    type: String,
-    default: null,
-  },
   searchOptions: {
     type: Object,
     default: () => {},
   },
 });
 
-var units = useUnits(props.searchOptions);
+var units = []; //useUnits(props.searchOptions);
 
 function filter(needle) {
   const filtered = units.value.filter((s) => {
@@ -52,6 +47,7 @@ function filter(needle) {
 }
 watch(
   () => props.searchOptions,
-  (val) => (units = useUnits(val))
+  (val) => (units = useUnits(val)),
+  { immediate: true }
 );
 </script>

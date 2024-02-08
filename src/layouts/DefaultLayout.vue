@@ -10,30 +10,25 @@
         vertical=""
         transition-prev="scale"
         transition-next="scale"
-        keep-alive=""
+        :keep-alive="true"
         class="modern-bg fits"
         style="padding: 0"
       >
-        <q-tab-panel name="search">
+        <q-tab-panel name="search" class="fits" style="opacity: 1">
           <SearchPanel />
-          <q-btn
-            unelevated=""
-            :color="store.theme.color.light"
-            icon="add"
-            icon-right="arrow_right"
-            label="Add new"
-            class="q-ma-xs"
-            @click="addNewItem"
-          />
         </q-tab-panel>
         <q-tab-panel
           name="edit"
           class="items-left justify-left"
-          style="padding: 0; margin-bottom: 80px"
+          style="padding: 0; margin-bottom: 120px"
         >
           <router-view></router-view>
         </q-tab-panel>
-        <q-tab-panel name="dashboard" style="padding: 0">
+        <q-tab-panel
+          name="dashboard"
+          style="padding: 0"
+          v-if="!$route.params.id"
+        >
           <DashboardForm />
         </q-tab-panel>
       </q-tab-panels>
@@ -43,11 +38,11 @@
 </template>
 
 <script setup>
-import { watch, defineAsyncComponent } from "vue";
+import { ref } from "vue";
+import { useDefaultStore } from "../stores/store.js";
 import DefaultHeader from "./DefaultHeader.vue";
 import DefaultDrawer from "./DefaultDrawer.vue";
 import DefaultFooter from "./DefaultFooter.vue";
-import { useDefaultStore } from "../stores/store.js";
 import DashboardForm from "src/components/forms/DashboardForm.vue";
 import SearchPanel from "src/components/SearchPanel.vue";
 
@@ -62,20 +57,14 @@ const SearchPanel = defineAsyncComponent(() =>
 const SearchList = defineAsyncComponent(() =>
   import("src/components/SearchList.vue")
 );*/
-
-function addNewItem() {
-  store.tabModel = "edit";
-}
-watch(
-  () => store.tabModel,
-  (newTab) => {
-    if (newTab === "search") {
-      store.currentDocument = {};
-    }
-  }
-);
+const drawerLeft = ref(true);
 </script>
-<script type="application/javascript"></script>
+
+<style scoped>
+.fits {
+  height: calc(100vh - 88px);
+}
+</style>
 <style>
 .modern-bg {
   background: url(../assets/modernbg.jpg);

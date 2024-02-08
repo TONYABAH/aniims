@@ -14,49 +14,44 @@
     :on-save="save"
     :loading="loading"
   >
-    <q-form ref="form" class="q-gutter-sm">
-      <q-separator spaced inset vertical dark />
-      <label>Name *</label>
+    <q-form ref="form" class="q-gutter-xs">
       <q-input
         v-model="unit.Name"
+        label="Name *"
         type="text"
         outlined
-        dense
         :rules="[(val) => !!val || 'Name is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-      <q-separator spaced inset vertical dark />
-      <label>Abbreviation *</label>
+
       <q-input
         v-model="unit.Abbrev"
+        label="Abbreviation *"
         outlined
-        dense
         type="text"
         :rules="[(val) => !!val || 'Abbreviation is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-      <q-separator spaced inset vertical dark />
-      <label>Location *</label>
+
       <q-select
         v-model="unit.Location"
+        label="Location *"
         outlined
-        dense
         options-dense=""
         :options="store.locations"
         :rules="[(val) => !!val || 'Location is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-      <q-separator spaced inset vertical dark />
-      <label>Status *</label>
+
       <q-select
+        label="Status *"
         v-model="status"
         :options="STATUS_OPTIONS"
         options-dense=""
         outlined
-        dense
       >
         <template v-slot:append>
           <q-btn
@@ -64,7 +59,7 @@
             color="teal"
             label="Update"
             glossy
-            @click.stop="save"
+            @click.stop="saveStatus"
             v-if="unit.id && updateBtn"
           ></q-btn>
         </template>
@@ -93,23 +88,33 @@ import { useDefaultStore } from "src/stores/store";
 import { addUnit } from "src/composables/functions";
 import { update } from "src/composables/remote";
 import AdminViewer from "src/views/AdminViewer.vue";
-import { addSearch, lifeSearch } from "src/composables/searchProvider";
+import {
+  addSearch,
+  dataGram,
+  lifeSearch,
+} from "src/composables/searchProvider";
+import { useUnits } from "src/composables/use-fn";
 
 const STATUS_OPTIONS = ["Active", "Deleted", "Deactivated"];
-const collection = "Units";
 const searchFields = ["Name", "Abbrev", "Location"];
+const collection = "Units";
 const store = useDefaultStore();
 const form = ref(null);
 const updateBtn = ref(false);
 const _unit = ref({});
-const units = ref([]);
+//const search = ref("");
+
+const loading = ref(false);
+
+let units = ref([]);
+
 const unit = computed({
   get: () => _unit.value || {},
   set: (val) => {
     _unit.value = val;
   },
 });
-const loading = ref(false);
+
 const status = computed({
   get: () => unit.value.Status || "Active",
   set: (v) => (unit.value.Status = v),
@@ -121,18 +126,39 @@ function reset() {
   form.value.resetValidation();
 }
 const validate = async () => await form.value?.validate(true);
-watch(
-  () => unit.value.Status,
-  (val, oldVal) => {
-    if (val !== oldVal) {
-      updateBtn.value = true;
-    } else {
-      updateBtn.value = false;
-    }
-  },
-  { immediate: true }
-);
+
 async function save() {
+  if (!unit.value.id) return;
+  loading.value = true;
+  let data = Object.assign({}, unit.value);
+  //delete data.meta;
+  update(unit.value.id, data, "Units")
+    .then(() => {
+      updateBtn.value = false;
+      handleSearch();
+      Notify.create({
+        timeout: 800,
+        message: "Status updated",
+        caption: "Update",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
+
+async function saveStatus() {
   if (!unit.value.id) return;
   loading.value = true;
   update(unit.value.id, { Status: status.value }, "Units")
@@ -159,6 +185,7 @@ async function save() {
       loading.value = false;
     });
 }
+
 async function create() {
   if (!(await validate())) return;
   loading.value = true;
@@ -171,6 +198,7 @@ async function create() {
     const result = await addUnit(unit.value);
     unit.value.id = result.data;
     handleSearch("");
+    setModel({});
     Notify.create({
       timeout: 800,
       message: "Created successfully",
@@ -192,7 +220,7 @@ async function create() {
   }
 }
 
-const handleSearch = debounce(async (d) => {
+/*const __handleSearch = debounce(async (d) => {
   loading.value = true;
   lifeSearch("Units", { searchText: d, limits: 100 })
     .then((_units) => {
@@ -210,7 +238,35 @@ const handleSearch = debounce(async (d) => {
     .finally(() => {
       loading.value = false;
     });
+}, 500);*/
+
+const handleSearch = debounce(async (s) => {
+  const whereFilters = [];
+  //whereFilters.push(["Status", "==", "Active"]);
+  const _units = await lifeSearch("Units", {
+    searchText: s,
+    whereFilters,
+    limits: 25,
+    orderByFilters: [
+      ["Location", "asc"],
+      ["Abbrev", "asc"],
+    ],
+  });
+  units.value = _units;
 }, 500);
+
+watch(
+  () => unit.value.Status,
+  (val, oldVal) => {
+    if (val !== oldVal) {
+      updateBtn.value = true;
+    } else {
+      updateBtn.value = false;
+    }
+  },
+  { immediate: true }
+);
+
 handleSearch();
 defineExpose({
   reset,

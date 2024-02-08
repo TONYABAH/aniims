@@ -1,15 +1,14 @@
 <template>
   <q-card
-    flat
     dark
-    class="search-card"
+    class="search-card shadow-22"
     :class="$q.dark.isActive ? '' : 'bg-grey-1'"
     style="
       opacity: 0.8;
       border: 0px solid;
       border-radius: 0px 0px;
-      max-width: 400px;
-      border-radius: 25px;
+      max-width: 300px;
+      border-radius: 5px;
     "
   >
     <q-toolbar
@@ -19,37 +18,32 @@
       <q-toolbar-title style="padding: 4px">
         <q-input
           v-if="!expandModel"
-          dense
+          v-model="searchText"
           rounded
           outlined
           type="search"
           placeholder="Enter search term"
           clear-icon="close"
           clearable=""
-          input-class="text-bold"
+          dense
           :bg-color="
             $q.dark.isActive
               ? store.settings.themeColor
-              : store.settings.themeColor + '-2'
+              : store.settings.themeColor + '-1'
           "
-          color="cyan"
-          style="font-size: 16px; padding: 0"
-          v-model="searchText"
+          style="font-size: 14px"
         >
-          <template v-slot:prepend> </template>
           <template v-slot:append>
             <q-btn
-              glossy
-              push=""
+              flat
               unelevated=""
               no-caps=""
-              :color="store.settings.themeColor"
               label=""
               icon="search"
               :loading="loading"
               v-close-popup
               class="right"
-              @click.stop="onSearch"
+              @click.stop="onSearch()"
               style="border-radius: 0 2px 2px 0"
             />
           </template>
@@ -60,10 +54,9 @@
         dense
         unelevated=""
         rounded=""
-        glossy=""
         flat
         color="teal"
-        icon="chevron_right"
+        icon="arrow_right"
         class="q-mr-xs"
         :style="expandIconRotation"
         @click="expandModel = !expandModel"
@@ -71,60 +64,68 @@
     </q-toolbar>
     <q-slide-transition>
       <q-form class="q-px-sm q-py-sm q-gutter-xs" v-if="expandModel">
-        <q-input dense outlined="" v-model="search.date1" type="date" />
-        <q-input dense outlined="" v-model="search.date2" type="date" />
-        <div v-if="store.user.role === 'Director' || store.user.claims.admin">
-          <q-select
-            v-model="search.location"
-            :options="store.locations"
-            options-dense=""
-            label="Location"
-            dense
-            outlined=""
-            clearable=""
-            clear-icon="close"
-          />
-        </div>
+        <q-input
+          dense
+          outlined=""
+          label="Start date"
+          stack-label=""
+          v-model="search.date1"
+          type="date"
+        />
+        <q-input
+          dense
+          outlined=""
+          label="End date"
+          stack-label=""
+          v-model="search.date2"
+          type="date"
+        />
         <q-select
-          v-model="search.unit"
-          :options="units"
+          v-model="search.location"
+          :options="store.locations"
+          options-dense=""
+          label="Location"
+          dense
+          outlined=""
+          clearable=""
+          clear-icon="close"
+          :disable="!isDirector"
+        />
+        <unit-input
+          :set-model="(v) => (search.unit = v)"
+          :model="search.unit"
+          dense
+          outlined
+          title="Unit"
           label="Unit in charge"
+          placeholder=""
+          :search-options="{ location: search.location }"
+          :disable="!isDirector"
+        />
+        <staff-input
+          :set-model="(v) => (search.staff = v)"
+          :model="search.staff"
           dense
-          outlined=""
-          options-dense=""
-          clearable=""
-          clear-icon="close"
+          outlined
+          title="Minuted to who?"
+          label="Staff name"
+          placeholder=""
+          :search-options="{
+            location: search.location,
+            unit: search.unit?.Abbrev,
+          }"
+          :disable="!isDirector"
         />
         <q-select
-          v-model="search.staff"
-          :options="staffList"
-          label="Minuted to Staff"
-          dense
-          outlined=""
+          v-model="search.status"
+          :options="status_options"
           options-dense=""
-          clearable=""
-          clear-icon="close"
-          option-value="StaffId"
-          option-label="Name"
-        />
-        <q-select
-          v-model="search.from"
-          :options="staffList"
-          label="Created by Staff"
-          dense
+          label="Status"
           outlined=""
-          options-dense=""
+          dense=""
           clearable=""
-          clear-icon="close"
-          option-value="StaffId"
-          option-label="Name"
+          clear-icon="clear"
         />
-        <!--<q-input
-          v-model="search.FileNumber"
-          type="text"
-          label="File number"
-          dense
-        />-->
         <div class="q-px-xs q-pt-xs">
           <q-input
             v-model="searchText"
@@ -136,9 +137,8 @@
             :bg-color="
               $q.dark.isActive
                 ? store.settings.themeColor
-                : store.settings.themeColor + '-2'
+                : store.settings.themeColor + '-1'
             "
-            color="cyan"
             :autofocus="true"
             style="font-size: 14px"
             rounded
@@ -150,15 +150,15 @@
             <template v-slot:append>
               <q-btn
                 no-caps=""
-                push
-                glossy=""
+                unelevated=""
+                flat
                 :color="store.settings.themeColor"
                 label="Search"
                 :loading="loading"
                 v-close-popup
                 class="right"
                 style="border-radius: 0 4px 4px 0"
-                @click.stop="onSearch"
+                @click.stop="onSearch()"
               />
             </template>
           </q-input>
@@ -168,10 +168,19 @@
   </q-card>
   <search-list
     v-if="!loading"
-    :searchResults="store.searchResults"
+    :searchResults="searchResults"
     :activeClass="$q.dark.isActive ? 'text-orange' : 'text-orange'"
-    class="q-ma-xs"
+    class="q-my-xs"
     style="border-radius: 4px 4px 4px 4px"
+  />
+  <q-btn
+    unelevated=""
+    :color="store.theme.color.light"
+    icon="add"
+    icon-right="arrow_right"
+    label="Add new"
+    class="q-ma-xs"
+    @click="addNewItem"
   />
 </template>
 
@@ -194,46 +203,40 @@ import {
   or,
   and,
 } from "firebase/firestore";
+
 import { useCollection } from "vuefire";
 import { useDefaultStore } from "src/stores/store";
 import { dataGram } from "src/composables/searchProvider";
 import { firestore } from "src/composables/firebase";
+import UnitInput from "./forms/UnitInput.vue";
+import StaffInput from "./forms/StaffInput.vue";
+import {
+  useSearchQuery,
+  useDefaultSerachQuery,
+  useStaffList,
+} from "src/composables/use-fn";
+import { getById } from "src/composables/remote";
+const SearchList = defineAsyncComponent(() =>
+  import("src/components/SearchList.vue")
+);
 
 const route = useRoute();
 const db = firestore;
 const store = useDefaultStore();
-const collectionName = computed(() => store.currentCollection);
 const expandModel = ref(false);
 const searchText = ref("");
-const search = reactive({});
+const search = ref({});
 const loading = ref(false);
+var searchResults = [];
 
-const SearchList = defineAsyncComponent(() =>
-  import("src/components/SearchList.vue")
-);
-const units = computed(() => {
-  if (store.user.role !== "Director" && !store.user.claims?.admin) {
-    return store.user.claims.units;
-  }
-  return search.location
-    ? store.units
-        .filter((u) => u.Location === search.location)
-        .map((u) => u.Abbrev)
-    : store.units.map((u) => u.Abbrev);
-});
+const status_options = ["Active", "Assigned", "Submitted", "Open", "Closed"];
 
-const staffList = computed(() => {
-  if (
-    store.user.claims.role !== "Head" &&
-    store.user.claims.role !== "Director" &&
-    !store.user.claims.admin
-  ) {
-    return store.staffList.filter((s) => s.uid === store.user.uid);
-  }
-  return search.unit
-    ? store.staffList.filter((s) => s.Units?.includes(search.unit))
-    : store.staffList;
-});
+if (route.params.id && route.path.indexOf("Reports") > -1) {
+  store.currentCollection = "Reports";
+}
+const isDirector = computed(() => store.user.claims.role === "Director");
+const isHead = computed(() => store.user.claims.role.indexOf("Head") === 0);
+const isAdmin = computed(() => store.user.claims.admin === true);
 
 const expandIconRotation = computed(
   () =>
@@ -242,128 +245,74 @@ const expandIconRotation = computed(
     });cursor:pointer;`
 );
 
-function computeQuery() {
-  const searchFilters = [];
-  if (search.location) {
-    searchFilters.push(where("Location", "==", search.location));
-  }
-  if (search.unit && !search.staff) {
-    searchFilters.push(where("Unit", "==", search.unit));
-  }
-  if (
-    store.user.claims?.role !== "Director" &&
-    store.user.claims?.admin !== true
-  ) {
-    searchFilters.push(
-      or(
-        where("meta.To", "==", store.user.uid),
-        and(
-          where("meta.CreatedBy", "==", store.user.uid),
-          where("meta.Status", "==", "Created")
-        )
-      )
-    );
-  } else if (search.staff?.uid) {
-    //(store.user.claims?.role !== "Director" && !store.user.claims?.admin)
-    searchFilters.push(where("meta.To", "==", search.staff?.uid));
-  }
-  if (search.from) {
-    //(store.user.claims?.role !== "Director" && !store.user.claims?.admin)
-    searchFilters.push(where("meta.From", "==", search.staff?.uid));
-    //searchFilters.push(["Status", "==", "Created"]);
-  }
-  if (search.date1) {
-    //console.log(Date.parse(search.date1));
-    searchFilters.push(
-      where(
-        "meta.CreatedAt",
-        ">=",
-        Date.parse(new Date(search.date1).toDateString())
-      )
-    );
-  }
-  if (search.date2) {
-    searchFilters.push(where("meta.CreatedAt", "<=", Date.parse(search.date2)));
-  }
-  return searchFilters;
-}
-
-function onSearch() {
+function onSearch(filter) {
   loading.value = true;
+
   setTimeout(() => {
     expandModel.value = false;
     const searchConstraints = [];
-    const dbRef = collection(db, collectionName.value);
+
+    const dbRef = collection(
+      db,
+      route.params.id && route.path.indexOf("Reports") > 0
+        ? `Investigations/${route.params.id}/Reports`
+        : store.currentCollection
+    );
     const data = dataGram(searchText.value || "");
     if (data && data.length > 0)
       searchConstraints.push(where(`meta.search`, "array-contains-any", data));
-    const filters = computeQuery();
+    const filters = filter || useSearchQuery(search.value);
     const dataSource = query(
       dbRef,
-      and(...filters, ...searchConstraints),
+      ...filters,
+      ...searchConstraints,
       limit(1000)
     );
-    store.searchResults = useCollection(dataSource);
+
+    searchResults = useCollection(dataSource);
+
     let count = 0;
-    const interval = setInterval(() => {
+    let interval = setInterval(() => {
       count++;
-      if (store.searchResults.length > 0) {
+      if (searchResults.value.length > 0) {
         clearInterval(interval);
         loading.value = false;
       }
-      if (count > 5) {
+      if (count > 15) {
         clearInterval(interval);
         loading.value = false;
       }
-    }, 1000);
+      //console.log(searchResults.value);
+    }, 100);
   }, 0);
 }
-function initialSearch() {
-  loading.value = true;
-  setTimeout(() => {
-    expandModel.value = false;
-    const searchConstraints = [];
-    const dbRef = collection(db, collectionName.value);
-    searchConstraints.push(
-      or(
-        where("meta.To", "==", store.user.uid),
-        and(
-          where("meta.CreatedBy", "==", store.user.uid),
-          where("meta.Status", "==", "Created")
-        )
-      )
-    );
-    //searchConstraints.push(where(`meta.To`, "==", store.user.uid));
-    //const filters = computeQuery();
-    const dataSource = query(dbRef, ...searchConstraints, limit(1000));
-    store.searchResults = useCollection(dataSource);
-    let count = 0;
-    const interval = setInterval(() => {
-      count++;
-      if (store.searchResults.length > 0) {
-        clearInterval(interval);
-        loading.value = false;
-      }
-      if (count > 5) {
-        clearInterval(interval);
-        loading.value = false;
-      }
-    }, 1000);
-  }, 0);
+
+function addNewItem() {
+  store.tabModel = "edit";
+  store.currentDocument = {};
 }
 watch(
   () => route.path,
   async (path, old) => {
-    if (path !== old) {
-      initialSearch();
-      //store.currentDocument = {};
+    if (path) {
+      onSearch(useDefaultSerachQuery(store.currentCollection));
       return;
     }
   },
   { immediate: true }
 );
-//onMounted(() => setTimeout(() => initialSearch(), 0));
+onMounted(async () => {
+  let staff = await getById(store.user.uid, "Users");
+  //console.log(staff);
+  search.value.unit = {
+    Abbrev: staff?.Unit,
+    Name: staff?.Unit,
+  };
+  //const { uid, displayName } = store.user;
+  search.value.staff = staff; // || { uid, Name: displayName };
+  search.value.location = staff?.Location; // store.user.claims.location;
+});
 defineExpose({
-  onSearch,
+  //onSearch,
 });
 </script>

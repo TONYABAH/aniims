@@ -4,17 +4,17 @@
     <q-drawer
       v-model="leftDrawerOpen"
       :show-if-above="true"
-      :class="store.theme.bg.normal"
       :mini-width="68"
       :mini="miniMode"
-      :bordered="$q.dark.isActive"
-      :breakpoint="800"
-      :width="$q.screen.width > 800 ? 380 : $q.screen.width"
-      class="text-white elevation-1"
-      style="opacity: 0.99"
+      :width="$q.screen.width > 800 ? 180 : $q.screen.width"
+      dark
+      flat
+      :bordered="false"
+      class="elevation-1 bg-deep-purple-10"
+      style="opacity: 0.8"
       elevated=""
     >
-      <q-item :class="store.theme.bg.dark" :clickable="false">
+      <q-item :clickable="false">
         <q-item-section>
           {{ pkg.productName }} v {{ pkg.version }}
         </q-item-section>
@@ -23,7 +23,7 @@
           <q-btn
             flat
             dense
-            color="white"
+            color="teal"
             :icon="miniMode && $q.screen.gt.xs ? 'arrow_right' : 'close'"
             @click="$q.screen.gt.sm ? toggleMiniMode() : toggleLeftDrawer()"
           />
@@ -40,8 +40,8 @@
           :active-class="
             link.link !== '/admin'
               ? $q.dark.isActive
-                ? store.theme.bg.dark
-                : store.theme.bg.light
+                ? store.theme.bg.dark + ' text-white'
+                : store.theme.bg.xlight + ' text-white'
               : ''
           "
         >
@@ -57,8 +57,8 @@
     </q-drawer>
 
     <q-page-container class="modern-bg2">
-      <q-scroll-area style="width: 100%; height: calc(100vh - 48px)">
-        <q-banner
+      <div style="width: 100%; height: calc(100vh - 48px); overflow: auto">
+        <!--<q-banner
           v-if="banner"
           class="bg-deep-purple text-white"
           style="opacity: 0.8"
@@ -74,9 +74,9 @@
               @click="() => (banner = false)"
             />
           </template>
-        </q-banner>
+        </q-banner>-->
         <router-view />
-      </q-scroll-area>
+      </div>
     </q-page-container>
     <DefaultFooter />
   </q-layout>
@@ -110,7 +110,7 @@ const links = [
     title: "Users",
     caption: "User entry",
     icon: "perm_identity",
-    link: "/admin/user",
+    link: "/admin/users",
   },
   {
     title: "Staff",
@@ -123,13 +123,13 @@ const links = [
     title: "Ipos",
     caption: "IPO entry",
     icon: "balance",
-    link: "/admin/ipo",
+    link: "/admin/ipos",
   },
   {
     title: "Units",
     caption: "Unit entry",
     icon: "work",
-    link: "/admin/unit",
+    link: "/admin/units",
   },
   {
     title: "Home",
@@ -149,12 +149,6 @@ const links = [
   /*background-image: url(../assets/patterns.jpg);*/
   /*background: linear-gradient(#827, #827);*/
   background: linear-gradient(#827, #827);
-}
-.q-list .q-item {
-  /*border-radius: 15px;*/
-}
-.q-drawer .q-list .q-item {
-  /*border-radius: 25px 0 0 25px;*/
 }
 </style>
 <style>

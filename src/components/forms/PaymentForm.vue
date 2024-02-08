@@ -1,24 +1,37 @@
 <template>
-  <q-form ref="form" class="q-gutter-sm">
-    <q-separator spaced inset vertical dark />
-    <label>Case Number</label>
-    <q-input
-      outlined
-
-      v-model="payment.CaseNumber"
-      type="number"
+  <q-form ref="form" class="q-gutter-md">
+    <q-select
+      label="Reason for payment *"
+      v-model="payment.Item"
+      :options="payment_options"
+      options-dense=""
+      option-value="label"
+      option-label="label"
+      :rules="[(val) => !!val || 'Reason for payment is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      style="max-width: 380px"
-    />
-    <q-separator spaced inset vertical dark />
-    <label>Invoice Number (payment advice) *</label>
-    <q-input
       outlined
-
+      stack-label
+      :disable="payment.id !== undefined"
+    />
+    <q-input
+      v-if="payment.Item?.label?.indexOf('Destruction') === -1"
+      label="Case number *"
+      outlined
+      stack-label
+      v-model="payment.CaseNumber"
+      type="number"
+      :rules="[(val) => !!val || 'Case number is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space
+    />
+    <q-input
+      label="Invoice Number (payment advice) *"
+      outlined
+      stack-label
       v-model="payment.InvoiceId"
       type="text"
-      :rules="[(val) => !!val || 'RRR is required']"
+      :rules="[(val) => !!val || 'Invoice number is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
       style="max-width: 380px"
@@ -50,14 +63,15 @@
         </q-btn>
       </template>
     </q-input>
-    <q-separator spaced inset vertical dark />
-    <label>Receipt Number</label>
-    <q-input
-      outlined
 
+    <q-input
+      v-if="payment?.id"
+      label="Receipt Number *"
+      outlined
+      stack-label
       v-model="payment.ReceiptId"
       type="text"
-      :rules="[(val) => !!val || 'RRR is required']"
+      :rules="[(val) => !!val || 'Receipt number is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
     >
@@ -86,14 +100,20 @@
             />
           </svg>
         </q-btn>
-        <q-btn flat color="primary" label="Update" @click.stop="updateReceipt" />
+        <q-btn
+          flat
+          color="secondary"
+          label="Update"
+          :loading="loading"
+          @click.stop="updateReceipt"
+        />
       </template>
     </q-input>
-    <q-separator spaced inset vertical dark />
-    <label>Remita Reference (RRR)</label>
-    <q-input
-      outlined
 
+    <q-input
+      label="Remita Reference (RRR)"
+      outlined
+      stack-label
       v-model="payment.RRR"
       type="text"
       lazy-rules="ondemand"
@@ -103,7 +123,6 @@
         <q-btn
           flat
           dense
-
           no-caps
           unelevated
           color="secondary"
@@ -125,100 +144,104 @@
             />
           </svg>
         </q-btn>
-        <q-btn flat color="primary" label="Update" @click.stop="updateRRR" />
+        <q-btn
+          flat
+          color="secondary"
+          label="Update"
+          :loading="loading"
+          @click.stop="updateRRR"
+        />
       </template>
     </q-input>
-    <q-separator spaced inset vertical dark />
-    <label>Subject *</label>
+
     <q-input
+      label="Subject *"
       v-model="payment.Title"
       type="text"
       :rules="[(val) => !!val || 'Subject is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined=""
-
+      outlined
+      stack-label=""
     />
-    <q-separator spaced inset vertical dark />
-    <label>Payee Name *</label>
+
     <q-input
+      label="Payee Name *"
       v-model="payment.Name"
       type="text"
       :rules="[(val) => !!val || 'Payee name is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined=""
-
+      outlined
+      stack-label=""
     />
-    <q-separator spaced inset vertical dark />
-    <label>Payee Email *</label>
+
     <q-input
+      label="Payee Email (optional)"
       v-model="payment.Email"
       type="email"
-      :rules="[(val) => !!val || 'Payee email is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined=""
-
+      outlined
+      stack-label=""
     />
-    <q-separator spaced inset vertical dark />
-    <label>Payee phone number *</label>
+
     <q-input
+      label="Payee phone number (optional)"
       v-model="payment.Phone"
       type="text"
-      :rules="[(val) => !!val || 'Payee phone number is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
-      outlined=""
-
+      outlined
+      stack-label=""
     />
-    <div class="row">
-      <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
-        <q-separator spaced inset vertical dark />
-        <label>Reason for payment *</label>
-        <q-select
-          v-model="payment.Item"
-          :options="payment_options"
-          options-dense=""
-          option-value="label"
-          option-label="label"
-          :rules="[(val) => !!val || 'Reason for payment is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-          outlined
 
-        />
-      </div>
-      <div class="col col-xs-6 col-sm-4 col-md-4 col-lg-4 q-pr-xs">
-        <q-separator spaced inset vertical dark />
-        <label>Amount *</label>
+    <div class="row">
+      <div class="col col-xs-6 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
         <q-input
+          label="Amount *"
           v-model="payment.Amount"
           type="number"
           :rules="[(val) => !!val || 'Amount is required']"
           lazy-rules="ondemand"
           hide-bottom-space
-          outlined=""
-
+          outlined
+          stack-label=""
         />
       </div>
-      <div class="col col-xs-6 col-sm-2 col-md-2 col-lg-2">
-        <q-separator spaced inset vertical dark />
-        <label>Currency *</label>
+      <div class="col col-xs-6 col-sm-6 col-md-6 col-lg-6">
         <q-select
+          label="Currency *"
           v-model="payment.Currency"
           options-dense=""
           :options="CURRENCIES"
           :rules="[(val) => !!val || 'Currency is required']"
           lazy-rules="ondemand"
           hide-bottom-space
-          outlined=""
-
+          outlined
+          stack-label=""
         />
       </div>
     </div>
-
-    <q-separator spaced inset vertical dark />
+    <!--<q-select
+      label="Status *"
+      options-dense=""
+      v-model="payment.Status"
+      :options="['Treated', 'Received', 'Dispatched', 'Filed', 'KIV']"
+      :rules="[(val) => !!val || 'Status is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      outlined
+      stack-label
+      square=""
+    />-->
+    <StatusInput
+      collection-name="Payments"
+      :documentId="payment?.id"
+      :status="payment?.Status"
+      :set-status="(v) => (payment.Status = v)"
+      :options="['Confirmed', 'Received', 'Closed']"
+    />
     <q-toolbar :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-amber-2'">
       <q-checkbox
         :left-label="false"
@@ -227,7 +250,7 @@
         color="secondary"
         size="xl"
         :class="payment.Confirmed ? 'text-teal' : 'text-red'"
-        disable=""
+        :disable="!isAccountant"
       />
       <q-space />
       <label>Confirmed?</label>
@@ -241,6 +264,7 @@
           { label: 'No', value: false },
         ]"
         :on-update:model-value="onConfirmPayment"
+        :loading="loading"
       />
     </q-toolbar>
   </q-form>
@@ -249,16 +273,20 @@
 <script setup>
 import { Dialog, Notify } from "quasar";
 import { useDefaultStore } from "src/stores/store";
-import { onMounted, ref, computed, provide } from "vue";
-import FormCard from "src/components/FormCard.vue";
+import { ref, computed, provide, watch } from "vue";
+//import FormCard from "src/components/FormCard.vue";
 import Clipboard from "src/utils/clipboard.js";
 import { update } from "src/composables/remote";
+import { simpleSearch } from "src/composables/searchProvider";
+import StatusInput from "./StatusInput.vue";
+
 const store = useDefaultStore();
 const form = ref(null);
 const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn");
-const CURRENCIES = ref(["NGN", "USD", "EUR", "GBP"]);
+const loading = ref(false);
 
+const CURRENCIES = ref(["NGN", "USD", "EUR", "GBP"]);
 const payment_options = [
   { label: "Laboratory Analysis", value: "280000.00" },
   { label: "Admin Charge", value: "1200000.00" },
@@ -275,7 +303,7 @@ const props = defineProps({
   setModel: Function,
 });
 
-const updateFields = [];
+//const updateFields = [];
 const payment = computed({
   get: () => props.model || {},
   set: (v) => props.setModel(v),
@@ -284,12 +312,10 @@ const confirmed = computed({
   get: () => payment.value.Confirmed || false,
   set: (v) => (payment.value.Confirmed = v),
 });
-const setDocument = (v) => (payment.value = v);
+//const setDocument = (v) => (payment.value = v);
 
-const isAccountant = computed(() => store.user.claims.confirmpay !== true);
-function getDocument() {
-  return payment.value;
-}
+const isAccountant = computed(() => store.user.claims.confirmpay === true);
+
 function copyToClipboard(val) {
   clipboard.copyToClipboard(val);
   setTimeout(() => {
@@ -304,6 +330,7 @@ const validate = async () => {
 };
 function onConfirmPayment(val) {
   //payment.value.Confirmed = !payment.value.Confirmed;
+  loading.value = true;
   update(payment.value.id, { Confirmed: val }, "Payments")
     .then(() => {
       Notify.create({
@@ -321,9 +348,13 @@ function onConfirmPayment(val) {
         iconColor: "orange",
         color: "red",
       });
+    })
+    .finally(() => {
+      loading.value = false;
     });
 }
 function updateReceipt() {
+  loading.value = true;
   update(payment.value.id, { ReceiptId: payment.value.ReceiptId }, "Payments")
     .then(() => {
       Notify.create({
@@ -340,9 +371,13 @@ function updateReceipt() {
         iconColor: "orange",
         color: "red",
       });
+    })
+    .finally(() => {
+      loading.value = false;
     });
 }
 function updateRRR() {
+  loading.value = true;
   update(payment.value.id, { RRR: payment.value.RRR }, "Payments")
     .then(() => {
       Notify.create({
@@ -359,9 +394,34 @@ function updateRRR() {
         iconColor: "orange",
         color: "red",
       });
+    })
+    .finally(() => {
+      loading.value = false;
     });
 }
 
+watch(
+  () => payment.value?.CaseNumber,
+  (newValue) => {
+    if (newValue) {
+      simpleSearch("Investigations", {
+        whereFilters: [["CaseNumber", "==", Number(newValue)]],
+      })
+        .then((list) => {
+          if (list.length > 0) {
+            payment.value.CaseId = list[0].id;
+          } else {
+            payment.value.CaseId = null;
+          }
+        })
+        .catch((e) => {});
+    } else {
+      payment.value.CaseId = null;
+    }
+    //update_fileNumber.value = newValue ? true : false;
+  },
+  { immediate: true }
+);
 provide("iconName", "payment");
 provide("titleField", "Title");
 provide("secondTitle", "Location");

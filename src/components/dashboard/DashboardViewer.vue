@@ -35,7 +35,7 @@
           :title="'Jan - Dec ' + year"
         />
       </div>
-      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+      <!-- <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
         <LineChartViewer
           :area="true"
           :data="barChartData"
@@ -58,7 +58,7 @@
           title="Bar chart"
           :vertical="true"
         />
-      </div>
+      </div>-->
       <!-- <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
         <GoogleMapViewer
           :data="geoData"
@@ -78,9 +78,9 @@
 import LineChartViewer from "./LineChartViewer.vue";
 import PieChartViewer from "./PieChartViewer.vue";
 import BarChartViewer from "./BarChartViewer.vue";
-import GoogleGeoViewer from "./GoogleGeoViewer.vue";
+//import GoogleGeoViewer from "./GoogleGeoViewer.vue";
 import { computed, ref, onMounted, watch } from "vue";
-import GoogleMapViewer from "./GoogleMapViewer.vue";
+//import GoogleMapViewer from "./GoogleMapViewer.vue";
 import {
   lastQuarterData,
   lineChartData,
@@ -143,11 +143,5 @@ const geoChartOptions = {
 };
 useDashboardData();
 const year = computed(() => new Date().getFullYear());
-const props = defineProps({
-  data: {
-    type: Object,
-    required: true,
-  },
-});
 onMounted(async () => {});
 </script>

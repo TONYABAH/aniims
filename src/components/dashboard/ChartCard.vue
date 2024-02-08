@@ -1,5 +1,8 @@
 <template>
-  <q-card  :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-1'" class="shadow-1">
+  <q-card
+    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-1'"
+    class="shadow-1"
+  >
     <q-bar class="bg-transparent">
       <q-toolbar-title></q-toolbar-title>
       <q-btn flat dense icon="fullscreen" @click="zoomChart" />
@@ -7,18 +10,17 @@
     <q-card-section class="chart">
       <slot></slot>
     </q-card-section>
+    <q-dialog full-width v-model="zoom" persistent="">
+      <q-card flat class="full-">
+        <q-bar class="bg-transparent">
+          <q-toolbar-title> {{ dialogTitle }}</q-toolbar-title>
+          <q-btn flat dense icon="close" color="negative" @click="cancelZoom" />
+        </q-bar>
+        <q-card-section ref="dialogChartContainer"> </q-card-section>
+        <q-card-section> </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-card>
-
-  <q-dialog full-width v-model="zoom" persistent="">
-    <q-card flat class="full-">
-      <q-bar class="bg-transparent">
-        <q-toolbar-title> {{ dialogTitle }}</q-toolbar-title>
-        <q-btn flat dense icon="close" color="negative" @click="cancelZoom" />
-      </q-bar>
-      <q-card-section ref="dialogChartContainer"> </q-card-section>
-      <q-card-section> </q-card-section>
-    </q-card>
-  </q-dialog>
 </template>
 
 <script setup>

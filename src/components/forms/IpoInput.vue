@@ -7,14 +7,13 @@
     :set-model="setModel"
     :filter="filter"
     :input-debounce="400"
-    placeholder="Enter name"
     icon="search"
     option-value="uid"
     option-label="Name"
   />
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { watch } from "vue";
 import AutoComplete from "src/components/AutoComplete.vue";
 import { useIpoList } from "src/composables/use-fn";
 
@@ -37,11 +36,11 @@ const props = defineProps({
   },
 });
 
-const ipoList = useIpoList(props.status, props.searchOptions);
-
+var ipoList = [];
 function filter(needle) {
-  const filtered = ipoList.value.filter((s) => {
+  const filtered = ipoList?.value?.filter((s) => {
     return (
+      needle.trim() === "" ||
       s.Name.toLowerCase().indexOf(needle) === 0 ||
       s.Name.toLowerCase().indexOf(" " + needle) > 0
     );
@@ -49,8 +48,10 @@ function filter(needle) {
   });
   return filtered;
 }
-onMounted(() => {
-  //selectStaff(officer.value || {});
-  //console.log(officer.value);
-});
+
+watch(
+  () => props.searchOptions,
+  (val) => (ipoList = useIpoList(val)),
+  { immediate: true }
+);
 </script>

@@ -40,7 +40,7 @@
         </q-card-section>
         <q-card-section>
           <form action="">
-            <div class="row">
+            <div class="row q-col-gutter-xs">
               <div class="col col-xs-12 col-sm-4 col-md-4 col-lg-3">
                 <q-input
                   ref="passwordRef"
@@ -73,7 +73,7 @@
                   icon="check"
                   size="lg"
                   no-caps=""
-                  unelevated=""
+                  glossy=""
                   @click="resetUserPassword"
                 />
               </div>
@@ -94,10 +94,10 @@
 import { ref, onMounted } from "vue";
 import { auth } from "../composables/firebase";
 import {
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-  signInWithPhoneNumber,
+  //sendSignInLinkToEmail,
+  //isSignInWithEmailLink,
+  //signInWithEmailLink,
+  //signInWithPhoneNumber,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   verifyPasswordResetCode,

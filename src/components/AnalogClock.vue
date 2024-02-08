@@ -1,8 +1,8 @@
 <template>
-  <div class="container">
+  <div class="clock-container bg-">
     <div
-      class="clock shadow-22"
-      :style="style"
+      class="clock shadow-22 text-white"
+      :style="clock_styles"
       :class="$q.dark.isActive ? 'text-grey-1' : 'text-grey-9'"
     >
       <label style="--i: 1"><span>1</span></label>
@@ -20,11 +20,11 @@
       <div class="indicator">
         <span
           class="hand hour"
-          :class="$q.dark.isActive ? 'bg-teal' : 'bg-grey-8'"
+          :class="$q.dark.isActive ? 'bg-teal' : ''"
         ></span>
         <span
           class="hand minute"
-          :class="$q.dark.isActive ? 'bg-grey-5' : 'bg-grey-8'"
+          :class="$q.dark.isActive ? 'bg-grey-8' : ''"
         ></span>
         <span
           class="hand second"
@@ -38,9 +38,9 @@
       <q-btn
         unelevated=""
         rounded=""
-        label="Aniims"
         size="lg"
-        glossy
+        :icon="stopped ? 'arrow_right' : 'pause'"
+        flat
         class="mode-switch q-px-md"
         @click="toggleClock"
       />
@@ -56,9 +56,13 @@ const props = defineProps({
     type: Number,
     default: 400,
   },
+  hourHandColor: {
+    type: String,
+    default: "teal",
+  },
 });
-const style = computed(() => {
-  return `width:${props.size}px;height:${props.size}px`;
+const clock_styles = computed(() => {
+  return `width:${props.size}px;height:${props.size}px; background-color: rgba(0, 180, 255, 1)`;
 });
 const stopped = ref(false);
 const pulses = ref(0);
@@ -145,37 +149,31 @@ onBeforeUnmount(() => {
   --black-color: #333;
   --red-color: #e74c3c;
 }
-body {
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  background: var(--primary-color);
-}
+
 .dark {
   --primary-color: #242526;
   --white-color: #18191a;
   --black-color: #fff;
   --red-color: #e74c3c;
 }
-.container {
+.clock-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 60px;
+  gap: 40px;
 }
-.container .clock {
+.clock {
   display: flex;
   border-radius: 50%;
   align-items: center;
   justify-content: center;
   box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1), 0 25px 45px rgba(0, 0, 0, 0.1);
   position: relative;
-  border: 4px solid teal;
+  border: 4px solid var(--red-color);
 }
 .clock label {
   position: absolute;
-  inset: 20px;
+  inset: 8px;
   text-align: center;
   transform: rotate(calc(var(--i) * (360deg / 12)));
 }
@@ -184,8 +182,9 @@ body {
   font-size: 30px;
   font-weight: 600;
   transform: rotate(calc(var(--i) * (-360deg / 12)));
+  color: var(--white-color);
 }
-.container .indicator {
+.clock .indicator {
   position: absolute;
   height: 18px;
   width: 18px;
@@ -193,7 +192,7 @@ body {
   justify-content: center;
   border-radius: 50%;
 }
-.indicator::before {
+.clock .indicator::before {
   content: "";
   position: absolute;
   height: 100%;
@@ -203,7 +202,7 @@ body {
   background: var(--red-color);
   border: 1px solid var(--red-color);
 }
-.indicator .hand {
+.clock .indicator .hand {
   position: absolute;
   height: 130px;
   width: 4px;
@@ -212,17 +211,17 @@ body {
   transform-origin: bottom;
   background: var(--red-color);
 }
-.hand.minute {
+.clock .indicator .hand.minute {
   height: 120px;
   width: 5px;
   background: var(--black-color);
 }
-.hand.hour {
+.clock .indicator .hand.hour {
   height: 100px;
   width: 10px;
   background: var(--black-color);
 }
-.hand.projection {
+.clock .indicator .hand.projection {
   height: 24px;
   width: 10px;
   border-radius: 0px, 0px;

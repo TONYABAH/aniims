@@ -5,10 +5,9 @@
     show-if-above=""
     :mini="miniMode"
     :mini-width="80"
-    :behavior="$q.screen.gt.xs ? 'desktop' : 'mobile'"
     :elevated="false"
-    :breakpoint="500"
-    :width="$q.screen.width > 500 ? 240 : $q.screen.width"
+    :behavior="$q.screen.gt.sm ? 'desktop' : 'mobile'"
+    :width="$q.screen.width > 600 ? 280 : $q.screen.width"
     style="letter-spacing: 1.2px; overflow: hidden"
     class="text-grey-1 exortic-bg"
   >
@@ -32,59 +31,73 @@
       </q-item-section>
     </q-item>
     <q-scroll-area
-      :class="$q.dark.isActive ? 'bg-grey-9' : store.theme.bg.dark"
-      style="width: 100%; height: calc(100vh - 80px); opacity: 0.9"
+      :class="$q.dark.isActive ? 'bg-blue-grey-9' : store.theme.bg.dark"
+      style="width: 100%; height: calc(100vh - 80px); opacity: 0.96"
     >
       <q-list>
         <q-item
           v-for="link in links"
           clickable
           v-ripple
-          :to="link.path"
           :key="link.title"
-          :v-bind="link"
           :active-class="
             $q.dark.isActive
               ? store.theme.bg.dark + ' border-right'
-              : store.theme.bg.light + ' border-right'
+              : store.theme.bg.normal + ' border-right'
           "
+          :active="store.currentCollection === link.name"
+          class="text-white"
+          @click="navigateTo(link)"
         >
           <q-item-section
             v-if="link.icon"
             thumbnail=""
-            class="q-pl-md text-grey-2"
+            class="q-pl-md text-grey-1"
           >
-            <q-icon :name="link.icon" />
+            <DashboardChip
+              :collectionName="link.name"
+              :icon="link.icon"
+              bg-color="red"
+              ref="dashboardRef"
+            />
           </q-item-section>
 
-          <q-item-section style="font-variant: small-caps; font-size: large">
+          <q-item-section
+            style="
+              font-size: 16px;
+              font-weight: 100;
+              text-shadow: none;
+              font-family: Arial, Helvetica, sans-serif;
+            "
+          >
             <q-item-label>{{ link.title }}</q-item-label>
           </q-item-section>
-          <q-item-section side top class="text-amber">
-            <!--<q-icon name="star" />-->
-          </q-item-section>
+          <q-item-section side top> </q-item-section>
         </q-item>
       </q-list>
     </q-scroll-area>
   </q-drawer>
 </template>
+
 <script setup>
 import { useQuasar } from "quasar";
 import { useDefaultStore } from "src/stores/store";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-//import { logOut } from "src/composables/authentication";
 import { links } from "src/composables/links";
+//import { logOut } from "src/composables/authentication";
 //import pkg from "../../package.json";
 //import { useTheme } from "src/composables/use-fn";
+import DashboardChip from "src/components/dashboard/DashboardChip.vue";
 
 const store = useDefaultStore();
 const $q = useQuasar();
 const router = useRouter();
 const route = useRoute();
 const miniMode = ref(false);
-//store.tabModel = "search";
-//const theme = ref(store.theme);
+const loading = ref(false);
+const dashboardRef = ref(null);
+
 const leftDrawerOpen = computed({
   get: () => store.leftDrawerOpen,
   set: (v) => (store.leftDrawerOpen = v),
@@ -95,16 +108,38 @@ const toggleLeftDrawer = () => {
 const toggleLeftMini = () => {
   miniMode.value = !miniMode.value;
 };
-watch(
-  () => route.path,
-  async (p) => {
-    //console.log(p);
-    if (p) store.tabModel = "edit";
-  },
-  { immediate: true }
-);
+function navigateTo(link) {
+  if (router.currentRoute.value.path !== link.path) {
+    setTimeout(() => {
+      loading.value = false;
+    }, 15000);
+    loading.value = true;
+
+    //store.currentCollection = link.name; //to.replace(/\//g, "");
+    //console.log(to.replace(/\//g, ""));
+    store.tabModel = "search";
+    router
+      .push(link.path)
+      .then(() => {
+        //console.log(dashboardRef?.value);
+        //store.tabModel = "search";
+      })
+      .catch((e) => {
+        console.log(e.message);
+        $q.notify({
+          timeout: 1000,
+          message: e.message,
+          color: "red",
+          textColor: "white",
+          position: "left",
+          icon: "error",
+        });
+      })
+      .finally(() => (loading.value = false));
+  }
+}
 </script>
-<style>
+<style scoped>
 .fits {
   height: calc(100vh - 60px);
 }

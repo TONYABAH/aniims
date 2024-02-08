@@ -1,15 +1,15 @@
 <template>
-  <q-form ref="reportFormRef" class="q-pa-xs">
-    <q-toolbar class="bg-transparent">
+  <q-form ref="formRef" class="q-pa-xs" style="overflow: hidden">
+    <q-toolbar class="bg-transparent" v-if="header">
       <q-icon name="edit" />
-      <q-toolbar-title> Write a report </q-toolbar-title>
+      <q-toolbar-title> {{ header || "Write a report" }} </q-toolbar-title>
     </q-toolbar>
     <q-input
       v-model="report.Title"
       type="text"
-      outlined=""
-      borderless=""
-      square=""
+      outlined
+      label="Title"
+      stack-label=""
       :color="$q.dark.isActive ? store.theme.color.normal : 'text-grey-9'"
       :class="
         $q.dark.isActive
@@ -20,15 +20,37 @@
       lazy-rules="ondemand"
       hide-bottom-space=""
       placeholder="Enter report title..."
-    />
+    >
+      <q-btn
+        v-if="route.hash && !route.params.id"
+        flat
+        size="lg"
+        color="primary"
+        icon="arrow_right"
+        :to="navLink"
+      />
+    </q-input>
+
+    <q-separator spaced inset vertical dark />
 
     <TextEditor
-      class="q-mb-sm"
+      class="q-my-sm"
       :Text="report.Text"
       :setText="setReportText"
+      max-height="10rem"
       placeholder="Enter report text..."
     />
+
     <div class="bg-" align="left">
+      <q-btn
+        label="Reset"
+        type="reset"
+        color="negative"
+        unelevated=""
+        class="q-mr-sm"
+        @click="reset"
+        v-if="report?.id || report?.Text || report?.Title"
+      />
       <q-btn
         label="Submit report"
         color="secondary"
@@ -42,15 +64,6 @@
           Saving...
         </template>
       </q-btn>
-      <q-btn
-        label="Reset"
-        type="reset"
-        color="negative"
-        unelevated=""
-        class="q-ml-sm"
-        @click="reset"
-        v-if="report?.id || report?.Text || report?.Title"
-      />
     </div>
   </q-form>
 </template>
@@ -60,40 +73,47 @@ import { Dialog as dialog } from "quasar";
 import TextEditor from "src/components/TextEditor.vue";
 import { addChildDocument } from "src/composables/remote.js";
 import { useDefaultStore } from "src/stores/store";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const store = useDefaultStore();
+const loading = ref(false);
+const formRef = ref(null);
 const props = defineProps({
   caseId: String,
   data: {
     type: Object,
-    default: () => {},
   },
   setData: Function,
+  header: {
+    type: String,
+    default: null,
+  },
 });
 const report = computed({
   get: () => props.data || {},
   set: (v) => props.setData(v),
 });
-const reportFormRef = ref(null);
-const loading = ref(false);
-
+const navLink = computed(() => {
+  const hash = route.hash?.substring(1);
+  return `/Investigations/${hash}/Reports/#${props.data.id}`;
+});
 function setReportText(v) {
   report.value.Text = v;
 }
 function onAddReport() {
   report.value = {};
 }
-async function validateReport() {
-  return await reportFormRef.value?.validate(true);
-}
+
 async function addReport() {
-  const valid = await validateReport();
+  const valid = await validate();
   if (!valid) return;
   if (!report.value?.Text) return;
   loading.value = true;
   const data = report.value;
   data.Date = new Date().toISOString();
-  addChildDocument("Cases", props.caseId, "Reports", data)
+
+  addChildDocument("Investigations", props.caseId, "Reports", data)
     .then((id) => {
       report.value.id = id;
       onAddReport();
@@ -109,12 +129,13 @@ async function addReport() {
 
 function reset() {
   props.setData({});
-  reportFormRef.value?.resetValidation();
+  formRef.value?.resetValidation();
 }
-const validate = async () => await reportFormRef.value?.validate(true);
+const validate = async () => await formRef.value?.validate(true);
 
 defineExpose({
   reset,
   validate,
+  report,
 });
 </script>

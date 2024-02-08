@@ -22,7 +22,7 @@
           v-else
           align="center"
           class=""
-          :class="$q.screen.gt.xs ? 'bg-teal-8 text-grey-1' : ''"
+          :class="$q.screen.gt.xs ? store.theme.bg.normal : ''"
         >
           <q-avatar
             flat
@@ -33,7 +33,7 @@
             :color="$q.screen.gt.xs ? '' : ''"
           />
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="q-px-" style="padding: 0">
           <q-tab-panels
             v-model="tab"
             animated
@@ -42,12 +42,9 @@
             transition-next="scale"
           >
             <q-tab-panel name="user">
-              <q-form
-                class="q-px-sm q-pt-lg q-gutter-sm"
-                ref="loginRef"
-                align="left"
-              >
-                <label>Please enter your user email or staff number.</label>
+              <q-form class="q-pt-lg" ref="loginRef" align="left">
+                <label>Please enter your user ID</label>
+                <q-separator spaced inset vertical dark />
                 <q-input
                   ref="idRef"
                   name="id"
@@ -57,21 +54,16 @@
                   :rules="[isValid]"
                   lazy-rules="ondemand"
                   outlined=""
-                  placeholder="Your email, Id or phone"
+                  placeholder="Email, Id or phone"
                   input-class="q-px-sm"
                 >
-                  <template v-slot:prepend>
-                    <q-icon name="perm_identity" />
-                  </template>
                 </q-input>
               </q-form>
             </q-tab-panel>
             <q-tab-panel name="pwd">
-              <q-form
-                class="q-px-sm q-pt-lg q-gutter-sm"
-                ref="loginRef"
-                align="left"
-              >
+              <q-form class="q-pt-lg" ref="loginRef" align="left">
+                <label class="text-h6">{{ email }}</label>
+                <q-separator spaced inset vertical dark />
                 <label>Please enter your password.</label>
                 <q-input
                   ref="passwordRef"
@@ -99,110 +91,91 @@
               </q-form>
             </q-tab-panel>
           </q-tab-panels>
-          <q-toolbar>
-            <q-item>
-              <q-item-section avatar>
-                <q-btn
-                  flat
-                  icon="arrow_left"
-                  label="Register"
-                  to="/register"
-                  v-if="tab === 'user'"
-                />
-                <q-btn
-                  v-else
-                  flat
-                  icon="arrow_left"
-                  label="Previous"
-                  @click="() => (tab = 'user')"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-btn
-                  v-if="tab === 'user'"
-                  unelevated=""
-                  color="teal-8"
-                  icon-right="arrow_right"
-                  label="Continue"
-                  padding="md"
-                  :loading="loading"
-                  @click="getUser"
-                >
-                  <template v-slot:loading>
-                    <q-spinner-hourglass class="on-left" />
-                    Wait...
-                  </template>
-                </q-btn>
-                <q-btn
-                  v-else
-                  unelevated=""
-                  color="teal-8"
-                  icon-right="arrow_right"
-                  label="Login"
-                  padding="md"
-                  :loading="loading"
-                  @click="submit"
-                >
-                  <template v-slot:loading>
-                    <q-spinner-hourglass class="on-left" />
-                    Wait...
-                  </template>
-                </q-btn>
-              </q-item-section>
-              <q-item-section side top> </q-item-section>
-            </q-item>
-          </q-toolbar>
+
+          <q-item class="full-width">
+            <q-item-section align="left">
+              <q-btn
+                v-if="tab === 'user'"
+                rounded
+                unelevated=""
+                :color="store.theme.color.normal"
+                icon-right="arrow_right"
+                label="Continue"
+                padding="md"
+                :loading="loading"
+                @click="getUser"
+              >
+                <template v-slot:loading>
+                  <q-spinner-hourglass class="on-left" />
+                  Wait...
+                </template>
+              </q-btn>
+              <q-btn
+                v-else
+                unelevated=""
+                color="teal-8"
+                icon-right="arrow_right"
+                label="Login"
+                padding="md"
+                :loading="loading"
+                @click="submit"
+              >
+                <template v-slot:loading>
+                  <q-spinner-hourglass class="on-left" />
+                  Wait...
+                </template>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                icon="arrow_left"
+                label="Previous"
+                @click="() => (tab = 'user')"
+                class="q-my-xs"
+                align="left"
+                v-if="tab !== 'user'"
+              />
+            </q-item-section>
+          </q-item>
+          <q-item>
+            <q-item-section>
+              <q-btn
+                v-if="tab === 'pwd'"
+                dense
+                no-caps
+                flat
+                unelevated=""
+                color="teal"
+                to="password_reset"
+                >Forgot your password?</q-btn
+              >
+              <q-btn v-else dense no-caps flat unelevated="" to="register"
+                >Not registered? Create an account</q-btn
+              >
+            </q-item-section>
+          </q-item>
         </q-card-section>
-        <q-card-actions class="" align="center" vertical="">
-          <q-btn
-            v-if="tab === 'pwd'"
-            dense
-            no-caps
-            flat
-            unelevated=""
-            to="password_reset"
-            >Forgot your password?</q-btn
-          >
-          <q-btn v-else dense no-caps flat unelevated="" to="register"
-            >Not registered? Create an account</q-btn
-          >
-        </q-card-actions>
       </q-card>
     </div>
-    <q-dialog v-model="dialogModel">
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-icon name=",error" color="primary" text-color="white" />
-          <span class="q-ml-sm">Error</span>
-        </q-card-section>
-        <q-card-section class="row items-center">
-          <span class="q-ml-sm">{{ errorMessage }}</span>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn label="Cancel" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
 <script setup>
 //import { useQuasar } from "quasar";
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import {
   //signIn,
   loginUserWithEmailAndPassword,
   getAuthUser,
   signIn,
 } from "../composables/authentication.js";
-//import * as auth from "../composables/auth.js";
-//import LoadingButton from "src/components/LoadingButton.vue";
+import { useDefaultStore } from "src/stores/store.js";
 import { Notify } from "quasar";
 
-const dialogModel = ref(false);
-const errorMessage = ref("Error");
-//const router = useRouter();
+const store = useDefaultStore();
+const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const tab = ref("user");
 const visibility = ref(false);
@@ -240,9 +213,14 @@ async function loginUser() {
   loginUserWithEmailAndPassword(email.value, password.value)
     .then((user) => {
       if (!user) {
-        return (error.value = "Wrong password");
+        error.value = "Wrong password";
       } else {
-        //guest.value = user;
+        window.user = user;
+        if (!route.query.redirect) {
+          router.push("/");
+        } else {
+          router.push(route.query.redirect);
+        }
       }
     })
     .catch((e) => {

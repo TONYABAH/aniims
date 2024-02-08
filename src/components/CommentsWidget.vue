@@ -4,24 +4,38 @@
       v-for="(item, i) of comments"
       :key="i"
       square=""
-      class="shadow-1 q-mt-xs"
-      :class="$q.dark.isActive ? 'bg-grey-9 text-white' : 'bg-grey-1'"
-      style="border-radius: 2px 2px; border: 0px inset #888"
+      class="shadow-1 q-my-md"
+      :class="$q.dark.isActive ? 'bg-grey text-white' : 'bg-grey-1'"
+      style="border-radius: 12px 12px"
     >
       <div
-        class="q-pl-sm text-white full-width"
-        :class="store.user.uid === item.uid ? 'bg-teal' : 'bg-purple'"
+        class="text-white full-width q-px-sm"
+        :class="store.user.uid === item.uid ? 'bg-purple-7' : 'bg-purple-5'"
+        :style="
+          store.user.uid === item.uid
+            ? 'border-radius: 8px 8px 0 8px; text-align:right'
+            : 'border-radius: 8px 8px 8px 0'
+        "
       >
         <q-icon name="person" class="q-mr-sm" />
         <label>{{ item.from }}</label>
-        <div rows="" type="text" dark readonly class="full-width transparent">
-          <q-icon name="comment" class="q-mr-sm" />
-          {{ item.comment }}
+        <q-icon name="comment" class="q-mx-sm" />
+        <div rows="" type="text" dark readonly class="transparent">
+          <q-editor
+            v-model="item.comment"
+            square=""
+            :content-class="
+              store.user.uid === item.uid ? 'bg-purple-7' : 'bg-purple-5'
+            "
+            min-height="2rem"
+            :toolbar="false"
+            style="border: 0; border-top: 1px solid"
+          />
         </div>
 
         <label class="text-grey-3" style="font-size: 12px">
           <q-icon name="timer" class="q-mr-sm" />
-          {{ new Date(item.time).toString() }}</label
+          {{ new Date(item.time).toUTCString() }}</label
         >
       </div>
     </q-card>
@@ -31,15 +45,16 @@
       v-for="(item, i) of comments"
       :key="i"
       :name="item.from"
+      :text-html="true"
       :text="[item.comment]"
-      :stamp="new Date(item.time).toString()"
+      :stamp="new Date(item.time).toUTCString()"
       :sent="store.user?.uid === item.uid"
-      :bg-color="store.user?.uid === item.uid ? 'teal' : 'purple'"
-      text-color="white"
+      :bg-color="store.user?.uid === item.uid ? 'purple-7' : 'purple-5'"
+      :text-color="store.user?.uid === item.uid ? 'white' : 'grey-1'"
       :avatar="
         store.user?.uid === item.uid
-          ? 'https://cdn.quasar.dev/img/avatar2.jpg'
-          : 'https://cdn.quasar.dev/img/avatar3.jpg'
+          ? '../assets/avatar1.jpg'
+          : '../assets/avatar2.jpg'
       "
     ></q-chat-message>
   </template>

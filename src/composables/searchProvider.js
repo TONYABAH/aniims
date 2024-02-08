@@ -14,7 +14,7 @@ const db = firestore;
 
 const GENERATION_OFFSET = new Date("5000-01-01").getTime();
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-const offset = 500;
+//const offset = 500;
 const EXCLUSION = [
   "a",
   "i",
@@ -186,7 +186,7 @@ export const lifeSearch = async (
     dbRef,
     ..._whereFilters,
     ...searchConstraints,
-    //..._orderByFilters,
+    ..._orderByFilters,
     ..._startAtFilters,
     limit(limits || 25)
   );

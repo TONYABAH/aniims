@@ -6,8 +6,11 @@ import {
   getCountFromServer,
 } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
+import { useDefaultStore } from "src/stores/store";
 
 const db = firestore;
+const store = useDefaultStore();
+
 export const MONTH_NAMES = [
   "January",
   "February",
@@ -36,6 +39,13 @@ export const MONTH_ABBREV = [
   "Nov",
   "Dec",
 ];
+
+const isHOD = () =>
+  store.user.claims.role === "Head Division" ||
+  store.user.claims.role === "Head Location";
+const isDirector = () => store.user.claims.role === "Director";
+const isAdmin = () => store.user.claims.isAdmin;
+
 export function getDaysInTheMonth(month, year) {
   switch (month) {
     case 2:
@@ -50,17 +60,28 @@ export function getDaysInTheMonth(month, year) {
       return 31;
   }
 }
-
+function filterQuery(filters) {
+  if (isDirector || isAdmin) {
+    // do not filter
+  } else if (isHOD) {
+    filters.push(
+      where("meta.Unit", "==", store.user.claims.unit)
+    );
+  } else {
+    filters.push(where("meta.CreatedBy", "==", store.user.uid));
+  }
+  return filters;
+}
 export async function getDateData(date, month, year, collectionId) {
   const date1 = new Date(year, month, date, 0, 0, 0, 0);
   const date2 = new Date(year, month, date, 23, 59, 59, 999);
   const dbRef = collection(db, collectionId);
-  let q = query(
-    dbRef,
-    //where("Level", "==", 3),
+  const filters = [
     where("meta.CreatedAt", ">=", Date.parse(date1)),
-    where("meta.CreatedAt", "<=", Date.parse(date2))
-  );
+    where("meta.CreatedAt", "<=", Date.parse(date2)),
+  ];
+  filterQuery(filters);
+  let q = query(dbRef, ...filters);
   const snapshot = await getCountFromServer(q);
   return snapshot?.data()?.count || 0;
 }
@@ -76,12 +97,13 @@ export async function getMonthData(month, year, collectionId) {
     999
   );
   const dbRef = collection(db, collectionId);
-  let q = query(
-    dbRef,
-    //where("Level", "==", 3),
+  const filters = [
     where("meta.CreatedAt", ">=", Date.parse(date1)),
-    where("meta.CreatedAt", "<=", Date.parse(date2))
-  );
+    where("meta.CreatedAt", "<=", Date.parse(date2)),
+  ];
+  filterQuery(filters);
+  let q = query(dbRef, ...filters);
+
   const snapshot = await getCountFromServer(q);
   return snapshot?.data()?.count || 0;
 }
@@ -99,16 +121,15 @@ export async function getYearData(year, collectionId) {
   const date1 = new Date(year, 0, 1, 0, 0, 0, 0);
   const date2 = new Date(year, 11, 31, 23, 59, 59, 999);
   const dbRef = collection(db, collectionId);
-  let q = query(
-    dbRef,
-    //where("Level", "==", 3),
+  const filters = [
     where("meta.CreatedAt", ">=", Date.parse(date1)),
-    where("meta.CreatedAt", "<=", Date.parse(date2))
-  );
+    where("meta.CreatedAt", "<=", Date.parse(date2)),
+  ];
+  filterQuery(filters);
+  let q = query(dbRef, ...filters);
   const snapshot = await getCountFromServer(q);
   return snapshot?.data()?.count || 0;
 }
-
 export async function getDailyData(month, year, collectionId) {
   const daysInTheMonth = getDaysInTheMonth(month);
   const data = [];

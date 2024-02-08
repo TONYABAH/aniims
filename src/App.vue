@@ -12,10 +12,11 @@ import { firestore } from "./composables/firebase";
 import { useDefaultStore } from "./stores/store";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./composables/firebase";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 const store = useDefaultStore();
 const router = useRouter();
+const route = useRoute();
 const db = firestore;
 
 function getParameterByName(param, level) {
@@ -68,10 +69,24 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 watch(
-  () => store.user,
-  () => {}
+  () => route.path,
+  (path) => {
+    let segments = path.toString().split(/\//);
+    let collectionName = "Files";
+    segments.pop();
+    segments.shift();
+    if (segments.length === 3) {
+      let p = segments[2];
+      collectionName = p.substring(0, 1).toUpperCase() + p.substring(1);
+      store.currentCollection = collectionName;
+    } else if (segments.length === 1) {
+      let p = segments[0];
+      collectionName = p.substring(0, 1).toUpperCase() + p.substring(1);
+      store.currentCollection = collectionName;
+    }
+  },
+  { immediate: true }
 );
-
 onBeforeMount(async () => {
   //nextTick(())
   //setTimeout(async () => {

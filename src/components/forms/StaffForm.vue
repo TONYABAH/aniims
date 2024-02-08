@@ -15,22 +15,9 @@
     :loading="loading"
   >
     <q-form class="q-pb-sm q-gutter-sm" ref="form">
-      <!--<q-input
-        v-model="searchText"
-        type="text"
-        label="Search name, email, location..."
-        outlined  dense
-        rounded
-      >
-        <template v-slot:append>
-          <q-icon name="search" />
-        </template>
-      </q-input>-->
-      <q-separator spaced inset vertical dark />
-
-      <label>Title *</label>
       <q-select
         v-model="staff.Title"
+        label="Title *"
         :options="TITLE_OPTIONS"
         options-dense=""
         outlined
@@ -39,11 +26,9 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-      <q-separator spaced inset vertical dark />
-
-      <label>Full name *</label>
       <q-input
         v-model="staff.Name"
+        label="Full name *"
         type="text"
         input-class="text-input"
         outlined
@@ -56,10 +41,9 @@
           <q-icon name="person" />
         </template>
       </q-input>
-      <q-separator spaced inset vertical dark />
 
-      <label>Phone *</label>
       <q-input
+        label="Phone *"
         outlined
         v-model="staff.Phone"
         type="text"
@@ -72,10 +56,9 @@
           <q-icon name="phone" />
         </template>
       </q-input>
-      <q-separator spaced inset vertical dark />
 
-      <label>Email *</label>
       <q-input
+        label="Email *"
         outlined
         v-model="staff.Email"
         type="email"
@@ -88,10 +71,9 @@
           <q-icon name="email" />
         </template>
       </q-input>
-      <q-separator spaced inset vertical dark />
 
-      <label>Staff Number *</label>
       <q-input
+        label="Staff Number *"
         outlined
         v-model="StaffId"
         type="text"
@@ -101,10 +83,9 @@
         hide-bottom-space=""
       >
       </q-input>
-      <q-separator spaced inset vertical dark />
 
-      <label>Rank *</label>
       <q-input
+        label="Rank *"
         outlined
         v-model="staff.Rank"
         type="text"
@@ -113,10 +94,9 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-      <q-separator spaced inset vertical dark />
 
-      <label>Role *</label>
       <q-select
+        label="Role *"
         outlined
         v-model="staff.Role"
         :options="roleOptions"
@@ -126,10 +106,9 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-      <q-separator spaced inset vertical dark />
 
-      <label>Location *</label>
       <q-select
+        label="Location *"
         v-model="staff.Location"
         options-dense=""
         :options="store.locations"
@@ -139,10 +118,70 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       />
-
-      <q-separator spaced inset vertical dark />
-
       <template v-if="staff.Role !== 'Director'">
+        <q-select
+          v-model="staff.Unit"
+          :options="store.units"
+          options-dense
+          emit-value
+          option-value="Abbrev"
+          option-label="Abbrev"
+          label="Unit"
+          outlined=""
+        />
+      </template>
+      <q-select
+        v-model="status"
+        :options="STATUS_OPTIONS"
+        options-dense=""
+        label="Status"
+        outlined
+      >
+        <template v-slot:append>
+          <q-btn
+            unelevated
+            color="teal"
+            label="Update"
+            glossy
+            @click.stop="onStatusChanged"
+            v-if="staff.id"
+          ></q-btn>
+        </template>
+      </q-select>
+    </q-form>
+  </AdminViewer>
+
+  <!--<q-toolbar class="bg-grey-9" style="border-radius: 6px">
+        <q-toolbar-title></q-toolbar-title>
+        <q-btn
+          color="teal"
+          label="Save changes"
+          unelevated=""
+          @click="save"
+          v-if="!!staff.id"
+        />
+        <q-separator spaced inset vertical dark />
+        <q-btn
+          unelevated=""
+          class="q-mr-xs"
+          color="negative"
+          label="Save"
+          glossy=""
+          @click.stop="save"
+          :disable="!staff.id || !store.user.claims.admin"
+        />
+        <q-btn
+          unelevated=""
+          class="q-mr-xs"
+          color="secondary"
+          label="Create"
+          glossy=""
+          @click.stop="create"
+          v-if="!staff.id"
+        />
+      </q-toolbar>-->
+
+  <!--<template v-if="staff.Role !== 'Director'">
         <label>Divisions or Units *</label>
         <q-select
           outlined
@@ -208,58 +247,7 @@
             </q-item>
           </template>
         </q-select>
-      </template>
-
-      <q-select
-        v-model="status"
-        :options="STATUS_OPTIONS"
-        options-dense=""
-        label="Status"
-        outlined
-      >
-        <template v-slot:append>
-          <q-btn
-            unelevated
-            color="teal"
-            label="Update"
-            glossy
-            @click.stop="onStatusChanged"
-            v-if="staff.id"
-          ></q-btn>
-        </template>
-      </q-select>
-
-      <!--<q-toolbar class="bg-grey-9" style="border-radius: 6px">
-        <q-toolbar-title></q-toolbar-title>
-        <q-btn
-          color="teal"
-          label="Save changes"
-          unelevated=""
-          @click="save"
-          v-if="!!staff.id"
-        />
-        <q-separator spaced inset vertical dark />
-        <q-btn
-          unelevated=""
-          class="q-mr-xs"
-          color="negative"
-          label="Save"
-          glossy=""
-          @click.stop="save"
-          :disable="!staff.id || !store.user.claims.admin"
-        />
-        <q-btn
-          unelevated=""
-          class="q-mr-xs"
-          color="secondary"
-          label="Create"
-          glossy=""
-          @click.stop="create"
-          v-if="!staff.id"
-        />
-      </q-toolbar>-->
-    </q-form>
-  </AdminViewer>
+      </template>-->
 </template>
 
 <script setup>
@@ -281,6 +269,7 @@ const roleOptions = [
   "Director",
   "Head Location",
   "Head Division",
+  "Head Unit",
   "Regulatory",
   "Secretary",
   "Accountant",
@@ -327,7 +316,7 @@ const isAdmin = computed({
   get: () => staff.value.IsAdmin || undefined,
   set: (v) => (staff.value.IsAdmin = v),
 });
-async function onAdminStatusChanged() {
+/*async function onAdminStatusChanged() {
   if (!staff.value.id) return;
   loading.value = true;
   update(staff.value.id, { IsAdmin: isAdmin.value }, "Users")
@@ -353,7 +342,7 @@ async function onAdminStatusChanged() {
     .finally(() => {
       loading.value = false;
     });
-}
+}*/
 async function onStatusChanged() {
   if (!staff.value.id) return;
   loading.value = true;
@@ -390,7 +379,7 @@ async function save() {
       Rank: staff.value.Rank,
       Role: staff.value.Role,
       Heads: staff.value.Heads || [],
-      Units: staff.value.Units || [],
+      Unit: staff.value.Unit,
       Location: staff.value.Location,
       //Admin: isAdmin.value,
       //CanEditPayment: staff.value.CanEditPayment || false,
@@ -432,6 +421,7 @@ async function create() {
     .then((result) => {
       staff.value.id = result.data;
       handleSearch("");
+      setModel({});
       Notify.create({
         timeout: 800,
         message: "Created successfully",
@@ -453,28 +443,11 @@ async function create() {
       loading.value = false;
     });
 }
-/*function filter(val) {
-  const needle = val?.toLowerCase() || "";
-  if (!needle || needle.trim().length === 0) {
-    userList.value = store.staffList;
-    return userList.value;
-  }
-  const filtered = store.staffList?.filter((v) => {
-    return (
-      v.Email?.toLowerCase().indexOf(needle) > -1 ||
-      v.Location?.toLowerCase().indexOf(needle) > -1 ||
-      v.Name?.toLowerCase().indexOf(needle) >= 0
-    );
-  });
-  userList.value = filtered;
-  return filtered;
-}*/
+
 function reset() {
   form.value?.resetValidation();
 }
 const validate = async () => await form.value?.validate(true);
-
-//watch(searchText, (val) => filter(val), { immediate: true });
 
 const handleSearch = debounce(async (d, active) => {
   const whereFilters = [["Level", "==", 3]];

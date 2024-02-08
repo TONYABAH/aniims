@@ -19,6 +19,7 @@ export const useDefaultStore = defineStore("default", {
       "Inceneration",
       "Other",
     ],
+    documents: [],
     query: null,
     refererUrl: "/",
     chatMode: true,
@@ -44,7 +45,7 @@ export const useDefaultStore = defineStore("default", {
     tabModel: "search",
     fn: {},
     settings: {
-      themeColor: "cyan",
+      themeColor: "purple",
       keepLogin: true,
     },
     //settingDialog: false,
@@ -59,12 +60,16 @@ export const useDefaultStore = defineStore("default", {
         light: _themeColor + "-8",
         dark: _themeColor + "-10",
         default: _themeColor,
+        xxlight: _themeColor + "-3",
+        xlight: _themeColor + "-5",
       };
       const bg = {
         normal: "bg-" + _themeColor + "-9",
         light: "bg-" + _themeColor + "-8",
         dark: "bg-" + _themeColor + "-10",
         default: "bg-" + _themeColor,
+        xxlight: "bg-" + _themeColor + "-3",
+        xlight: "bg-" + _themeColor + "-5",
       };
       return {
         color,

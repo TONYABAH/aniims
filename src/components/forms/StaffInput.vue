@@ -7,7 +7,6 @@
     :set-model="setModel"
     :filter="filter"
     :input-debounce="400"
-    placeholder="Enter name..."
     icon="search"
     option-value="uid"
     option-label="Name"
@@ -39,10 +38,10 @@ const props = defineProps({
   },
 });
 
-var staffList = useStaffList(props.searchOptions);
+var staffList = [];
 
 function filter(needle) {
-  const filtered = staffList.value.filter((s) => {
+  const filtered = staffList?.value?.filter((s) => {
     return (
       s.Name.toLowerCase().indexOf(needle) === 0 ||
       s.Name.toLowerCase().indexOf(" " + needle) > 0
@@ -51,8 +50,10 @@ function filter(needle) {
   });
   return filtered;
 }
+
 watch(
   () => props.searchOptions,
-  (val) => (staffList = useStaffList(val))
+  (val) => (staffList = useStaffList(val)),
+  { immediate: true }
 );
 </script>

@@ -2,7 +2,7 @@
   <q-btn :loading="loading" @click="submit">
     <template v-slot:loading>
       <q-spinner-hourglass class="on-left" />
-      Loading...
+      Wait...
     </template>
   </q-btn>
 </template>

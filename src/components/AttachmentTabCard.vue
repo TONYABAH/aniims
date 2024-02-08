@@ -1,27 +1,16 @@
 <template>
-  <q-card flat class="my-card bg-transparent">
+  <q-card flat class="my-card">
     <q-toolbar>
       <q-icon name="attachment" size="sm" class="q-mr-md" />
       <span class="text-h6"> {{ store.currentCollection }} / Attachments</span>
     </q-toolbar>
     <q-card-section>
-      <q-tabs
-        v-model="attachmentTab"
-        class="text-teal"
-        shrink=""
-        narrow-indicator=""
-        outside-arrows=""
-        active-bg-color="teal-2"
-      >
-        <q-tab name="documents" label="Documents" />
-        <q-tab name="images" label="Images" />
-        <q-tab name="videos" label="Videos" />
-      </q-tabs>
-      <q-tab-panels v-model="attachmentTab" animated>
-        <q-tab-panel name="documents">
+      <q-card class="my-card shadow-22">
+        <q-card-section>
+          <label>Documents</label>
           <TableView
             :editable="false"
-            :deletable="true"
+            :deletable="false"
             :data="attachedDocuments"
             :columns="document_columns"
             :onAddItem="() => addAttachment('doc')"
@@ -30,11 +19,15 @@
             :onViewItem="onViewDocument"
             v-if="store.currentDocument?.id"
           />
-        </q-tab-panel>
-        <q-tab-panel name="images">
+        </q-card-section>
+      </q-card>
+
+      <q-card class="my-card q-mt-sm shadow-22">
+        <q-card-section>
+          <label>Images</label>
           <TableView
             :editable="false"
-            :deletable="true"
+            :deletable="false"
             :data="attachedImages"
             :columns="document_columns"
             :onAddItem="() => addAttachment('image')"
@@ -43,11 +36,15 @@
             :onViewItem="onViewDocument"
             v-if="store.currentDocument?.id"
           />
-        </q-tab-panel>
-        <q-tab-panel name="videos">
+        </q-card-section>
+      </q-card>
+
+      <q-card class="my-card q-mt-sm shadow-22">
+        <q-card-section>
+          <label>Videos</label>
           <TableView
             :editable="false"
-            :deletable="true"
+            :deletable="false"
             :data="attachedVideos"
             :columns="document_columns"
             :onAddItem="() => addAttachment('mp4')"
@@ -56,8 +53,8 @@
             :onViewItem="onViewDocument"
             v-if="store.currentDocument?.id"
           />
-        </q-tab-panel>
-      </q-tab-panels>
+        </q-card-section>
+      </q-card>
     </q-card-section>
     <FileViewerDialog
       :docTitle="docTitle"
@@ -84,7 +81,17 @@ import {
   onDeleteAttachment,
   getStorageFolder,
 } from "src/composables/remote";
-
+import { useCollection } from "vuefire";
+import { firestore } from "src/composables/firebase";
+import {
+  collection,
+  query,
+  where,
+  and,
+  or,
+  limit,
+  //getCountFromServer,
+} from "firebase/firestore";
 const TableView = defineAsyncComponent(() =>
   import("src/components/TableView.vue")
 );
@@ -94,31 +101,14 @@ const FileViewerDialog = defineAsyncComponent(() =>
 const UploadDialog = defineAsyncComponent(() =>
   import("src/components/UploadDialog.vue")
 );
+
+const db = firestore;
 const store = useDefaultStore();
 const dialogModel = ref(false);
 const fileViewerDialogModel = ref(false);
 const fileSource = ref("");
 const docTitle = ref("");
 const accept = ref(".pdf, .jpg, .jpeg, .png, .mp4");
-const attachmentTab = ref("documents");
-const attachedDocuments = computed(() => {
-  return store.currentDocument?.Attachments?.filter(
-    (f) => f.Type.indexOf("application/") > -1
-  );
-});
-const attachedImages = computed(() => {
-  return store.currentDocument?.Attachments?.filter((f) =>
-    f.Type.match(/image\//)
-  );
-});
-const attachedVideos = computed(() => {
-  return store.currentDocument?.Attachments?.filter((f) =>
-    f.Type.match(/video\//)
-  );
-});
-const document_columns = [
-  { name: "Title", field: "Title", label: "Title", align: "left" },
-];
 
 const currentDocument = computed({
   get: () => store.currentDocument || {},
@@ -126,6 +116,28 @@ const currentDocument = computed({
     store.currentDocument = v;
   },
 });
+//const attachmentTab = ref("documents");
+//const Attachments = useCollection(db, store.currentCollection)
+const dbRef = collection(
+  db,
+  store.currentCollection + "/" + currentDocument.value?.id,
+  "/Attachments"
+);
+//const dataSource = query(dbRef);
+var Attachments = useCollection(dbRef);
+//console.log(Attachments);
+const attachedDocuments = computed(() => {
+  return Attachments.value?.filter((f) => f.Type.indexOf("application/") > -1);
+});
+const attachedImages = computed(() => {
+  return Attachments.value?.filter((f) => f.Type.match(/image\//));
+});
+const attachedVideos = computed(() => {
+  return Attachments.value?.filter((f) => f.Type.match(/video\//));
+});
+const document_columns = [
+  { name: "Title", field: "Title", label: "Title", align: "left" },
+];
 
 function setDialogModel(val) {
   dialogModel.value = val;
@@ -147,10 +159,17 @@ function deleteAttachment(d) {
   }).onOk(() => {
     onDeleteAttachment(store.currentCollection, currentDocument.value.id, d)
       .then(() => {
-        const index = currentDocument.value.Attachments?.findIndex(
+        /*const index = Attachments?.findIndex(
           (doc) => doc.id === d.id
-        );
-        currentDocument.value.Attachments.splice(index, 1);
+        );*/
+        //Attachments.splice(index, 1);
+        Notify.create({
+          textColor: "teal",
+          message: "Document successfully removed",
+          icon: "check",
+          iconColor: "secondary",
+          position: "right",
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -159,35 +178,45 @@ function deleteAttachment(d) {
           message: error.message,
           icon: "error",
           iconColor: "red",
+          position: "right",
         });
       });
   });
 }
 async function onEditDocument(d) {
-  const storage = getStorage();
-  let folder = getStorageFolder(d.Type);
+  //const storage = getStorage();
+  //let folder = getStorageFolder(d.Type);
   //const path = "http://localhost:3000/upload/" + d.id;
-  const url = await getDownloadURL(reference(storage, folder + d.id));
-  fileSource.value = url;
+  //const url = await getDownloadURL(reference(storage, folder + d.id));
+  fileSource.value = d.downloadURL;
   docTitle.value = d.Title;
   fileViewerDialogModel.value = true;
 }
 async function onViewDocument(d) {
-  const storage = getStorage();
-  let folder = getStorageFolder(d.Type);
+  //const storage = getStorage();
+  //console.log(d);
+  //let folder = getStorageFolder(d.Type);
   //const path = "http://localhost:3000/upload/" + d.id;
-  const url = await getDownloadURL(reference(storage, folder + d.id));
-  fileSource.value = url;
+  //const url = await getDownloadURL(reference(storage, folder + d.id));
+  fileSource.value = d.downloadURL;
   docTitle.value = d.Title;
   fileViewerDialogModel.value = true;
 }
 function onDocumentUploaded(doc) {
-  currentDocument.value.Attachments
+  /*currentDocument.value.Attachments
     ? currentDocument.value.Attachments.push(doc)
-    : (currentDocument.value.Attachments = [doc]);
+    : (currentDocument.value.Attachments = [doc]);*/
   if (currentDocument.value.id) {
     onAddAttachment(store.currentCollection, currentDocument.value.id, doc)
-      .then(() => {})
+      .then(() => {
+        Notify.create({
+          textColor: "teal",
+          message: "Document successfully attached",
+          icon: "check",
+          iconColor: "secondary",
+          position: "right",
+        });
+      })
       .catch((error) => {
         console.log(error);
         Notify.create({
@@ -195,6 +224,7 @@ function onDocumentUploaded(doc) {
           message: error.message,
           icon: "error",
           iconColor: "red",
+          position: "right",
         });
       });
   }

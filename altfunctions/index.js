@@ -89,6 +89,19 @@ const listAllUsers = (users, nextPageToken) => {
       Promise.reject(error);
     });
 };
+
+async function updateDestruction(id) {
+  try {
+    const ApplicationNumber = await getNextDestructionApplicationNumber();
+    //const data = { CaseNumber };
+    getFirestore()
+      .doc("Destructions/" + id)
+      .update({ ApplicationNumber });
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
 async function deleteUsers(uids = []) {
   try {
     //let result = 0;
@@ -127,9 +140,12 @@ async function createUser(email, password, phone, name, emailVerified) {
 
   return userRecord;
 }
-async function sendAccountRecoveryLink(receiverEmail, recipientName) {
+async function sendAccountRecoveryLink(accountEmail, newEmail, recipientName) {
   const sendEmail = require("./emailservice.js").sendEmail;
-  const link = await getAuth().generateVerifyAndChangeEmailLink(receiverEmail);
+  const link = await getAuth().generateVerifyAndChangeEmailLink(
+    accountEmail,
+    newEmail
+  );
   const options = {
     title: "Recover email",
     recipientName,
@@ -139,7 +155,7 @@ async function sendAccountRecoveryLink(receiverEmail, recipientName) {
     link,
     button: "Recover my email",
   };
-  const info = await sendEmail(receiverEmail, options);
+  const info = await sendEmail(accountEmail, options);
   //logger.info("Message sent: %s", receiverEmail, info);
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
   return info;
@@ -242,6 +258,52 @@ async function sendCustomEmail(
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
   return info;
 }
+async function setCustomClaims(uid, data) {
+  getAuth()
+    .setCustomUserClaims(uid, {
+      //displayName: displayName || email,
+      unit: data.Unit || null,
+      level: data.Level || 0,
+      admin: data.IsAdmin || false,
+      location: data.Location || null,
+      role: data.Role || "public",
+    })
+    .catch((e) => {
+      logger.log(e.message);
+    });
+  if (!data.Email) return;
+  sendPasswordResetEmail(data.Email, data.Name).catch((e) =>
+    logger.log(e.message)
+  );
+}
+
+async function addHistory(
+  operation,
+  collection,
+  documentId,
+  historyId,
+  data,
+  transaction,
+  uid,
+  user
+) {
+  //const user = await getAuth().getUser(uid);
+  const d = {
+    op: operation,
+    time: Date.now(),
+    coll: collection,
+    doc: documentId,
+    user: user,
+    uid,
+    ...data,
+  };
+  const _ref = getFirestore().doc(
+    collection + "/" + documentId + "/" + "History" + "/" + historyId
+  );
+
+  return transaction.set(_ref, d);
+}
+
 exports.resetpassword = onCall(async (request) => {
   if (!request.data?.email)
     throw new HttpsError("bad-request", "Email required");
@@ -261,7 +323,7 @@ exports.resetpassword = onCall(async (request) => {
   }
 });
 
-exports.recoveremail = onCall(async (request) => {
+/*exports.recoveremail = onCall(async (request) => {
   if (!request.data?.email)
     throw new HttpsError("bad-request", "Email required");
   try {
@@ -271,6 +333,7 @@ exports.recoveremail = onCall(async (request) => {
     }
     const info = await sendAccountRecoveryLink(
       userRecord.email,
+      request.data.newEmail,
       userRecord.displayName
     );
     return info;
@@ -278,25 +341,8 @@ exports.recoveremail = onCall(async (request) => {
     logger.log(error);
     throw new HttpsError("unknown", error.message);
   }
-});
-async function setCustomClaims(uid, data) {
-  getAuth()
-    .setCustomUserClaims(uid, {
-      //displayName: displayName || email,
-      units: data.Units || [],
-      level: data.Level || 0,
-      admin: data.IsAdmin || false,
-      location: data.Location || "",
-      role: data.Role || "public",
-    })
-    .catch((e) => {
-      logger.log(e.message);
-    });
-  if (!data.Email) return;
-  sendPasswordResetEmail(data.Email, data.Name).catch((e) =>
-    logger.log(e.message)
-  );
-}
+});*/
+
 exports.register = onCall(async (request) => {
   try {
     if (!request.auth?.uid || !request.auth?.token?.admin) {
@@ -385,8 +431,8 @@ exports.getstaffbyid = onCall(async (request) => {
 });
 exports.getuser = onCall(async (request) => {
   try {
-     let uid = request.data.uid;
-     if (!uid) throw new HttpsError("bad-request", "User ID required");
+    let uid = request.data.uid;
+    if (!uid) throw new HttpsError("bad-request", "User ID required");
     const userRecord = await getAuth().getUser(request.data.uid);
     return userRecord?.toJSON();
   } catch (error) {
@@ -396,8 +442,8 @@ exports.getuser = onCall(async (request) => {
 });
 exports.getuserbyemail = onCall(async (request) => {
   try {
-     let email = request.data.email;
-     if (!email) throw new HttpsError("bad-request", "Email address required");
+    let email = request.data.email;
+    if (!email) throw new HttpsError("bad-request", "Email address required");
     const userRecord = await getAuth().getUserByEmail(request.data.email);
     return userRecord?.toJSON();
   } catch (error) {
@@ -600,14 +646,14 @@ exports.beforeusersignin = beforeUserSignedIn(async (event) => {
       //displayName: displayName || email,
       admin: true,
       developer: true,
-      units: [],
+      unit: null,
       level: 5,
     };
     if (!claims.level) {
       claims.level = 5;
       claims.admin = true;
       claims.developer = true;
-      claims.units = [];
+      claims.unit = null;
     }
     return {
       emailVerified: true,
@@ -622,17 +668,6 @@ exports.beforeusersignin = beforeUserSignedIn(async (event) => {
   }
 });
 
-async function updateDestruction(id) {
-  try {
-    const ApplicationNumber = await getNextDestructionApplicationNumber();
-    //const data = { CaseNumber };
-    getFirestore()
-      .doc("Destructions/" + id)
-      .update({ ApplicationNumber });
-  } catch (error) {
-    logger.error(error);
-  }
-}
 exports.ondestructioncreated = onDocumentCreated(
   "Destructions/{id}",
   async (event) => {
@@ -655,22 +690,25 @@ exports.ondestructioncreated = onDocumentCreated(
     });
   }
 );
-exports.oncasecreated = onDocumentCreated("Cases/{id}", async (event) => {
-  try {
-    const snapshot = event.data;
-    const id = event.params.id;
-    if (!snapshot) {
-      return;
+exports.oncasecreated = onDocumentCreated(
+  "Investigations/{id}",
+  async (event) => {
+    try {
+      const snapshot = event.data;
+      const id = event.params.id;
+      if (!snapshot) {
+        return;
+      }
+      const CaseNumber = await getNextCaseNumber();
+      //const data = { CaseNumber };
+      getFirestore()
+        .doc("Investigations/" + id)
+        .update({ CaseNumber });
+    } catch (error) {
+      logger.error(error);
     }
-    const CaseNumber = await getNextCaseNumber();
-    //const data = { CaseNumber };
-    getFirestore()
-      .doc("Cases/" + id)
-      .update({ CaseNumber });
-  } catch (error) {
-    logger.error(error);
   }
-});
+);
 exports.onusercreated = onDocumentCreated("Users/{uid}", async (event) => {
   const snapshot = event.data;
   const uid = event.params.uid;
@@ -682,10 +720,10 @@ exports.onusercreated = onDocumentCreated("Users/{uid}", async (event) => {
   getAuth()
     .setCustomUserClaims(uid, {
       //displayName: displayName || email,
-      units: data.Units || [],
+      unit: data.Unit || null,
       level: data.Level || 0,
       admin: data.IsAdmin || false,
-      location: data.Location || "",
+      location: data.Location || null,
       role: data.Role || "public",
     })
     .catch((e) => {
@@ -755,32 +793,6 @@ exports.oncomplaintcreated = onDocumentCreated(
   }
 );
 
-async function addHistory(
-  operation,
-  collection,
-  documentId,
-  historyId,
-  data,
-  transaction,
-  uid,
-  user
-) {
-  //const user = await getAuth().getUser(uid);
-  const d = {
-    op: operation,
-    time: Date.now(),
-    coll: collection,
-    doc: documentId,
-    user: user,
-    uid,
-    ...data,
-  };
-  const _ref = getFirestore().doc(
-    collection + "/" + documentId + "/" + "History" + "/" + historyId
-  );
-
-  return transaction.set(_ref, d);
-}
 exports.updatedocument = onCall(async (request) => {
   try {
     let Level = request.auth?.token?.level;

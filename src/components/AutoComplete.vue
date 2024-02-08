@@ -4,6 +4,7 @@
     use-input
     autocomplete=""
     options-dense=""
+    :label="label"
     :options="_options"
     @filter="filterFn"
     @filter-abort="abortFilterFn"
@@ -15,6 +16,23 @@
     </template>
     <template v-slot:append v-if="icon">
       <q-icon :name="icon" />
+    </template>
+    <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+      <q-item dense v-bind="itemProps">
+        <q-item-section thumbnail="">
+          <q-checkbox
+            left-label
+            :model-value="selected"
+            @update:model-value="toggleOption(opt)"
+            size="xs"
+          />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label
+            >{{ opt.Name || opt }} {{ opt.Rank || "" }}</q-item-label
+          >
+        </q-item-section>
+      </q-item>
     </template>
   </q-select>
 </template>

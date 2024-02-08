@@ -1,5 +1,5 @@
 <template>
-  <q-card flat class="my-card bg-transparent">
+  <q-card flat class="my-card">
     <q-toolbar>
       <q-icon name="comment" size="sm" class="q-mr-md" />
       <span class="text-h6"> {{ store.currentCollection }} / minutes</span>
@@ -7,63 +7,74 @@
     <q-card-section>
       <CommentsPanel />
       <q-separator spaced inset vertical dark />
+
       <q-form autofocus="" class="text-teal">
         <label for="" class="">Write minutes</label>
-        <textarea
-          v-model="comment"
-          autofocus
-          rows="5"
-          class="full-width q-px-sm"
-          :class="$q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-white'"
-          :disabled="!commentable"
-        ></textarea>
+        <TextEditor :Text="comment" :setText="(text) => (comment = text)" />
         <q-toolbar class="bg-transparent" style="padding: 0">
           <q-toolbar-title> </q-toolbar-title>
+          <FloatingEditorButtons
+            :assign="assignDocument"
+            :submit="submitDocument"
+            :isDirector="isDirector"
+            :returnable="returnable"
+            :returnDocument="returnDocument"
+            :assignable="assignable"
+            :submitable="submitable"
+            :glossy="true"
+            :loading="loading"
+            padding="sm"
+            color="red"
+            direction="left"
+            v-if="comment"
+          />
           <q-btn-dropdown
             unelevated=""
             glossy
-            label="Send Minute"
+            label="Minute"
+            class="q-ml-xs"
             :color="store.theme.color.light"
+            :loading="loading"
+            v-if="comment"
           >
             <q-list dense>
               <q-item
                 clickable
                 v-close-popup
-                :disable="!comment"
-                @click="assign"
+                v-if="assignable"
+                @click="assignDocument"
               >
                 <q-item-section>
                   <q-item-label>Assign</q-item-label>
                 </q-item-section>
-                <q-item-section avatar>
+                <q-item-section side>
                   <q-icon name="arrow_right" />
                 </q-item-section>
               </q-item>
               <q-item
-                v-show="!isDirector"
+                v-show="submitable"
                 clickable
                 v-close-popup
-                :disable="!comment"
-                @click="submit"
+                @click="submitDocument"
               >
                 <q-item-section>
                   <q-item-label>Submit</q-item-label>
                 </q-item-section>
-                <q-item-section avatar>
+                <q-item-section side>
                   <q-icon name="check" />
                 </q-item-section>
               </q-item>
               <q-item
+                v-if="returnable"
                 v-show="isDocumentAssignedToUser"
                 clickable
                 v-close-popup
-                :disable="!comment"
                 @click="returnDocument"
               >
                 <q-item-section>
                   <q-item-label>Return</q-item-label>
                 </q-item-section>
-                <q-item-section avatar>
+                <q-item-section side>
                   <q-icon name="undo" />
                 </q-item-section>
               </q-item>
@@ -83,19 +94,24 @@
       :onCancel="onDialogCancel"
       :action="dialogAction"
       :iconName="iconName"
+      :loading="loading"
       ref="dialogRef"
     />
   </q-card>
 </template>
 
 <script setup>
-import { ref, computed, defineAsyncComponent, provide } from "vue";
+import { ref, computed, defineAsyncComponent } from "vue";
+//import { useRouter } from "vue-router";
 import { useDefaultStore } from "src/stores/store";
-import { Dialog, Notify } from "quasar";
-import { onAssign, onSubmit } from "src/composables/remote";
+import { Notify, Dialog } from "quasar";
+import { onSubmit } from "src/composables/remote";
 import AssignDialog from "src/components/AssignDialog.vue";
+import TextEditor from "src/components/TextEditor.vue";
+import FloatingEditorButtons from "./FloatingEditorButtons.vue";
 
 const store = useDefaultStore();
+//const router = useRouter();
 const comment = ref("");
 const assignDialogModel = ref(false);
 const iconName = ref("");
@@ -103,14 +119,27 @@ const dialogRef = ref(null);
 const loading = ref(false);
 const dialogAction = ref("");
 
+const props = defineProps({
+  onMinuted: Function,
+});
 const isDirector = computed(() => store.user.claims.role === "Director");
 const isHod = computed(
   () =>
     store.user.claims.role === "Head Division" ||
     store.user.claims.role === "Head Location"
 );
+const isHou = computed(() => store.user.claims.role === "Head Unit");
+/*const isFromHead = computed(() => {
+  let user = store.staffList.find(
+    (s) => s.uid === currentDocument.value?.meta?.From
+  );
+  return user.Heads !== undefined && user.Heads.length > 0;
+});*/
 const isDocumentAssignedToUser = computed(() => {
-  return store.currentDocument?.meta?.To === store.user.uid;
+  return (
+    store.currentDocument?.meta?.To === store.user.uid &&
+    store.currentDocument?.meta?.From !== undefined
+  );
 });
 
 const CommentsPanel = defineAsyncComponent(() =>
@@ -124,20 +153,24 @@ function onDialogCancel() {
   console.log("Action cancelled by user");
 }
 async function onDialogOk(assigned, unit) {
-  submitDocument(assigned, unit);
+  //console.log(assigned, unit);
+  submit(assigned, unit);
 }
 
-async function submitDocument(assigned, unit) {
+async function submit(assigned, unit) {
   loading.value = true;
   let action = dialogAction.value;
   onSubmit(comment.value, assigned, unit, store.currentDocument.id, action)
     .then(() => {
       assignDialogModel.value = false;
-      dialogRef.value.reset();
+      //dialogRef.value.reset();
       comment.value = "";
+      store.tabModel = "search";
+      props.onMinuted();
     })
-    .catch(() => {
-      Notify.create({
+    .catch((error) => {
+      console.trace(error);
+      Dialog.create({
         timeout: 3000,
         textColor: "white",
         message: error.message,
@@ -151,15 +184,34 @@ async function submitDocument(assigned, unit) {
       loading.value = false;
     });
 }
-function submit() {
+async function returnDocument() {
+  dialogAction.value = "Return";
+  const doc = store.currentDocument;
+  const unit = doc.meta.unit || null;
+  const user = store.staffList.find((s) => s.uid === doc.meta.From);
+  if (!user) {
+    Notify.create({
+      timeout: 3000,
+      textColor: "white",
+      message: "User not found: " + doc.meta.From,
+      icon: "error",
+      iconColor: "white",
+      color: "red",
+      position: "right",
+    });
+    return;
+  }
+  submit(user, unit);
+}
+function submitDocument() {
   dialogAction.value = "Submit";
   iconName.value = "check";
-
-  if (isHod.value) {
+  assignDialogModel.value = true;
+  /*if (isHod.value) {
     let dir = store.staffList.find((s) => s.Role === "Director");
     if (dir) {
       // Submit to director
-      submitDocument(dir, store.currentDocument?.meta?.unit || "");
+      submit(dir, store.currentDocument?.meta?.unit || null);
     } else {
       Notify.create({
         timeout: 3000,
@@ -177,7 +229,7 @@ function submit() {
     );
     if (oldUser) {
       // submit to old user (HOU or HOD or Director)
-      submitDocument(oldUser, store.currentDocument?.meta?.unit);
+      submit(oldUser, store.currentDocument?.meta?.unit || null);
     } else {
       Notify.create({
         timeout: 3000,
@@ -193,20 +245,12 @@ function submit() {
   } else {
     // Show dialog
     assignDialogModel.value = true;
-  }
+  }*/
 }
-function assign() {
+function assignDocument() {
   dialogAction.value = "Assign";
   iconName.value = "arrow_right";
   assignDialogModel.value = true;
-}
-async function returnDocument() {
-  dialogAction.value = "Return";
-  const doc = store.currentDocument;
-  const unit = doc.meta.unit;
-  const user = doc.meta.From;
-  //const id = doc.id;
-  submitDocument(user, unit);
 }
 
 const currentDocument = computed({
@@ -215,17 +259,16 @@ const currentDocument = computed({
     store.currentDocument = v;
   },
 });
-const commentable = computed(() => {
-  /*console.log(
-    currentDocument.value?.meta?.Status === "Created" &&
-      store.user?.uid === currentDocument.value?.meta?.CreatedBy
-  );*/
+const returnable = computed(() => {
   return (
-    currentDocument.value?.id &&
-    (store.user?.claims?.admin ||
-      store.user?.uid === currentDocument.value?.meta?.To ||
-      (currentDocument.value?.meta?.Status === "Created" &&
-        store.user?.uid === currentDocument.value?.meta?.CreatedBy))
+    currentDocument.value?.meta?.From !== undefined &&
+    store.user?.uid === currentDocument.value?.meta?.To
   );
+});
+const assignable = computed(() => {
+  return isHou.value || isHod.value || isDirector.value;
+});
+const submitable = computed(() => {
+  return !isDirector.value; // && !isFromHead.value;
 });
 </script>

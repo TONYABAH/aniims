@@ -1,5 +1,5 @@
-//import { useDefaultStore } from "src/stores/store";
-import { ref, computed } from "vue";
+import { useDefaultStore } from "src/stores/store";
+import { computed } from "vue";
 import { useCollection, useDocument } from "vuefire";
 import { collection, query, where, or, and, orderBy } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
@@ -7,7 +7,8 @@ import states from "../data/states.json";
 import cities from "../data/cities.json";
 import countries from "../data/countries.json";
 import lgas from "../data/lga.json";
-//const store = useDefaultStore();
+
+const store = useDefaultStore();
 
 export const useStates = (country) => {
   return country === "Nigeria" ? states : [];
@@ -95,19 +96,32 @@ export function useDebounce(func, wait, immediate) {
 }
 
 export const useStaffList = (options = {}) => {
-  const whereClause = [where("Level", ">", 2)];
-  if (options?.status) {
-    whereClause.push(where("Status", "==", options.status));
+  // console.log(options);
+  const whereClause = [];
+  if (options?.uid) {
+    whereClause.push(where("uid", "==", options.uid));
+  } else {
+    if (options?.status) {
+      whereClause.push(where("Status", "==", options.status));
+    }
+    if (options?.role) {
+      whereClause.push(where("Role", "==", options.role));
+    }
+    if (options?.unit) {
+      whereClause.push(where("Unit", "==", options.unit));
+    } else if (options?.location) {
+      whereClause.push(where("Location", "==", options.location));
+    }
+    if (options.name) {
+      whereClause.push(where("Name", "==", options.name));
+    }
+    if (options.search) {
+      whereClause.push(
+        where("meta.search", "array-contains-any", options.search.split(" "))
+      );
+    }
   }
-  if (options?.role) {
-    whereClause.push(where("Role", "==", options.role));
-  }
-  if (options?.location) {
-    whereClause.push(where("Location", "==", options.location));
-  }
-  if (options?.unit) {
-    whereClause.push(where("Units", "array-contains", options.unit));
-  }
+  whereClause.push(where("Level", ">", 2));
   const staffQuery = computed(() =>
     query(collection(firestore, "Users"), ...whereClause)
   );
@@ -115,30 +129,84 @@ export const useStaffList = (options = {}) => {
   //return staffList;
 };
 
-export const useIpoList = (options ={}) => {
-  const whereClause = [where("Level", "==", 2)];
-  if (options?.status) {
-    whereClause.push(where("Status", "==", options.status));
+export const useIpoList = (options = {}) => {
+  const whereClause = [];
+  if (options?.uid) {
+    whereClause.push(where("uid", "==", options.uid));
+    //return [useDocument("Users/" + options.uid)];
+  } else {
+    if (options?.status) {
+      whereClause.push(where("Status", "==", options.status));
+    }
+    if (options?.unit) {
+      whereClause.push(where("Unit", "==", options.unit));
+    } else if (options?.location) {
+      whereClause.push(where("Location", "==", options.location));
+    }
+    if (options?.role) {
+      whereClause.push(where("Role", "==", options.role));
+    }
+    if (options.name) {
+      whereClause.push(where("Name", "==", options.name));
+    }
+    if (options.search) {
+      whereClause.push(
+        where("meta.search", "array-contains-any", options.search.split(" "))
+      );
+    }
   }
-  if (options?.location) {
-    whereClause.push(where("Location", "==", options.location));
-  }
-  if (options?.unit) {
-    whereClause.push(where("Unit", "==", options.unit));
-  }
-  if (options?.role) {
-    whereClause.push(where("Role", "==", options.role));
-  }
+  whereClause.push(where("Level", "==", 2));
+
   const ipoQuery = computed(() =>
     query(collection(firestore, "Users"), ...whereClause)
   );
+
   return useCollection(ipoQuery);
 };
-
-export const useSuspects = (CaseNumber) => {
+export const useUserList = (options = {}) => {
   const whereClause = [];
-  if (CaseNumber) {
-    whereClause.push(where("Cases", "array-contains", CaseNumber));
+  if (options?.uid) {
+    whereClause.push(where("uid", "==", options.uid));
+    //return [useDocument("Users/" + options.uid)];
+  } else {
+    if (options?.status) {
+      whereClause.push(where("Status", "==", options.status));
+    }
+    if (options?.role) {
+      whereClause.push(where("Role", "==", options.role));
+    }
+    if (options?.level) {
+      whereClause.push(where("Level", "==", options.level));
+    }
+    if (options.name) {
+      whereClause.push(where("Name", "==", options.name));
+    }
+    if (options.search) {
+      whereClause.push(
+        where("meta.search", "array-contains-any", options.search.split(" "))
+      );
+    }
+  }
+
+  const userQuery = computed(() =>
+    query(collection(firestore, "Users"), ...whereClause)
+  );
+
+  return useCollection(useUserListQuery);
+};
+export const useSuspects = (options = {}) => {
+  const whereClause = [];
+  if (options?.caseNumber) {
+    whereClause.push(where("Cases", "array-contains", options.caseNumber));
+  }
+  if (options?.name) {
+    whereClause.push(where("Name", "==", options.name));
+  }
+
+  if (options?.search) {
+    whereClause.push(
+      where("meta.search", "array-contains-any", options.search.split(" "))
+    );
   }
   const suspectQuery = computed(() =>
     query(collection(firestore, "Suspects"), ...whereClause)
@@ -146,16 +214,30 @@ export const useSuspects = (CaseNumber) => {
   return useCollection(suspectQuery);
 };
 
-export const useUnits = (options) => {
+export const useUnits = (options = {}) => {
   const whereClause = [];
-  if (options?.location) {
-    whereClause.push(where("Location", "==", options.location));
+  if (options?.abbrev) {
+    whereClause.push(where("Abbrev", "==", options.abbrev));
+  } else {
+    if (options?.location) {
+      whereClause.push(where("Location", "==", options.location));
+    }
+    if (options?.name) {
+      whereClause.push(where("Name", "==", options.name));
+    }
+    if (options?.search) {
+      whereClause.push(where("meta.search", "array-contains", options.search));
+    }
+    if (options?.status) {
+      whereClause.push(where("Status", "==", options.status));
+    }
   }
   const unitQuery = computed(() =>
     query(collection(firestore, "Units"), ...whereClause)
   );
   return useCollection(unitQuery);
 };
+
 export const useValidation = () => {
   return {
     isStaffNumber: (val) => {
@@ -176,3 +258,67 @@ export const useValidation = () => {
     },
   };
 };
+
+export function useSearchQuery(search = {}) {
+  const searchConstraints = [];
+  //console.log(search.date2,new Date(search.date2),Date.parse(new Date(search.date2)));
+  if (search.date1) {
+    searchConstraints.push(
+      where("meta.CreatedAt", ">=", Date.parse(new Date(search.date1)))
+    );
+  }
+  if (search.date2) {
+    searchConstraints.push(
+      where("meta.CreatedAt", "<=", Date.parse(new Date(search.date2)))
+    );
+  }
+  if (search.staff) {
+    //console.log(search);
+    searchConstraints.push(where("meta.To", "==", search.staff.uid));
+  } else if (search.unit) {
+    searchConstraints.push(where("meta.Unit", "==", search.unit.Abbrev));
+  } else if (search.location) {
+    searchConstraints.push(where("meta.Location", "==", search.location));
+  }
+  if (search.status) {
+    searchConstraints.push(where("Status", "==", search.status));
+  }
+
+  return searchConstraints;
+}
+export function useDefaultSerachQuery(collectionName) {
+  let caseFilters = [];
+  if (
+    collectionName == "Samples" ||
+    collectionName == "Raids" ||
+    collectionName == "Payments"
+  ) {
+    caseFilters.push(where("CaseId", "==", ""));
+  } else if (collectionName == "Mails") {
+    caseFilters.push(where("FileNumber", "==", ""));
+    //} else if (collectionName == "Cases") {
+    //caseFilters.push(where("Status", "==", "In progress"));
+    //} else if (
+    // collectionName == "Complaints" ||
+    // collectionName == "Destructions" ||
+    // collectionName == "Applications"
+    //) {
+    //caseFilters.push(where("Status", "!=", "Treated"));
+  }
+  let filters = [
+    or(
+      and(
+        where("meta.To", "==", store.user.uid),
+        where("Status", "==", "Open"),
+        //where("Status", "!=", "KIV"),
+        ...caseFilters
+      ),
+      and(
+        where("meta.CreatedBy", "==", store.user.uid),
+        where("meta.Status", "==", "Created"),
+        ...caseFilters
+      )
+    ),
+  ];
+  return filters;
+}

@@ -13,14 +13,7 @@
         :class="$q.screen.lt.sm ? '' : 'q-mx-xl q-mb-xl'"
       >
         <q-toolbar class="bg-cyan-7 text-white">
-          <q-btn
-            fab
-            dense
-            color=""
-            icon="home"
-            unelevated=""
-            @click="goHome"
-          />
+          <q-btn fab dense color="" icon="home" unelevated="" @click="goHome" />
           <q-toolbar-title> Petition Form </q-toolbar-title>
           <q-btn flat round dense icon="more_vert" />
         </q-toolbar>
@@ -160,8 +153,9 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { ref, computed, watch, onBeforeUnmount } from "vue";
+import { useDefaultStore } from "src/stores/store";
+import { useRoute, useRouter } from "vue-router";
+import { ref, computed, watch, onBeforeMount } from "vue";
 import { Notify, Dialog } from "quasar";
 import ComplaintForm from "src/components/forms/ComplaintForm.vue";
 import FileViewerDialog from "src/components/FileViewerDialog.vue";
@@ -183,6 +177,8 @@ const document_columns = [
 ];
 
 const router = useRouter();
+const route = useRoute();
+const store = useDefaultStore();
 const tab = ref("form");
 const form = ref(null);
 const complaint = ref({});
@@ -195,6 +191,7 @@ const fileSource = ref("");
 const fileTypes = ref("");
 const pendingEdits = ref(false);
 const uploadTitle = ref("Application Letter");
+const collectionName = "Complaints";
 const attachments = computed({
   get: () => complaint.value.Attachments || [],
   set: (v) => (complaint.value.Attachments = v),
@@ -206,6 +203,7 @@ const pdf = computed(() =>
   attachments.value.filter((item) => item.Type.indexOf("application/pdf") === 0)
 );
 const setData = (v) => (complaint.value = v);
+let id = route.hash ? route.hash.substring(1) : 0;
 
 function goHome() {
   //return (window.location.href = "/");
@@ -371,10 +369,17 @@ watch(
 window.addEventListener("beforeunload", (e) => {
   e.preventDefault();
 });
-/*window.navigator.geolocation.getCurrentPosition((p) => {
-  console.log(p);
-});*/
-onBeforeUnmount((d) => {
-  console.log(d);
+
+onBeforeMount(async () => {
+  let d = id > 0 ? await getById(id, collectionName) : null;
+  complaint.value = d || {};
+  if (!d) {
+    complaint.value.ContactName = store.user.displayName;
+    complaint.value.ContactPhone = store.user.phoneNumber;
+    complaint.value.ContactEmail = store.user.email;
+  }
+  store.currentCollection = collectionName;
+  store.currentDocument = complaint.value;
+  //destruction.value.ApplicationYear = applicationYear.value;
 });
 </script>

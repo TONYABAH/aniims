@@ -33,13 +33,14 @@
     </div>
     <div class="row justify-center full-height" style="opacity: 0.9" v-else>
       <q-card
-        style="width: 400px; height: 100vh"
+        style="width: 528px; height: 100vh"
         class="full-height shadow-2"
         align="center"
       >
         <q-card-section
           :align="$q.screen.lt.sm ? 'center' : ''"
-          class="bg-teal text-white"
+          class="text-white"
+          :class="$q.screen.gt.xs ? store.theme.bg.normal : ''"
         >
           <q-toolbar class="q-mb-md">
             <q-avatar
@@ -49,10 +50,13 @@
               text-color="grey-2"
               icon="perm_identity"
             />
-            <q-toolbar-title> Register </q-toolbar-title>
+            <q-toolbar-title class="text-left"> Register </q-toolbar-title>
           </q-toolbar>
         </q-card-section>
-        <q-card-section :align="$q.screen.lt.sm ? 'center' : ''">
+        <q-card-section
+          :align="$q.screen.lt.sm ? 'center' : ''"
+          class="q-px-xl"
+        >
           <q-form ref="form" class="q-gutter-sm q-mb-md q-pb-sm" align="left">
             <q-input
               v-model="user.Name"
@@ -116,22 +120,25 @@
               type="text"
               label="Company phone *"
             />-->
+            <q-btn
+              unelevated=""
+              rounded
+              :color="store.theme.color.normal"
+              icon-right="arrow_right"
+              label="Continue"
+              padding="md"
+              :loading="loading"
+              @click="submit"
+              class="full-width q-mt-md"
+            >
+              <template v-slot:loading>
+                <q-spinner-hourglass class="on-left" />
+                Wait...
+              </template>
+            </q-btn>
           </q-form>
-          <q-btn
-            unelevated=""
-            color="teal-8"
-            icon-right="arrow_right"
-            label="Continue"
-            padding="md"
-            :loading="loading"
-            @click="submit"
-          >
-            <template v-slot:loading>
-              <q-spinner-hourglass class="on-left" />
-              Wait...
-            </template>
-          </q-btn>
-          <q-space />
+
+          <q-separator spaced inset vertical dark />
           <q-btn no-caps flat unelevated to="login"
             >Already registered? Login</q-btn
           >
@@ -147,16 +154,14 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+//import { useRouter } from "vue-router";
 import { addUser } from "../composables/functions";
+import { useDefaultStore } from "src/stores/store.js";
 
-//import { decodeMessage } from "../composables/decodeErrorMessage";
+const store = useDefaultStore();
 const $q = useQuasar();
-const router = useRouter();
+//const router = useRouter();
 const loading = ref(false);
-//const modal = ref(false);
-const errorMessage = ref("There were errors!");
-const statusMessage = ref("Error");
 const role = ref("");
 const form = ref(null);
 const user = ref({});

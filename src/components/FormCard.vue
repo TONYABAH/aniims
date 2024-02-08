@@ -1,155 +1,171 @@
 <template>
   <q-card
-    :flat="false"
+    flat
     square
-    class="my-card shadow-22"
+    class="my-card"
     style="opacity: 0.85"
-    :class="+$q.dark.isActive ? 'bg-grey-9' : 'bg-white'"
+    :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-white'"
   >
-    <div>
-      <q-toolbar
-        class="q-pb-sm"
-        :class="
-          $q.dark.isActive
-            ? 'bg-grey-8'
-            : 'bg-' + store.settings.themeColor + '-2'
-        "
-      >
-        <q-tabs
-          v-model="tab"
-          narrow-indicator=""
-          indicator-color=""
-          inline-label=""
-          align="left"
-          no-caps=""
-          mobile-arrows=""
-          outside-arrows=""
-          shrink=""
-          active-bg-color=""
-          class="q-pb-xs text-"
-        >
-          <q-tab
-            name="edit"
-            icon="edit"
-            title="Edit"
-            :label="$q.screen.lt.sm ? '' : 'Edit'"
-            style="border-radius: 4px 4px 0 0"
-          />
-
-          <q-tab
-            name="attachments"
-            icon="attachment"
-            title="attachments"
-            :label="$q.screen.lt.sm ? '' : 'Attach'"
-            style="border-radius: 4px 4px 0 0"
-            v-if="isDocumentSaved"
-          />
-          <q-tab
-            name="timeline"
-            icon="timer"
-            title="Timeline"
-            :label="$q.screen.lt.sm ? '' : 'Timeline'"
-            style="border-radius: 4px 4px 0 0"
-            v-if="isDocumentSaved"
-          />
-          <q-tab
-            name="minutes"
-            icon="comment"
-            title="Minute"
-            :label="$q.screen.lt.sm ? '' : 'Minutes'"
-            style="border-radius: 4px 4px 0 0"
-            v-if="isDocumentSaved"
-          />
-        </q-tabs>
-      </q-toolbar>
-      <q-tab-panels
-        :keep-alive="true"
-        ref="tabPanelsRef"
+    <q-toolbar flat class="bg-red text-white">
+      <q-tabs
         v-model="tab"
-        animated
-        vertical
-        transition-next="scale"
-        transition-prev="scale"
-        style="padding: 0; border-top: 1px inset"
-        :class="
-          $q.dark.isActive
-            ? 'bg-grey-9'
-            : 'bg-' + store.settings.themeColor + '-1'
-        "
+        narrow-indicator=""
+        :indicator-color="$q.dark.isActive ? 'grey-4' : 'red'"
+        inline-label=""
+        no-caps=""
+        mobile-arrows=""
+        outside-arrows=""
+        align="left"
+        :shrink="false"
+        stretch=""
+        class="q-pt-xs"
+        :active-bg-color="$q.dark.isActive ? 'grey-8' : 'white'"
+        :active-color="$q.dark.isActive ? 'grey-1' : 'red'"
       >
-        <q-tab-panel
+        <q-tab
           name="edit"
-          style="overflow: auto; padding-bottom: 24px; margin-bottom: 120px"
-          :class="$q.screen.lt.sm ? '' : 'q-px-xl'"
-        >
-          <!--<FormTabCard
-            :reset="reset"
-            :validate="validate"
-            :set-current-doc="setCurrentDoc"
-            :updateFields="updateFields"
-            :getDocument="getDocument"
-          >
+          icon="edit"
+          title="Editor"
+          :label="$q.screen.lt.sm ? '' : 'Editor'"
+          style="border-radius: 4px 4px 0 0"
+        />
+
+        <q-tab
+          name="attachments"
+          icon="attachment"
+          title="attachments"
+          :label="$q.screen.lt.sm ? '' : 'Attach'"
+          style="border-radius: 4px 4px 0 0"
+          v-if="isDocumentSaved && !hideTabs"
+        />
+        <q-tab
+          name="timeline"
+          icon="timer"
+          title="Timeline"
+          :label="$q.screen.lt.sm ? '' : 'Timeline'"
+          style="border-radius: 4px 4px 0 0"
+          v-if="isDocumentSaved"
+        />
+        <q-tab
+          name="minutes"
+          icon="comment"
+          title="Minute"
+          :label="$q.screen.lt.sm ? '' : 'Minutes'"
+          style="border-radius: 4px 4px 0 0"
+          v-if="isDocumentSaved && !hideTabs && commentable"
+        />
+      </q-tabs>
+    </q-toolbar>
+    <q-tab-panels
+      :keep-alive="true"
+      ref="tabPanelsRef"
+      v-model="tab"
+      animated
+      vertical
+      transition-next="scale"
+      transition-prev="scale"
+      style="padding: 0"
+      class="bg-transparent"
+    >
+      <q-tab-panel
+        name="edit"
+        style="overflow: auto"
+        :class="$q.screen.lt.sm ? 'padding:0' : 'q-px-xl q-pb-xl'"
+      >
+        <q-card class="my-card shadow-22" :flat="$q.screen.lt.sm">
+          <q-card-section :style="$q.screen.lt.sm ? 'padding:0px;' : ''">
             <slot></slot>
-          </FormTabCard>-->
-          <slot></slot>
-          <q-toolbar
-            class="q-mt-xl q-pb-xl q-pt-sm"
-            style="border-top: 1px inset"
-          >
-            <q-space />
-            <LoadingButton
-              no-caps
+          </q-card-section>
+          <q-toolbar class="my-card q-py-md">
+            <q-btn
+              dense
               unelevated
               :color="store.theme.color.light"
-              label="Submit"
+              icon="arrow_back"
+              label="Previous"
+              class="float-right q-pr-md"
+              @click="onPrevious"
+              v-if="showPrevious"
+            />
+            <q-space />
+            <slot name="action"></slot>
+            <LoadingButton
+              unelevated
+              no-caps
               class="q-ml-xs"
               icon-right="arrow_right"
-              icon=""
+              :label="saveButtonLabel"
               :submit="onSave"
               :loading="loading"
+              :color="
+                $q.dark.isActive
+                  ? store.theme.color.light
+                  : store.theme.color.light
+              "
+              style="letter-spacing: 1.2px"
+              v-show="editable && !hideSaveButton"
+            />
+            <q-badge
+              class="q-pa-md"
+              color="orange-4"
+              text-color="black"
+              label="Read only"
+              style="font-size: large"
+              v-if="!editable"
             />
             <q-btn
-              unelevated
+              flat
+              no-caps
               icon="close"
               label="Cancel"
-              color=""
-              flat
+              class="q-ml-xs"
+              :color="$q.dark.isActive ? 'grey-8' : 'blue-grey'"
+              style="letter-spacing: 1.2px"
               @click="close"
             />
           </q-toolbar>
-        </q-tab-panel>
+        </q-card>
+      </q-tab-panel>
 
-        <q-tab-panel
-          name="attachments"
-          style="overflow: auto; padding-bottom: 80px"
-        >
-          <AttachmentTabCard />
-        </q-tab-panel>
+      <q-tab-panel
+        v-if="!hideTabs"
+        name="attachments"
+        style="overflow: auto; padding-bottom: 120px"
+      >
+        <AttachmentTabCard />
+      </q-tab-panel>
 
-        <q-tab-panel
-          name="timeline"
-          style="overflow: auto; padding-bottom: 80px"
-        >
-          <HistoryTabCard />
-        </q-tab-panel>
+      <q-tab-panel
+        name="timeline"
+        style="overflow: auto; padding-bottom: 120px"
+      >
+        <HistoryTabCard />
+      </q-tab-panel>
 
-        <q-tab-panel
-          name="minutes"
-          style="overflow: auto; padding-bottom: 80px"
-          v-if="commentable"
-        >
-          <MinutesTabCard />
-        </q-tab-panel>
-      </q-tab-panels>
-    </div>
+      <q-tab-panel
+        v-if="!hideTabs"
+        name="minutes"
+        style="overflow: auto; padding-bottom: 120px"
+      >
+        <MinutesTabCard :onMinuted="onMinuted" />
+      </q-tab-panel>
+    </q-tab-panels>
   </q-card>
 </template>
 
 <script setup>
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useQuasar, Notify, Dialog, debounce } from "quasar";
+import { useDocument } from "vuefire";
+import { collection, doc } from "firebase/firestore";
+import { useDefaultStore } from "src/stores/store";
+import { firestore } from "src/composables/firebase";
+//import MinutesTabCard from "src/components/MinutesTabCard.vue";
+//import HistoryTabCard from "src/components/HistoryTabCard.vue";
+//import AttachmentTabCard from "src/components/AttachmentTabCard.vue";
 import {
   onMounted,
+  onBeforeMount,
   ref,
   computed,
   inject,
@@ -157,23 +173,23 @@ import {
   watch,
   defineAsyncComponent,
 } from "vue";
-import { useCollection, useDocument } from "vuefire";
-import { collection, query, orderBy, doc } from "firebase/firestore";
-import { useDefaultStore } from "src/stores/store";
-import { firestore } from "src/composables/firebase";
-import { update, create, onSubmit, onAssign } from "src/composables/remote";
-
+import {
+  update,
+  create,
+  getById,
+  addChildDocument,
+  updateChildDocument,
+} from "src/composables/remote";
 const MinutesTabCard = defineAsyncComponent(() =>
   import("src/components/MinutesTabCard.vue")
 );
 const HistoryTabCard = defineAsyncComponent(() =>
   import("src/components/HistoryTabCard.vue")
 );
-
 const AttachmentTabCard = defineAsyncComponent(() =>
   import("src/components/AttachmentTabCard.vue")
 );
-
+//const router = useRouter();
 const $q = useQuasar();
 const store = useDefaultStore();
 const tab = ref("edit");
@@ -182,103 +198,183 @@ const searchText = ref("");
 const whereFilters = ref([]);
 const route = useRoute();
 const comment = ref("");
-
-var collectionName = inject("collection");
+//const readOnly = ref(false);
+//var collectionName = inject("collection");
+//currentCollection.value = props.collectionName;
 
 const LoadingButton = defineAsyncComponent(() =>
   import("src/components/LoadingButton.vue")
 );
+
 const props = defineProps({
+  collectionName: String,
   reset: Function,
   validate: Function,
   setCurrentDoc: Function,
   getDocument: Function,
   updateFields: Array,
   searchFields: Array,
+  hideTabs: Boolean,
+  commentable: {
+    type: Boolean,
+    default: false,
+  },
+  hideSaveButton: {
+    type: Boolean,
+    default: false,
+  },
+  showPrevious: {
+    type: Boolean,
+    default: false,
+  },
+  saveButtonLabel: {
+    type: String,
+    default: "Save",
+  },
+  onSaved: {
+    type: Function,
+    default: () => {
+      console.log("Saved");
+    },
+  },
+  onPrevious: {
+    type: Function,
+    default: () => {},
+  },
 });
 
-store.currentCollection = collectionName;
-const currentCollection = computed({
-  get: () => store.currentCollection,
-  set: (v) => (store.currentCollection = collectionName = v),
-});
-//const currentDataSource = computed(() => store.query);
-//store.searchResults = useCollection(currentDataSource);
-const document_columns = [
-  { name: "Title", field: "Title", label: "Title", align: "left" },
-];
-/*const showAssignDialog = computed(() => {
-  return (
-    store.user?.claims?.role === "Director" ||
-    store.user?.claims?.role === "Head"
-  );
-});*/
 const loading = computed({
   get: () => store.loading,
   set: (v) => (store.loading = v),
 });
-/*const pendingEdit = computed(
-  () => Object.values(currentDocument.value).length > 0
-);*/
+
+const currentCollection = computed({
+  get: () => props.collectionName,
+  //set: (v) => (currentCollection.value = collectionName = v),
+});
 const currentDocument = computed({
-  get: () => store.currentDocument || {},
+  get: () => store.currentDocument,
   set: (v) => {
-    store.currentDocument = v;
+    store.currentDocument = v || {};
+    props.setCurrentDoc(v || {});
   },
 });
-const commentable = computed(() => {
+
+const editable = computed(() => {
   //console.log(currentDocument.value);
   return (
-    //currentDocument.value?.id ||
-    currentDocument.value?.id &&
-    (store.user?.claims?.admin ||
-      store.user?.uid === currentDocument.value?.meta?.To ||
-      (currentDocument.value?.meta?.Status === "Created" &&
-        store.user?.uid === currentDocument.value?.meta?.CreatedBy))
+    currentDocument.value?.id === undefined ||
+    (currentDocument.value?.id && store.user?.claims?.admin) ||
+    (currentDocument.value?.meta?.Status === "Created" &&
+      store.user?.uid === currentDocument.value?.meta?.CreatedBy)
   );
 });
 const isDocumentSaved = computed(() => {
-  return currentDocument.value?.id;
+  return store.currentDocument?.id;
 });
-/*function setDialogModel(val) {
-  dialogModel.value = val;
+function onMinuted() {
+  resetValues();
+  store.tabModel = "search";
 }
-function handleComment() {
-  tabPanelsRef.value.next();
-}*/
+const loadDocumentById = debounce(async (docId) => {
+  loading.value = true;
+  //currentDocument will always be in sync with the data source
+  let dRef = computed(() =>
+    doc(collection(firestore, currentCollection.value), docId)
+  );
+  store.currentDocument = useDocument(dRef);
+  setTimeout(() => {
+    props.setCurrentDoc(store.currentDocument);
+    loading.value = false;
+  }, 400);
+}, 500);
+
 async function onLoad(doc, i) {
   window.location.hash = "#" + doc.id;
-  loadDocument(doc.id);
+  loadDocumentById(doc.id);
 }
 
 function resetValues() {
-  //store.tabModel = "search";
   currentDocument.value = {};
   store.searchResults = [];
   store.minutes = [];
 }
+/*async function onSaveCaseDocument() {
+  //const result = await props.validate();
+  try {
+    loading.value = true;
+
+    let data = props.getDocument();
+    data.CaseId = caseId;
+
+    if (docId.value) {
+      await updateChildDocument(
+        caseCollection.value,
+        caseId.value,
+        childCollection.value,
+        docId.value,
+        data
+      );
+    } else {
+      let response = await addChildDocument(
+        caseCollection.value,
+        caseId.value,
+        childCollection.value,
+        data
+      );
+      if (store.currentDocument) store.currentDocument.id = response;
+      //store.currentDocument = {};
+    }
+
+    Notify.create({
+      timeout: 3000,
+      closeBtn: true,
+      caption: "Success",
+      message: "Document saved",
+      icon: "check",
+      iconColor: "secondary",
+      position: "right",
+    });
+    props.onSaved();
+  } catch (error) {
+    console.error(store.user, error);
+    Dialog.create({
+      title: "Error",
+      timeout: 2000,
+      message: error.message,
+      icon: "error",
+      iconColor: "warning",
+      color: "red",
+      position: "right",
+    });
+  } finally {
+    loading.value = false;
+  }
+}*/
 async function onSave() {
   const result = await props.validate();
+
   if (result) {
+    //if (caseId.value) return onSaveCaseDocument();
     try {
       loading.value = true;
       //throw { message: "Please fill form fields correctly" };
       let data = props.getDocument();
       if (store.currentDocument?.id) {
-        let dt = await update(
+        await update(
           store.currentDocument.id,
           data,
           //currentDocument.value,
-          store.currentCollection
+          currentCollection.value
         );
       } else {
         let response = await create(
           data,
-          store.currentCollection,
+          currentCollection.value,
           props.searchFields
         );
         if (store.currentDocument) store.currentDocument.id = response;
-        store.currentDocument = {};
+        //store.currentDocument = {};
       }
 
       Notify.create({
@@ -290,6 +386,7 @@ async function onSave() {
         iconColor: "secondary",
         position: "right",
       });
+      props.onSaved();
     } catch (error) {
       console.error(store.user, error);
       Dialog.create({
@@ -299,10 +396,16 @@ async function onSave() {
         icon: "error",
         iconColor: "warning",
         color: "red",
+        position: "right",
       });
     } finally {
       loading.value = false;
     }
+  } else {
+    Notify.create({
+      message: "Fill all fields correctly",
+      position: "right",
+    });
   }
 }
 function close() {
@@ -314,78 +417,35 @@ function close() {
   props.reset();
 }
 
-const loadDocument = debounce(async (docId) => {
-  loading.value = true;
-  const docSource = computed(() =>
-    doc(collection(firestore, store.currentCollection), docId)
-  );
-  //currentDocument will always be in sync with the data source
-  store.currentDocument = useDocument(docSource);
-  loading.value = false;
-  store.tabModel = "edit";
-}, 500);
-
 async function loadHash(hash) {
   const docId = hash.substring(1);
-  await loadDocument(docId);
+  loadDocumentById(docId);
 }
-// do a `console.log(route)` to see route attributes (fullPath, hash, params, path...)
 watch(
-  () => route.hash,
-  async (hash) => {
-    if (hash) loadHash(hash);
+  () => route.path,
+  async (p, q) => {
+    if (window.location.hash) {
+      store.tabModel = "edit";
+      //let [cid, cn] = route.hash.split(/cid\=|\&cn\=/);
+      loadHash(window.location.hash);
+    }
   },
   { immediate: true }
 );
 
-watch(
-  () => store.currentDocument,
-  async (doc) => {
-    props.setCurrentDoc(Object.assign({}, doc));
-    //if (doc?.id) {
-    /*const histSource = query(
-        collection(firestore, store.currentCollection, doc.id, "History"),
-        orderBy("time", "asc")
-      );
-      store.history = useCollection(histSource);
-      store.minutes = useCollection(
-        query(
-          collection(firestore, store.currentCollection, doc.id, "Minutes"),
-          orderBy("time", "asc")
-        )
-      );*/
-    //}
-  }
-);
-
-function submit(comment, assigned, unit) {
-  onSubmit(comment, assigned, unit, currentDocument.value.id).then(() => {
-    //console.log("Submitted");
-    close();
-  });
-}
-function assign(comment, assigned, unit) {
-  onAssign(comment, assigned, unit, currentDocument.value.id).then(() => {
-    //console.log("Assigned");
-    close();
-  });
-}
 //this.gradient = this.$refs.canvas.getContext("2d").createLinearGradient(0, 0, 0, 450);
 //console.log(this.gradient);
 provide("searchText", searchText);
 provide("whereFilters", whereFilters);
 provide("comment", comment);
 provide("on-load", onLoad);
-provide("on-assign", assign);
-provide("on-submit", submit);
 
 onMounted(async () => {
   resetValues();
-  currentCollection.value = store.currentCollection;
-  store.currentDocument = {};
-  //editForm.value = props.getDocument()?.id ? false : true;
-  tab.value = "edit";
-  store.tabModel = "search";
+  store.currentCollection = currentCollection.value;
+  //store.currentDocument = {};
+  //let params = route.path.split(/\/|\#/);
+  //if (route.params.id) childCollection.value = params[3];
 });
 </script>
 <style scoped>

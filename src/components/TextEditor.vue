@@ -1,12 +1,5 @@
 <template>
-  <q-editor
-    square=""
-    v-model="text"
-    min-height="5rem"
-    :toolbar="toolbar"
-    :fonts="fonts"
-    max-height="15em"
-  />
+  <q-editor square="" v-model="text" :toolbar="toolbar" :fonts="fonts" />
 </template>
 <script setup>
 import { useQuasar } from "quasar";

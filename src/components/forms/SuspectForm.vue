@@ -1,243 +1,184 @@
 <template>
-  <q-form ref="form" class="q-gutter-md full-width q-pa-md">
+  <q-form ref="form" class="q-gutter-">
+    <AutoComplete
+      :model="search"
+      :min-chars="0"
+      :auto-select="true"
+      :options="suspects"
+      :set-model="(v) => (search = v)"
+      :filter="filter"
+      :input-debounce="400"
+      placeholder="Enter name..."
+      icon="search"
+      option-value="id"
+      option-label="Name"
+      outlined
+      stack-label
+      rounded
+      style="max-width: 500px"
+    />
+    <q-separator spaced inset vertical dark />
+    <q-input
+      v-model="suspect.Name"
+      outlined
+      stack-label
+      label="Name"
+      type="text"
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    />
+
+    <q-input
+      v-model="suspect.Phone"
+      outlined
+      stack-label
+      label="Phone"
+      type="text"
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    />
+
+    <q-input
+      label="Date of birth *"
+      outlined
+      stack-label
+      v-model="suspect.DOB"
+      type="date"
+      input-class="q-mt-sm"
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    />
+
+    <CountryInput
+      label="Nationality *"
+      v-model="suspect.Nationality"
+      option-value=""
+      option-label=""
+      options-dense=""
+      outlined
+      stack-label=""
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    />
+    <template v-if="suspect.Nationality?.name === 'Nigeria'">
+      <StateInput
+        v-model="suspect.StateOfOrigin"
+        label="State of origin *"
+        options-dense=""
+        outlined
+        stack-label=""
+        :rules="[(val) => !!val || 'This field is required']"
+        lazy-rules="ondemand"
+      />
+      <LgaInput
+        v-model="suspect.LGA"
+        label="LGA *"
+        :state="suspect.StateOfOrigin || ''"
+        options-dense=""
+        outlined
+        stack-label
+        :rules="[(val) => !!val || 'This field is required']"
+        lazy-rules="ondemand"
+      />
+    </template>
+    <q-input
+      v-model="suspect.Address"
+      label="Residential address *"
+      type="text"
+      outlined
+      stack-label
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    >
+      <template v-if="suspect.Address">
+        <q-btn
+          flat
+          unelevated
+          glossy
+          color="teal"
+          icon="map"
+          @click="onPreviewMap"
+          class="q-mr-xs"
+        />
+        <q-btn
+          unelevated
+          glossy
+          color="teal"
+          :label="$q.screen.gt.xs ? 'Validate' : ''"
+          @click="onValidateAddress(suspect.Address)"
+        />
+      </template>
+    </q-input>
+    <StateInput
+      v-model="suspect.State"
+      label="State *"
+      options-dense=""
+      outlined
+      stack-label=""
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    />
     <div class="row">
       <div class="col col-xs-12 col-sm-12 col-md-12">
-        <label>Full name *</label>
-        <q-input
-          outlined
-          dense
-          square
-          v-model="suspect.Name"
-          type="text"
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
-        <label>Phone *</label>
-        <q-input
-          outlined
-          dense
-          square
-          v-model="suspect.Phone"
-          type="text"
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
-
-        <label>Date of birth *</label>
-        <q-input
-          outlined
-          dense
-          square
-          v-model="suspect.DOB"
-          type="date"
-          input-class="q-mt-sm"
-        />
-
-        <label>Nationality *</label>
-        <CountryInput
-          v-model="suspect.Nationality"
-          option-value=""
-          option-label=""
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
         <!--<q-select
           v-model="suspect.Nationality"
           :options="countries"
           option-value="name"
           option-label="name"
           options-dense=""
-          outlined
+          outlined stack-label
           dense
-          square=""
+          =""
           :rules="[(val) => !!val || 'This field is required']"
           lazy-rules="ondemand"
-          hide-bottom-space=""
+
         />-->
       </div>
     </div>
-
-    <div class="row" v-if="suspect.Nationality?.name === 'Nigeria'">
-      <div class="col col-xs-12 col-sm-6 col-md-6">
-        <label>State of origin *</label>
-        <!--<q-select
-          v-model="suspect.StateOfOrigin"
-          :options="states"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />-->
-        <StateInput
-          v-model="suspect.StateOfOrigin"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
-      </div>
-      <div class="col col-xs-12 col-sm-6 col-md-6">
-        <label>LGA *</label>
-        <LgaInput
-          v-model="suspect.LGA"
-          :state="suspect.StateOfOrigin || ''"
-          options-dense=""
-          label="LGA"
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
-        <!--<q-select
-          v-model="suspect.LGA"
-          :options="lgas"
-          options-dense=""
-          label="LGA"
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />-->
-      </div>
-    </div>
-
-    <label>Residential address *</label>
-    <q-input
-      v-model="suspect.Address"
-      type="text"
+    <CityInput
+      v-model="suspect.City"
+      label="City"
+      :state="suspect.State || ''"
+      options-dense=""
       outlined
-      dense
-      square
+      stack-label=""
       :rules="[(val) => !!val || 'This field is required']"
       lazy-rules="ondemand"
-      hide-bottom-space=""
-    >
-      <q-btn
-        unelevated
-        glossy
-        color="teal"
-        :label="$q.screen.gt.xs ? 'Validate' : ''"
-        @click="onValidateAddress(suspect.Address)"
-        v-if="suspect.Address"
-      />
-      <template v-slot:prepend>
-        <q-btn
-          dense
-          unelevated
-          glossy
-          color="teal"
-          icon="map"
-          @click="onPreviewMap"
-          v-if="suspect.Lat && suspect.Lng"
-        />
-      </template>
-    </q-input>
-
+    />
+    <q-select
+      label="Means of identification *"
+      v-model="suspect.IdentityCard"
+      :options="identityOptions"
+      options-dense=""
+      outlined
+      stack-label=""
+      clearable
+      clear-icon="clear"
+      :rules="[(val) => !!val || 'This field is required']"
+      lazy-rules="ondemand"
+    />
+    <q-input
+      label="ID Number"
+      v-model="suspect.IdNumber"
+      type="text"
+      outlined
+      stack-label
+    />
     <div class="row">
-      <div class="col col-xs-12 col-sm-6 col-md-6 q-pr-xs">
-        <label>State of residence *</label>
-        <StateInput
-          v-model="suspect.State"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
-        <!--<q-select
-          v-model="suspect.State"
-          :options="states"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />-->
-      </div>
-      <div class="col col-xs-12 col-sm-6 col-md-6">
-        <label>City of residence *</label>
-        <CityInput
-          v-model="suspect.City"
-          :state="suspect.State || ''"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />
-        <!--<q-select
-          v-model="suspect.City"
-          :options="cities"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        />-->
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col col-xs-12 col-sm-6 col-md-6 q-pr-xs">
-        <label>ID Number</label>
-        <q-input v-model="suspect.IdNumber" type="text" outlined dense square />
-      </div>
-      <div class="col col-xs-12 col-sm-6 col-md-6">
-        <label>Means of identification</label>
-        <q-select
-          v-model="suspect.IdentityCard"
-          :options="identityOptions"
-          options-dense=""
-          outlined
-          dense
-          square=""
-          clearable
-        />
-      </div>
-    </div>
-    <div class="row">
-      <div
-        class="col col-xs-6 col-sm-5 col-md-4 q-pr-sm q-pt-md text-left"
-        align="left"
-      >
+      <div class="col col-xs-6 col-sm-5 col-md-4 q-pr-sm q-pt-md text-center">
         <q-img
           :src="suspect.PhotoURL"
           spinner-color="orange"
           spinner-size="32px"
           width="224px"
+          height="224px"
           alt="Passport photo"
           :rules="[(val) => !!val || 'This field is required']"
           lazy-rules="ondemand"
-          hide-bottom-space=""
           style="
             border: 1px solid #bbb;
             border-radius: 4px 4px;
-            background-image: url('https://avatars.dicebear.com/api/adventurer-neutral/mail%40ashallendesign.co.uk.svg');
+            background-image: url('/assets/avatar3.jpg');
             background-repeat: no-repeat;
             background-size: cover;
           "
@@ -259,7 +200,6 @@
         </q-btn>
       </div>
     </div>
-    <CircularProgress :loading="loading" :size="140" />
   </q-form>
   <q-dialog v-model="previewMap" class="full-width">
     <q-card flat class="full-width">
@@ -272,30 +212,25 @@
     :model="dialogModel"
     :set-model="(v) => (dialogModel = v)"
     :maxSize="1028 * 100"
-    position="top"
+    position="left"
     v-on:DocUploaded="onDocumentUploaded"
   />
 </template>
 <script setup>
 import { ref, computed, watch } from "vue";
 
-import {
-  useStates,
-  useCities,
-  useCountries,
-  useLgas,
-  useGeolocation,
-} from "src/composables/use-fn";
+import { useGeolocation } from "src/composables/use-fn";
 import UploadDialog from "src/components/UploadDialog.vue";
 import { deleteFile } from "src/composables/remote";
-//import { useGeolocation } from "src/composables/use-fn";
 import { Dialog, Notify } from "quasar";
-import CircularProgress from "src/components/CircularProgress.vue";
+//import CircularProgress from "src/components/CircularProgress.vue";
 import GoogleGeoViewer from "src/components/dashboard/GoogleGeoViewer.vue";
 import StateInput from "./StateInput.vue";
 import CityInput from "./CityInput.vue";
 import LgaInput from "./LgaInput.vue";
 import CountryInput from "./CountryInput.vue";
+import AutoComplete from "../AutoComplete.vue";
+import { useSuspects } from "src/composables/use-fn";
 
 const geo = useGeolocation();
 
@@ -306,22 +241,40 @@ const identityOptions = [
   "Others",
 ];
 const props = defineProps({
-  data: Object,
+  model: Object,
+  setModel: Function,
 });
-const dialogModel = ref(false);
-const _suspect = ref(Object.assign({}, props.data));
 const suspect = computed({
-  get: () => _suspect.value || {},
-  set: (v) => (_suspect.value = v),
+  get: () => props.model || {},
+  set: (v) => props.setModel(v),
 });
-//const states = useStates("Nigeria");
-//const cities = computed(() => useCities(suspect.value?.State));
-//const lgas = computed(() => useLgas(suspect.value?.StateOfOrigin));
-//const countries = useCountries();
+
+const search = ref();
+const dialogModel = ref(false);
+//const _suspect = ref({ id: "", Name: "" }, props.data);
+const suspects = useSuspects();
+/*const suspect = computed({
+  get: () => _suspect.value,
+  set: (v) => (_suspect.value = v),
+});*/
 const form = ref(null);
 const loading = ref(false);
 const previewMap = ref(false);
 const geoData = ref({});
+
+function setSuspect(v) {
+  suspect.value = v;
+}
+function filter(needle) {
+  const filtered = suspects.value.filter((s) => {
+    return (
+      s.Name.toLowerCase().indexOf(needle) === 0 ||
+      s.Name.toLowerCase().indexOf(" " + needle) > 0
+    );
+    // v.toLowerCase().indexOf(needle) > -1)
+  });
+  return filtered;
+}
 function reset() {
   form.value.resetValidation();
 }
@@ -424,15 +377,20 @@ const onValidateAddress = async (address) => {
 };
 watch(
   () => suspect.value.StateOfOrigin,
-  (val) => {
-    suspect.value.LGA = null;
+  (newVal, oldVal) => {
+    if (oldVal) suspect.value.LGA = null;
   }
 );
 watch(
   () => suspect.value.State,
-  (val) => {
-    suspect.value.City = null;
+  (newVal, oldVal) => {
+    // console.log(newVal, oldVal);
+    if (oldVal) suspect.value.City = null;
   }
 );
+watch(search, (newVal, oldVal) => {
+  //console.log(newVal, oldVal);
+  suspect.value = newVal || {};
+});
 defineExpose({ suspect, reset, validate });
 </script>

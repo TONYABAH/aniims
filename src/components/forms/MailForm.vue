@@ -4,17 +4,19 @@
     :validate="validate"
     :set-current-doc="setMail"
     :getDocument="getDocument"
+    :searchFields="SEARCH_FIELDS"
+    :commentable="true"
+    collectionName="Mails"
   >
-    <q-form ref="form" class="q-gutter-sm">
-      <q-separator spaced inset vertical dark />
-      <label v-if="mail.id">Mail ID *</label>
+    <q-form ref="form" class="q-gutter-md q-pt-md">
       <q-input
         v-model="mail.id"
+        label="Mail ID"
         type="text"
         outlined
-        square
+        stack-label
         readonly=""
-        v-if="mail.id"
+        v-if="mail?.id"
       >
         <template v-slot:append>
           <q-btn
@@ -43,19 +45,30 @@
           </q-btn>
         </template>
       </q-input>
-      <q-separator spaced inset vertical dark />
-      <label>File number *</label>
+      <q-select
+        label="Location *"
+        options-dense=""
+        v-model="mail.Location"
+        :options="store.locations"
+        :rules="[(val) => !!val || 'I&E Location is required']"
+        lazy-rules="ondemand"
+        hide-bottom-space=""
+        outlined
+        stack-label
+        square=""
+      />
       <q-input
         v-model="mail.FileNumber"
+        label="File number *"
         type="text"
         color=""
         name="fileNumber"
         outlined
-        square=""
+        stack-label=""
       >
         <template v-slot:append>
           <q-btn
-            v-if="update_fileNumber && mail.id"
+            v-if="update_fileNumber && mail?.id"
             flat
             color="primary"
             label="Update"
@@ -63,10 +76,10 @@
           />
         </template>
       </q-input>
-      <q-separator spaced inset vertical dark />
-      <label>Subject *</label>
+
       <q-input
         v-model="mail.Title"
+        label="Subject *"
         type="text"
         color=""
         name="title"
@@ -78,12 +91,12 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square=""
+        stack-label=""
       />
-      <q-separator spaced inset vertical dark />
-      <label>Source name *</label>
+
       <q-input
         v-model="mail.Source"
+        label="Source name *"
         type="text"
         color=""
         name="source"
@@ -91,12 +104,12 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square=""
+        stack-label=""
       />
-      <q-separator spaced inset vertical dark />
-      <label>Source address *</label>
+
       <q-input
         v-model="mail.Address"
+        label="Source address *"
         type="text"
         color=""
         name="address"
@@ -104,41 +117,36 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-        square=""
+        stack-label=""
       />
       <div class="row q-col-gutter-xs">
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical dark />
-          <label>Incoming date *</label>
-
           <q-input
             name="inDate"
             v-model="mail.InDate"
+            label="Incoming date *"
             type="date"
             clear-icon="clear"
-            input-class="q-mt-md q-pb-md"
             :rules="[(val) => !!val || 'In coming date is required']"
             lazy-rules="ondemand"
             hide-bottom-space=""
             outlined
-            square=""
+            stack-label=""
           />
         </div>
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
-          <q-separator spaced inset vertical dark />
-          <label>Outgoing date</label>
           <q-input
             name="outDate"
             v-model="mail.OutDate"
+            label="Outgoing date"
             type="date"
             clear-icon="clear"
             outlined
-            square=""
-            input-class="q-mt-md q-pb-md"
+            stack-label=""
           >
             <template v-slot:append>
               <q-btn
-                v-if="update_outdate && mail.id"
+                v-if="update_outdate && mail?.id"
                 flat
                 color="primary"
                 label="Update"
@@ -148,6 +156,13 @@
           </q-input>
         </div>
       </div>
+      <StatusInput
+        collection-name="Mails"
+        :documentId="mail?.id"
+        :status="mail?.Status"
+        :set-status="(v) => (mail.Status = v)"
+        outlined
+      />
     </q-form>
     <!--<q-toolbar class="q-mt-sm">
       <q-toolbar-title> </q-toolbar-title>
@@ -166,21 +181,28 @@
 
 <script setup>
 import { Dialog as dialog } from "quasar";
-import { ref, onMounted, watch, provide, unref } from "vue";
+import { ref, onBeforeMount, watch, provide, computed } from "vue";
 import FormCard from "src/components/FormCard.vue";
 import { update } from "src/composables/remote";
+import { simpleSearch } from "src/composables/searchProvider";
 import { useDefaultStore } from "src/stores/store";
 import Clipboard from "src/utils/clipboard.js";
+import StatusInput from "./StatusInput.vue";
 
 const store = useDefaultStore();
-const mail = ref({});
+//const mail = ref({});
 const form = ref(null);
 const update_fileNumber = ref(false);
 const update_outdate = ref(false);
 const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn");
+const SEARCH_FIELDS = ["Title", "Source", "Address"];
 
-const setMail = (v) => (mail.value = unref(v));
+const mail = computed({
+  get: () => store.currentDocument || {},
+  set: (v) => (store.currentDocument = v || {}),
+});
+const setMail = (v) => (mail.value = v || {});
 
 const validate = async () => await form.value?.validate(true);
 
@@ -251,15 +273,28 @@ function reset() {
 }
 
 function generateComplaint() {}
+
 watch(
-  () => mail.value.FileNumber,
+  () => mail.value?.FileNumber,
   (newValue) => {
-    //console.log(mail.value);
+    if (newValue) {
+      simpleSearch("Files", { whereFilters: [["FileNumber", "==", newValue]] })
+        .then((list) => {
+          if (list.length > 0) {
+            const file = list[0];
+            mail.value.FileId = file.id;
+          }
+        })
+        .catch((e) => {});
+    } else {
+      mail.value.FileId = null;
+    }
     update_fileNumber.value = newValue ? true : false;
-  }
+  },
+  { immediate: true }
 );
 watch(
-  () => mail.value.OutDate,
+  () => mail.value?.OutDate,
   (newValue) => {
     //console.log(newValue);
     update_outdate.value = newValue ? true : false;
@@ -270,10 +305,10 @@ provide("iconName", "mail");
 provide("titleField", "title");
 provide("secondTitle", "date");
 provide("collection", "Mails");
-provide("searchFields", ["Title", "Source", "Address"]);
+//provide("searchFields", ["Title", "Source", "Address"]);
 
-onMounted(() => {
-  //console.log(mail.value.fileNumber);
+onBeforeMount(() => {
+  //if (!mail.value) mail.value = {};
   store.loading = false;
 });
 

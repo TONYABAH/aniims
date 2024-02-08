@@ -32,7 +32,7 @@ import {
   getFirestore,
   onSnapshot,*/
 } from "firebase/firestore";
-//import { updateDocument, createDocument } from "./functions";
+import { updateDocument, createDocument } from "./functions";
 import { addSearch, generateId } from "./searchProvider";
 import { useDefaultStore } from "src/stores/store";
 import { child, set, get, ref as databseRef } from "firebase/database";
@@ -42,12 +42,16 @@ const storage = getStorage(app);
 const store = useDefaultStore();
 
 const reoveStorageReference = async (collectionName, documentId, data) => {
-  const attachRef = doc(db, collectionName, documentId);
+  //const attachRef = doc(db, collectionName, documentId);
+  const _ref = doc(db, collectionName, documentId, "Attachments", data.id);
+ 
   await runTransaction(db, async (t) => {
-    t.update(attachRef, { Attachments: arrayRemove(data) });
+    //t.update(attachRef, { Attachments: arrayRemove(data) });
+    t.delete(_ref)
     addHistory("Removed an attachment", collectionName, documentId, {}, t);
   });
 };
+
 export async function deleteFile(fileName) {
   const storageRef = reference(storage, fileName);
   deleteObject(storageRef)
@@ -64,52 +68,6 @@ export async function deleteFile(fileName) {
       }
     });
 }
-export async function getStaffList(unit) {
-  const dbRef = collection(db, "Users");
-  let q = query(
-    dbRef,
-    where("Level", "==", 3),
-    where("Active", "==", true),
-    limit(10000)
-  );
-  const querySnapshot = await getDocs(q);
-  const list = querySnapshot.docs;
-  return list;
-}
-export async function getSuperiors() {
-  let staffList = await getStaffList();
-  return staffList.filter(
-    (s) => s.heads !== undefined || s.Role === "Director"
-  );
-}
-export async function getSuperior(unit) {
-  let user = store.user;
-  let superior = null;
-  if (user.claims.role === "Director") return null;
-  let staffList = await getStaffList();
-  for (let doc of staffList) {
-    let document = doc.data();
-    if (user.claims.heads) {
-      if (document.Role === "Director") return document;
-    } else if (document.Heads?.includes(unit)) {
-      //superior = staffList.find((s) => s.Heads?.includes(unit));
-      return document;
-    }
-    //console.log(document);
-  }
-  //console.log(superior);
-  return superior;
-}
-/*export async function logSMS(to, coll, docId, transaction) {
-  const data = {
-    phone: to.Phone,
-    coll: coll,
-    docId: docId,
-    CreatedAt: Date.now(),
-  };
-  const _ref = doc(db, "SMS", generateId());
-  return transaction.set(_ref, data);
-}*/
 
 export async function addHistory(
   operation,
@@ -119,23 +77,21 @@ export async function addHistory(
   transaction
 ) {
   //const user = store.user;
-  const d = {
+  const historyData = {
+    //coll: collectionName,
+    //doc: docId,
     op: operation,
-    time: serverTimestamp(),
-    //time: timestamp(),
     date: Date.now(),
-    coll: collectionName,
-    doc: docId,
-    user: store.user.displayName,
     uid: store.user.uid,
+    user: store.user.displayName,
     ...data,
   };
-  const { op, time, coll, uid, user } = d;
+  //const { op, date, coll, uid, user } = historyData;
   const historyRef = doc(db, collectionName, docId, "History", generateId());
-  const logRef = doc(db, "applogs", generateId());
-  return transaction
-    .set(historyRef, d)
-    .set(logRef, { op, time, coll, docId, uid, user, ...data });
+  //const logRef = doc(db, "logging", generateId());
+
+  return transaction.set(historyRef, historyData);
+  //.set(logRef, { op, date, coll, docId, uid, user });
 }
 export async function addChildDocument(
   collectionName,
@@ -143,10 +99,10 @@ export async function addChildDocument(
   subCollection,
   data
 ) {
-  //const logRef = doc(db, "applogs", generateId());
-  const childId = generateId();
-  const docRef = doc(db, collectionName, docId, subCollection, childId);
-  data.id = childId;
+  //const logRef = doc(db, "logging", generateId());
+  const childDocumentId = generateId();
+  const docRef = doc(db, collectionName, docId, subCollection, childDocumentId);
+  data.id = childDocumentId;
   await runTransaction(db, async (t) => {
     t.set(docRef, data);
     //t.set(logRef, { op, time, coll, docId, uid, user, ...data });
@@ -154,68 +110,39 @@ export async function addChildDocument(
       "Added child document",
       collectionName,
       docId,
-      { child: subCollection, childId },
+      { subColl: subCollection, subDocId: childDocumentId },
       t
     );
   });
-  return childId;
+  return childDocumentId;
 }
-export const addComment = async (
+export async function updateChildDocument(
   collectionName,
-  documentId,
-  comment,
-  to,
-  unit
-) => {
-  const user = store.user;
-  const commentsData = {
-    from: user.displayName,
-    to: to.Name,
-    comment: comment,
-    time: Date.now(),
-    unit,
-    uid: user.uid,
-    toid: to.uid,
-  };
-
-  const docRef = doc(db, collectionName, documentId);
-  //let minRef = doc(db, "Minutes", generateId());
-  let commentRef = doc(db, collectionName, documentId, "Minutes", generateId());
+  docId,
+  subCollection,
+  childDocumentId,
+  data
+) {
+  //const logRef = doc(db, "logging", generateId());
+  //const childDocumentId = generateId();
+  const docRef = doc(db, collectionName, docId, subCollection, childDocumentId);
 
   await runTransaction(db, async (t) => {
-    t.update(docRef, {
-      "meta.To": to.uid,
-      "meta.From": user.uid,
-      "meta.Unit": unit,
-    }).set(commentRef, commentsData);
-
+    t.update(docRef, data);
     addHistory(
-      "Minuted",
+      "Updated child document",
       collectionName,
-      documentId,
+      docId,
       {
-        from: user.displayName || user.email,
-        to: to.Name,
-        toid: to.uid,
-        unit: unit,
+        subColl: subCollection,
+        subDocId: childDocumentId,
+        childId: childDocumentId,
       },
       t
     );
-    // logSMS(to, collectionName, documentId, t);
-    // Atomically remove a region from the "regions" array field.
-    //.update({regions: FieldValue.arrayRemove("east_coast"),});
-    // Atomically add a new region to the "regions" array field.
-    // setDoc(historyRef, {History: arrayUnion(historyData),});
   });
-  return commentsData;
-};
-/**
- * Add document to cloud firestore.
- * @param {Map} data Document to save to firestore.
- * @param {Number} collectionName Name of collection to save document to.
- * @param  {...String} searchFields Array of strings to search.
- * @returns Promise reolved to id.
- */
+  return childDocumentId;
+}
 export const create = async (data, collectionName, searchFields = []) => {
   //const user = getAuth().currentUser;
   data.meta = {
@@ -223,20 +150,14 @@ export const create = async (data, collectionName, searchFields = []) => {
     CreatedAt: Date.now(),
     Status: "Created",
   };
+
   const _fields = [];
   searchFields.forEach((f) => {
     _fields.push(data[f]);
   });
 
   data.meta.search = addSearch(_fields);
-  //Server side creation
-  /*return await createDocument({
-    payload: data,
-    collection: collectionName,
-    documentId: generateId(),
-    historyId: generateId(),
-    user: store.user.displayName,
-  });*/
+  data.Status = "Open";
   // We set the id manually here to ensure ordering
   let id = generateId();
   data.id = id;
@@ -251,35 +172,77 @@ export const create = async (data, collectionName, searchFields = []) => {
 
 export const save = async (id, data, collectionName) => {
   const docRef = doc(db, collectionName, id);
+  delete data.meta;
   await runTransaction(db, async (t) => {
     t.set(docRef, data); //.update(docRef, metadata);
     addHistory("Saved", collectionName, id, {}, t);
   });
 };
 
-export const update = async (id, data, collectionName) => {
+export const update = async (id, data, collectionName, skipHistory) => {
+  delete data.meta;
+  await runTransaction(db, async (t) => {
+    const docRef = doc(db, collectionName, id);
+    t.update(docRef, data); //.update(docRef, metadata);
+    if (!skipHistory) addHistory("Updated", collectionName, id, {}, t);
+  });
+};
+
+export const createOnServer = async (
+  data,
+  collectionName,
+  searchFields = []
+) => {
+  //const user = getAuth().currentUser;
+  data.meta = {
+    CreatedBy: store.user.uid, //{ uid: user.uid, name: user.displayName };
+    CreatedAt: Date.now(),
+    Status: "Created",
+  };
+  const _fields = [];
+  searchFields.forEach((f) => {
+    _fields.push(data[f]);
+  });
+
+  data.meta.search = addSearch(_fields);
+  //Server side creation
+  return await createDocument({
+    payload: data,
+    collection: collectionName,
+    documentId: generateId(),
+    historyId: generateId(),
+    user: store.user.displayName,
+  });
+};
+
+export const updateOnServer = async (id, data, collectionName) => {
   // Server side creation
-  /*await updateDocument({
+  await updateDocument({
     payload: data,
     collection: collectionName,
     documentId: id,
     historyId: generateId(),
     user: store.user.displayName,
-  });*/
-  await runTransaction(db, async (t) => {
-    const docRef = doc(db, collectionName, id);
-    t.update(docRef, data); //.update(docRef, metadata);
-    addHistory("Updated", collectionName, id, {}, t);
   });
 };
 
 export const remove = async (id, collectionName) => {
   const docRef = doc(db, collectionName, id);
+  const logRef = doc(db, "logging", generateId());
   await runTransaction(db, async (t) => {
-    t.delete(docRef, data); //.update(docRef, metadata);
-    addHistory("Deleted", collectionName, id, {}, t);
+    t.delete(docRef, data).set(logRef, {
+      op: "Deleted",
+      date: new Date(),
+      coll: collectionName,
+      doc: id,
+      user: {
+        uid: store.user.uid,
+        name: store.user.displayName,
+        email: store.user.email,
+      },
+    });
+    //addHistory("Deleted", collectionName, id, {}, t);
   });
-  return res;
 };
 
 export function getStorageFolder(type) {
@@ -291,13 +254,15 @@ export function getStorageFolder(type) {
   }
   return folder;
 }
-export const onAddAttachment = async (collectionName, documentId, data) => {
-  const attachRef = doc(db, collectionName, documentId);
+
+export async function onAddAttachment(collectionName, documentId, data) {
+  const _ref = doc(db, collectionName, documentId, "Attachments", generateId());
   await runTransaction(db, async (t) => {
-    t.update(attachRef, { Attachments: arrayUnion(data) });
+    t.set(_ref, data);
     addHistory("Added an attachment", collectionName, documentId, {}, t);
   });
-};
+}
+
 export const onAddDocument = async (collectionName, documentId, name, data) => {
   const attachRef = doc(db, collectionName, documentId);
   const field = {};
@@ -308,6 +273,7 @@ export const onAddDocument = async (collectionName, documentId, name, data) => {
     addHistory("Added a row of " + name, collectionName, documentId, {}, t);
   });
 };
+
 export const onDeleteDocument = async (
   collectionName,
   documentId,
@@ -322,9 +288,10 @@ export const onDeleteDocument = async (
     addHistory("Removed a row of " + name, collectionName, documentId, {}, t);
   });
 };
+
 export const onDeleteAttachment = async (collectionName, documentId, data) => {
-  let folder = getStorageFolder(data.Type);
-  const storageRef = reference(storage, folder + data.id);
+  //let folder = getStorageFolder(data.Type);
+  const storageRef = reference(storage, data.downloadURL);
   deleteObject(storageRef)
     .then(async () => {
       //const attachRef = doc(db, collectionName, documentId);
@@ -349,26 +316,18 @@ export const onDeleteAttachment = async (collectionName, documentId, data) => {
       }
     });
 };
-export async function onAssign(comment, to, unit, docId, action = "Submit") {
-  /*await update(
-    docId,
-    {
-      "meta.To": to.uid,
-      "meta.From": store.user.uid,
-      "meta.Unit": unit,
-      "meta.Time": Date.now(),
-      "meta.Status": "Assigned",
-      "meta.Location": to.Location,
-    },
-    store.currentCollection,
-    false
-  );
 
-  return await addComment(store.currentCollection, docId, comment, staff, unit);
-  */
-  return onSubmit(comment, to, unit, docId, action);
+export async function onAssign(comment, to, unit, docId, action = "Assign") {
+  return __onSubmitMinutes(comment, to, unit, docId, action);
 }
-export async function onSubmit(comment, to, unit, docId, action = "Submit") {
+
+export async function onSubmit(
+  comment,
+  to,
+  unit,
+  documentId,
+  action = "Submit"
+) {
   if (store.currentDocument) {
     if (!to) {
       throw {
@@ -376,7 +335,7 @@ export async function onSubmit(comment, to, unit, docId, action = "Submit") {
           "No user with the given identifier. Please provide the user ID",
       };
     }
-    const data = {
+    const metaData = {
       "meta.To": to.uid,
       "meta.From": store.user.uid,
       "meta.Unit": unit || "",
@@ -388,15 +347,47 @@ export async function onSubmit(comment, to, unit, docId, action = "Submit") {
       status = "Returned";
     } else if (action === "Assign") {
       status = "Assigned";
-      data["meta.Assigned"] = true;
+      metaData["meta.Assigned"] = true;
     } else {
-      data["meta.Submitted"] = true;
+      metaData["meta.Submitted"] = true;
+      9;
     }
-    data["meta.Status"] = status;
+    metaData["meta.Status"] = status;
     store.currentDocument.Status = status;
+    const commentsData = {
+      from: store.user.displayName,
+      to: to.Name,
+      unit,
+      uid: store.user.uid,
+      toid: to.uid,
+      time: Date.now(),
+      comment: comment,
+    };
+    //await update(docId, metaData, store.currentCollection, true);
+    //await addComment(store.currentCollection, docId, comment, to, unit);
+    await runTransaction(db, async (t) => {
+      const metaRef = doc(db, store.currentCollection, documentId);
+      let commentRef = doc(
+        db,
+        store.currentCollection,
+        documentId,
+        "Minutes",
+        generateId()
+      );
+      t.update(metaRef, metaData).set(commentRef, commentsData);
 
-    await update(docId, data, store.currentCollection, false);
-    await addComment(store.currentCollection, docId, comment, to, unit);
+      await addHistory(
+        "Minuted",
+        store.currentCollection,
+        documentId,
+        {
+          from: store.user.displayName,
+          to: to.Name,
+          unit: unit,
+        },
+        t
+      );
+    });
   } else {
     throw { message: "No document loaded" };
   }
@@ -508,7 +499,7 @@ export const list = async (collectionName, limits, order = []) => {
 };
 
 export async function generateCaseId() {
-  const dbRef = collection(db, "Cases");
+  const dbRef = collection(db, "Investigations");
   let q = query(dbRef, orderBy("CaseID", "desc"), limit(1));
   const querySnapshot = await getDocs(q);
   let caseId = 0;
@@ -529,3 +520,184 @@ export async function saveSettings(data) {
   let dbRef = databseRef(database, "settings/" + store.user.uid);
   await set(dbRef, data);
 }
+
+export async function __getStaffList(unit) {
+  const dbRef = collection(db, "Users");
+  let q = query(
+    dbRef,
+    where("Level", "==", 3),
+    where("Active", "==", true),
+    limit(10000)
+  );
+  const querySnapshot = await getDocs(q);
+  const list = querySnapshot.docs;
+  return list;
+}
+export async function __getSuperiors() {
+  let staffList = await getStaffList();
+  return staffList.filter(
+    (s) => s.heads !== undefined || s.Role === "Director"
+  );
+}
+export async function __getSuperior(unit) {
+  let user = store.user;
+  let superior = null;
+  if (user.claims.role === "Director") return null;
+  let staffList = await getStaffList();
+  for (let doc of staffList) {
+    let document = doc.data();
+    if (user.claims.heads) {
+      if (document.Role === "Director") return document;
+    } else if (document.Heads?.includes(unit)) {
+      //superior = staffList.find((s) => s.Heads?.includes(unit));
+      return document;
+    }
+    //console.log(document);
+  }
+  //console.log(superior);
+  return superior;
+}
+export const _onAddAttachment = async (collectionName, documentId, data) => {
+  const attachRef = doc(db, collectionName, documentId);
+  await runTransaction(db, async (t) => {
+    t.update(attachRef, { Attachments: arrayUnion(data) });
+    addHistory("Added an attachment", collectionName, documentId, {}, t);
+  });
+};
+export async function __onSubmit(comment, to, unit, docId, action = "Submit") {
+  if (store.currentDocument) {
+    if (!to) {
+      throw {
+        message:
+          "No user with the given identifier. Please provide the user ID",
+      };
+    }
+    const metaData = {
+      To: to.uid,
+      From: store.user.uid,
+      Unit: unit || "",
+      Time: Date.now(),
+      Location: to.Location,
+    };
+    let status = "Submitted";
+    if (action === "Return") {
+      status = "Returned";
+    } else if (action === "Assign") {
+      status = "Assigned";
+      metaData["Assigned"] = true;
+    } else {
+      metaData["Submitted"] = true;
+      9;
+    }
+    metaData["Status"] = status;
+
+    store.currentDocument.Status = status;
+
+    const commentsData = {
+      ...metaData,
+      Comment: comment,
+    };
+    await runTransaction(db, async (t) => {
+      const metaRef = doc(db, "Meta", docId);
+      let commentRef = doc(
+        db,
+        collectionName,
+        documentId,
+        "Minutes",
+        generateId()
+      );
+      t.update(metaRef, metaData).set(commentRef, commentsData);
+
+      addHistory(
+        "Minuted",
+        collectionName,
+        documentId,
+        {
+          from: store.user.displayName,
+          to: to.Name,
+          toid: to.uid,
+          unit: unit,
+        },
+        t
+      );
+    });
+    //await save(docId, "Meta", metaData);
+    //await addComment(store.currentCollection, docId, comment, to, unit);
+  } else {
+    throw { message: "No document loaded" };
+  }
+}
+const __addComment = async (collectionName, documentId, comment, to, unit) => {
+  const user = store.user;
+  const commentsData = {
+    from: user.displayName,
+    to: to.Name,
+    comment: comment,
+    time: Date.now(),
+    unit,
+    uid: user.uid,
+    toid: to.uid,
+  };
+
+  const docRef = doc(db, collectionName, documentId);
+  let commentRef = doc(db, collectionName, documentId, "Minutes", generateId());
+
+  await runTransaction(db, async (t) => {
+    t.update(docRef, {
+      "meta.To": to.uid,
+      "meta.From": user.uid,
+      "meta.Unit": unit,
+    }).set(commentRef, commentsData);
+
+    addHistory(
+      "Minuted",
+      collectionName,
+      documentId,
+      {
+        from: user.displayName || user.email,
+        to: to.Name,
+        toid: to.uid,
+        unit: unit,
+      },
+      t
+    );
+    // logSMS(to, collectionName, documentId, t);
+    // Atomically remove a region from the "regions" array field.
+    //.update({regions: FieldValue.arrayRemove("east_coast"),});
+    // Atomically add a new region to the "regions" array field.
+    // setDoc(historyRef, {History: arrayUnion(historyData),});
+  });
+  return commentsData;
+};
+/**
+ * Add document to cloud firestore.
+ * @param {Map} data Document to save to firestore.
+ * @param {Number} collectionName Name of collection to save document to.
+ * @param  {...String} searchFields Array of strings to search.
+ * @returns Promise reolved to id.
+ */
+export const __create = async (data, collectionName, searchFields = []) => {
+  const _fields = [];
+  searchFields.forEach((f) => {
+    _fields.push(data[f]);
+  });
+
+  const metaData = {
+    CreatedBy: store.user.uid, //{ uid: user.uid, name: user.displayName };
+    CreatedAt: Date.now(),
+    Status: "Created",
+    search: addSearch(_fields),
+  };
+  // We set the id manually here to ensure ordering
+  let docId = generateId();
+  data.id = docId;
+
+  const metaRef = doc(db, "Meta", docId);
+  const docRef = doc(db, collectionName, docId);
+
+  await runTransaction(db, async (t) => {
+    t.set(docRef, data).set(metaRef, metaData);
+    addHistory("Created", collectionName, docId, {}, t);
+  });
+  return docId;
+};

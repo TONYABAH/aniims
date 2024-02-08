@@ -1,49 +1,51 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-     function isSignedIn() {
-      return request.auth != null && request.auth.uid != null;
-    }
-    function userCreated() {
-        return isSignedIn() && (resource.data.keys().hasAny(["CreatedBy"]) && resource.data.CreatedBy == request.auth.uid && resource.data.Status=="Created");
+    function isSignedIn() {
+      return request.auth != null
     }
     function isAdmin(){
-      return isSignedIn() && request.auth.token.admin == true;
+      return request.auth.token.admin == true;
+    }
+    function userCreated() {
+        return resource.data.meta.CreatedBy == request.auth.uid && resource.data.meta.Status=="Created";
+    }
+    function minutedToUser() {
+        return resource.data.meta.To == request.auth.uid;
     }
     function canDelete(){
-      return (userCreated() && resource.data.Status == "Created") || isAdmin();
+      return userCreated() || isAdmin();
     }
-
+    function documentMinutedToUser(collection, docId){
+      let uid = request.auth.uid;
+      let doc = get(/databases/$(database)/documents/$(collection)/$(docId));
+      let minuted = doc.data.meta.To == uid;
+      return minuted;
+    }
+    function documentExists(collection, docId){
+      let doc = exists(/databases/$(database)/documents/$(collection)/$(docId));
+      return doc;
+    }
+    match /logging/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && request.auth.token.level > 1;
+      allow list: if isSignedIn() && request.auth.token.level > 1;
+      allow update: if isSignedIn()
+      allow delete: if isAdmin();
+    }
     match /Users/{id} {
       allow create: if false;
-      allow get: if isSignedIn();
+      allow get: if isSignedIn() && request.auth.token.level > 1;
       allow list: if isSignedIn() && request.auth.token.level > 1;
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
     match /Units/{id} {
-      allow create: if false;
-      allow get: if isSignedIn();
+      allow create: if false
+      allow get: if isSignedIn() && request.auth.token.level > 1;
       allow list: if isSignedIn() && request.auth.token.level > 1;
       allow update: if isAdmin();
       allow delete: if isAdmin();
-    }
-    match /applogs/{id} {
-      allow create: if isSignedIn();
-      allow get: if isSignedIn() && request.auth.token.level > 1;
-      allow list: if isSignedIn() && request.auth.token.level > 1;
-      allow delete: if isAdmin();
-    }
-
-    match /{collection}/{docId}/History/{id} {
-      allow create: if isSignedIn();
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-    }
-    match /{collection}/{docId}/Minutes/{id} {
-      allow create: if isSignedIn();
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
     }
      match /Companies/{id} {
       allow create: if isSignedIn();
@@ -52,32 +54,82 @@ service cloud.firestore {
       allow update: if isSignedIn() && request.auth.token.level > 2;
       allow delete: if canDelete();
     }
-    match /Complaints/{id} {
+    match /Mails/{id} {
       allow create: if isSignedIn();
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.token.level > 2
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow delete: if canDelete();
+    }
+    match /Files/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow delete: if canDelete();
+    }
+     match /Complaints/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn()
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow delete: if canDelete();
+    }
+    match /Suspects/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn() && request.auth.token.level > 1;
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow delete: if canDelete();
+    }
+    match /Applications/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn()
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
       allow delete: if canDelete();
     }
     match /Destructions/{id} {
       allow create: if isSignedIn();
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.token.level > 2
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
       allow delete: if canDelete();
     }
-    match /Cases/{docId}/Reports/{id} {
+    match /Investigations/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn() && (isAdmin() || userCreated() || minutedToUser())
+      allow delete: if canDelete();
+    }
+    match /Raids/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn()
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn()
+      allow delete: if canDelete();
+    }
+    match /Samples/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn()
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn()
+      allow delete: if canDelete();
+    }
+    match /Payments/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && request.auth.token.level > 2;
+      allow update: if isSignedIn();
+      allow delete: if canDelete();
+    }
+    match /{collection}/{document}/{subcollection}/{subdocument} {
       allow create: if isSignedIn();
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-    }
-    match /{collection}/{id} {
-      //function isDoc(){return collection in ["Mails", "Files","Complaints","Surveillances","Raids","Cases","Samples","Destructions","Payments"]}
-      allow create: if isSignedIn();
-      allow get: if isSignedIn() && request.auth.token.level > 2; //userCreated() || userDocument() || canReadUnitDocument() || isDirector() || isAdmin();
-      allow list: if isSignedIn() && request.auth.token.level > 2; //userCreated() || userDocument() || canReadUnitDocument() || isDirector() || isAdmin();
-      allow update: if isSignedIn() && request.auth.token.level > 2
-      allow delete: if canDelete();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
   }
 }

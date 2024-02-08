@@ -2,50 +2,6 @@
   <q-layout view="HHh Lpr FFf">
     <default-header />
     <q-page-container>
-      <q-bar class="text-white" :class="store.theme.bg.default">
-        <q-btn-dropdown unelevated="" size="md" :label="selectedYear" color="">
-          <q-list>
-            <q-item
-              v-for="(item, i) of year_options"
-              :key="i"
-              clickable
-              v-close-popup
-              @click="onSelectYear(item)"
-            >
-              <q-item-section>
-                <q-item-label>{{ item }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
-        <q-checkbox
-          v-model="currentCases"
-          label="Current"
-          color="amber"
-          checked-icon="check"
-        />&nbsp; |
-        <q-btn-dropdown
-          unelevated=""
-          size="md"
-          :label="selectedUser?.Name"
-          color=""
-        >
-          <q-list>
-            <q-item
-              v-for="(item, i) of store.staffList"
-              :key="i"
-              clickable
-              v-close-popup
-              @click="onSelectUser(item)"
-            >
-              <q-item-section>
-                <q-item-label>{{ item.Name }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
-        <q-toolbar-title></q-toolbar-title>
-      </q-bar>
       <q-splitter
         v-model="splitterModel"
         style="width: 100%; height: 100vh"
@@ -53,34 +9,104 @@
         :vertical="$q.screen.gt.xs"
         :horizontal="$q.screen.lt.sm"
         :limits="[20, 80]"
-        :class="store.theme.bg.normal"
       >
         <template v-slot:before>
-          <q-list v-if="cases?.length > 0" class="list-panel">
+          <q-expansion-item
+            expand-separator
+            expand-icon="arrow_right"
+            icon="search"
+            label="Filter"
+            class="text-teal q-ma-xs q-pb-xs"
+            style="border-radius: 4px"
+            header-style="font-size:16px;"
+          >
+            <!-- <q-btn-dropdown
+              unelevated=""
+              size="md"
+              :label="selectedYear"
+              color=""
+            >
+              <q-list dense>
+                <q-item
+                  v-for="(item, i) of year_options"
+                  :key="i"
+                  clickable
+                  v-close-popup
+                  @click="onSelectYear(item)"
+                >
+                  <q-item-section>
+                    <q-item-label>{{ item }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>-->
+            <q-select
+              v-model="selectedYear"
+              :options="year_options"
+              label="Year started"
+              options-dense
+              outlined
+              class="q-mx-sm q-my-sm"
+              color="teal"
+              clear-icon="clear"
+              clearable
+            />
+            <q-select
+              v-model="statusModel"
+              :options="status_options"
+              label="Status"
+              options-dense
+              outlined
+              class="q-mx-sm"
+              color="teal"
+              clear-icon="clear"
+              clearable
+            />
+            <!--<StaffInput
+              :model="selectedUser"
+              :setModel="onSelectUser"
+              :searchOptions="staffSearchOptions"
+              dark
+              outlined
+              color="white"
+              label="Staff"
+              class="q-mx-sm q-mt-sm"
+            />-->
+            <IpoInput
+              :model="selectedIpo"
+              :setModel="onSelectIpo"
+              :search-options="ipoSearchOptions"
+              outlined
+              color="teal"
+              label="IPO"
+              class="q-mx-sm q-my-sm"
+            />
+          </q-expansion-item>
+
+          <q-list v-if="cases?.length > 0" class="list-panel q-mt-xs">
             <q-item
               clickable
               v-ripple
               v-for="(item, i) of cases"
               :key="i"
               :active-class="'bg-' + store.theme?.color?.default"
-              class="text-grey-2"
               @click="selectCase(item)"
             >
-              <q-item-section thumbnail top class="q-px-sm text-grey">
+              <q-item-section thumbnail top class="q-px-sm">
                 {{ cases.length - i }}.
               </q-item-section>
               <q-item-section top>{{ item.Title }}</q-item-section>
             </q-item>
           </q-list>
           <q-banner v-else class="text-italic"> No cases to show... </q-banner>
-          <q-list bordered>
+          <!--<q-list bordered class="text-white">
             <q-item clickable v-ripple v-for="(item, i) of staffList" :key="i">
               <q-item-section avatar>
-                <q-icon color="primary" name="person" />
+                <q-icon color="white" name="person" />
               </q-item-section>
               <q-item-section>{{ item.Name }}</q-item-section>
             </q-item>
-          </q-list>
+          </q-list>-->
         </template>
         <template v-slot:separator>
           <q-avatar
@@ -91,6 +117,10 @@
           />
         </template>
         <template v-slot:after>
+          <q-bar>
+            <q-toolbar-title>{{ Case?.Title }}</q-toolbar-title>
+            {{ store.user?.displayName }}
+          </q-bar>
           <q-card
             square
             class="my-card shadow-22"
@@ -128,6 +158,12 @@
                     :disable="shouldDisable"
                   />
                   <q-tab
+                    name="suspects"
+                    icon="perm_identity"
+                    label="Suspects"
+                    :disable="false"
+                  />
+                  <!--<q-tab
                     name="timeline"
                     icon="timer"
                     title="Timeline"
@@ -146,16 +182,10 @@
                     icon="sample"
                     label="Samples"
                     :disable="!complaint?.id && shouldDisable"
-                  />
-                  <q-tab
-                    name="suspects"
-                    icon="perm_identity"
-                    label="Suspects"
-                    :disable="shouldDisable"
-                  />
+                  />-->
                 </q-tabs>
               </q-toolbar>
-              <q-banner v-else class="bg-primary text-white">
+              <q-banner v-else class="bg-transparent text-italic">
                 No Case selected. Select a case to view items...
               </q-banner>
               <q-tab-panels
@@ -178,15 +208,11 @@
                   />
                 </q-tab-panel>
 
-                <q-tab-panel
+                <!--<q-tab-panel
                   name="complaint"
                   style="padding-left: 0; padding-right: 0"
                 >
-                  <ComplaintForm
-                    ref="complaintFormRef"
-                    :data="complaint"
-                    :setData="setComplaint"
-                  />
+                  <ComplaintForm ref="complaintFormRef" :data="complaint" />
                 </q-tab-panel>
                 <q-tab-panel
                   name="samples"
@@ -199,7 +225,7 @@
                     :deleteBtn="false"
                     title="Samples"
                   />
-                </q-tab-panel>
+                </q-tab-panel>-->
                 <q-tab-panel
                   name="suspects"
                   style="padding-left: 0; padding-right: 0"
@@ -256,18 +282,23 @@
                   name="minutes"
                   style="overflow: auto; padding-bottom: 80px"
                 >
-                  <MinutesTabCard />
+                  <MinutesTabCard :onMinuted="() => {}" />
                 </q-tab-panel>
 
-                <q-tab-panel
+                <!--<q-tab-panel
                   name="timeline"
                   style="overflow: auto; padding-bottom: 80px"
                 >
                   <HistoryTabCard />
-                </q-tab-panel>
+                </q-tab-panel>-->
               </q-tab-panels>
 
-              <q-dialog persistent="" v-model="suspectPopupModel">
+              <q-dialog
+                full-width=""
+                full-height=""
+                persistent=""
+                v-model="suspectPopupModel"
+              >
                 <q-card>
                   <q-toolbar class="bg-teal text-white">
                     <q-btn flat round dense icon="perm_identity" />
@@ -281,14 +312,21 @@
                       @click.stop="cancelDialog"
                     />
                   </q-toolbar>
-                  <q-card-section
-                    class="row items-center"
-                    style="padding: 0; padding-right: 16px"
+                  <div
+                    style="
+                      width: 100%;
+                      height: calc(100vh - 168px);
+                      overflow: auto;
+                    "
                   >
-                    <q-scroll-area style="width: 600px; height: 280px">
-                      <SuspectForm ref="suspectFormRef" :data="suspect" />
-                    </q-scroll-area>
-                  </q-card-section>
+                    <div class="q-pa-md">
+                      <SuspectForm
+                        ref="suspectFormRef"
+                        :model="suspect"
+                        :set-model="(v) => (suspect = v || {})"
+                      />
+                    </div>
+                  </div>
                   <q-card-actions align="right">
                     <q-btn
                       unelevated
@@ -307,10 +345,7 @@
                   </q-card-actions>
                 </q-card>
               </q-dialog>
-              <div
-                class="overlay"
-                v-if="tab !== 'reports' && tab !== 'minutes'"
-              />
+              <div class="overlay" v-if="tab === 'form'" />
             </q-card-section>
           </q-card>
         </template>
@@ -341,7 +376,9 @@ import DefaultHeader from "src/layouts/DefaultHeader.vue";
 import DefaultFooter from "src/layouts/DefaultFooter.vue";
 import TableView from "src/components/TableView.vue";
 import ReportForm from "src/components/forms/ReportForm.vue";
-import { useStaffList } from "src/composables/use-fn";
+import { useStaffList, useIpoList } from "src/composables/use-fn";
+import IpoInput from "src/components/forms/IpoInput.vue";
+import StaffInput from "src/components/forms/StaffInput.vue";
 //import TextEditor from "src/components/TextEditor.vue";
 //import FormCard from "src/components/FormCard.vue";
 //import SuspectForm from "src/components/forms/SuspectForm.vue";
@@ -351,27 +388,20 @@ import { useStaffList } from "src/composables/use-fn";
 /*const RaidForm = defineAsyncComponent(() =>
   import("src/components/forms/RaidForm.vue")
 );*/
-const staffList = useStaffList("Active");
+const staff_list = useStaffList();
+//const ipo_list = useIpoList();
 
 const SuspectForm = defineAsyncComponent(() =>
   import("src/components/forms/SuspectForm.vue")
 );
-const ComplaintForm = defineAsyncComponent(() =>
-  import("src/components/forms/ComplaintForm.vue")
-);
-/*const FormCard = defineAsyncComponent(() =>
-  import("src/components/FormCard.vue")
-);*/
+//const ComplaintForm = defineAsyncComponent(() =>import("src/components/forms/ComplaintForm.vue");
 const CaseForm = defineAsyncComponent(() =>
   import("src/components/forms/CaseForm.vue")
 );
 const MinutesTabCard = defineAsyncComponent(() =>
   import("src/components/MinutesTabCard.vue")
 );
-const HistoryTabCard = defineAsyncComponent(() =>
-  import("src/components/HistoryTabCard.vue")
-);
-
+//const HistoryTabCard = defineAsyncComponent(() =>import("src/components/HistoryTabCard.vue"));
 const props = defineProps({
   onCaseLoaded: Function,
 });
@@ -387,11 +417,12 @@ const complaintFormRef = ref(null);
 const complaint = ref({});
 const report = ref({});
 const year_options = ref([]);
-const selectedUser = ref({});
+const selectedUser = ref();
+const selectedIpo = ref();
 const selectedYear = ref(new Date().getFullYear());
 const splitterModel = ref(Screen.gt.xs ? 40 : 20);
-const currentCases = ref(true);
-//const reportFormRef = ref(null);
+const statusModel = ref("Active");
+const status_options = ["Active", "Court", "Concluded"];
 const columns = [
   { name: "Date", field: "Date", label: "Date", align: "left" },
   { name: "Title", field: "Title", label: "Title", align: "left" },
@@ -401,10 +432,58 @@ const doc_columns = [
   { name: "Name", field: "Name", label: "Name", align: "left" },
   // { name: "Address", field: "address", label: "Address", align: "left" },
 ];
+var suspects = [];
+var samples = [];
+var reports = [];
+var cases = [];
+
 const shouldDisable = computed(() => !Case.value?.id);
-const setComplaint = (v) => {
-  complaint.value = v;
-};
+const isAdmin = computed(() => store.user.claims.isAdmin);
+const isDirector = computed(() => store.user.claims.role === "Director");
+const isHOD = computed(
+  () =>
+    store.user.claims.role === "Head Division" ||
+    store.user.claims.role === "Head Location"
+);
+const isLawyer = computed(() => store.user.claims.role === "Legal");
+const isIPO = computed(() => store.user.claims.level === 2);
+const isOc = computed(() => store.user.claims.role === "OC");
+
+const staffSearchOptions = computed(() => {
+  if (isDirector.value) {
+    //return { uid: store.user.uid };
+    return null;
+  } else {
+    if (isHOD.value) {
+      return {
+        Location: store.user.claims.location,
+        unit: store.user.claims.unit,
+      };
+    } else {
+      return { uid: store.user.uid };
+    }
+  }
+});
+const ipoSearchOptions = computed(() => {
+  if (!isDirector.value) {
+    if (isOc.value) {
+      return {
+        Location: store.user.claims.location,
+        unit: store.user.claims.unit,
+      };
+    } else {
+      return { uid: store.user.uid };
+    }
+  }
+  return null;
+});
+const staffList = computed(
+  () =>
+    staff_list.value.filter(
+      (s) => s.Role === "Director" || s.Role === "Legal"
+    ) || []
+);
+
 const setDocument = (v) => {
   Case.value = v;
   store.currentDocument = v;
@@ -493,10 +572,6 @@ async function saveSuspect() {
   }
 }
 
-function getDocument() {
-  return Case.value;
-}
-
 function handleSuspectPopup(val) {
   suspect.value = val;
   suspectPopupModel.value = true;
@@ -516,11 +591,9 @@ async function cancelDialog() {
 function setReport(v) {
   report.value = v;
 }
-function onSelectYear(year) {
-  selectedYear.value = year;
-}
-function onSelectUser(user) {
-  selectedUser.value = user;
+
+function onSelectIpo(v) {
+  selectedIpo.value = v;
 }
 const suspectyQuery = computed(() =>
   query(
@@ -532,35 +605,50 @@ const suspectyQuery = computed(() =>
 const sampleQuery = computed(() =>
   query(
     collection(firestore, "Samples"),
-    where("CaseNumber", "==", Case.value.CaseNumber || 0)
+    where("CaseId", "==", Case.value?.id || 0)
   )
 );
 const reportQuery = computed(() =>
   query(
-    collection(firestore, `Cases/${Case.value.id}/Reports`),
+    collection(firestore, `Investigations/${Case.value.id}/Reports`),
     orderBy("id", "desc")
   )
 );
+function filterQuery() {
+  const year = selectedYear.value;
+  const date1 = new Date(year, 0, 1, 0, 0, 0, 0);
+  const date2 = new Date(year, 11, 31, 23, 59, 59, 999);
+  const filters = [
+    // `${selectedYear.value}/0/1 00:00:00.000`
+    where("meta.CreatedAt", ">=", Date.parse(date1)),
+    // `${selectedYear.value}/11/31 59:59:59.999`
+    where("meta.CreatedAt", "<=", Date.parse(date2)),
+  ];
+  if (isDirector.value || isAdmin.value) {
+    // do not filter
+    if (selectedUser.value)
+      filters.push(
+        //where("Division.Abbrev", "==", selectedUser.value.Unit || null)
+        where("meta.CreatedBy", "==", selectedUser.value?.uid || null)
+      );
+    if (selectedIpo.value)
+      filters.push(where("IPO", "==", selectedIpo.value.uid || null));
+  } else if (isIPO.value) {
+    filters.push(where("IPO", "==", selectedIpo.value?.uid || null));
+  } else if (isLawyer.value) {
+    filters.push(where("Location", "==", store.user.claims.location));
+  } else {
+    filters.push(
+      where("meta.CreatedBy", "==", selectedUser.value?.uid || null)
+    );
+    //throw { message: "User not allowed" };
+  }
+  return filters;
+}
 const caseDatasource = computed(() => {
-  if (store.user.claims.admnin)
-    return query(
-      collection(firestore, `Cases`),
-      where("meta.Year", "==", selectedYear.value),
-      where("meta.To", "==", store.user?.uid)
-      //orderBy("id", "desc")
-      //where("meta.CreatedAt", "<=", `${selectedYear.value}/11/31 59:59:59.999`),
-    );
-  else
-    return query(
-      collection(firestore, `Cases`),
-      where("meta.Year", "==", selectedYear.value)
-      //orderBy("id", "desc")
-    );
+  const filters = filterQuery();
+  return query(collection(firestore, `Investigations`), ...filters);
 });
-var suspects = useCollection(suspectyQuery);
-var samples = useCollection(sampleQuery);
-var reports = useCollection(reportQuery);
-var cases = useCollection(caseDatasource);
 
 const loadComplaint = debounce(() => {
   const cid = Case.value.ComplaintId;
@@ -572,11 +660,22 @@ const loadComplaint = debounce(() => {
       })
       .catch((e) => console.log(e));
 }, 500);
+
 watch(
   () => Case.value.ComplaintId,
   async (newId) => {
     if (!newId) return;
     loadComplaint();
+  }
+);
+watch(
+  () => Case.value.id,
+  async (newId) => {
+    store.currentDocument = newId ? Case.value : {};
+    if (!newId) return;
+    suspects = useCollection(suspectyQuery);
+    samples = useCollection(sampleQuery);
+    reports = useCollection(reportQuery);
   }
 );
 // const caseDateRef = ref(null)
@@ -590,12 +689,15 @@ provide("titleField", "title");
 provide("secondTitle", "date");
 provide("collection", "Cases");
 provide("searchFields", ["Title", "Location"]);
+
 onMounted(() => {
   store.currentCollection = "Cases";
   const thisYear = new Date().getFullYear();
   for (let i = 2023; i <= thisYear; i++) {
     year_options.value.push(i);
   }
+  store.currentCollection = "Investigations";
+  cases = useCollection(caseDatasource);
 });
 defineExpose({
   reset,
@@ -604,7 +706,7 @@ defineExpose({
 </script>
 <style scoped>
 .fits {
-  height: calc(100vh - 50%);
+  height: calc(100vh - 56px);
 }
 .overlay {
   position: absolute;

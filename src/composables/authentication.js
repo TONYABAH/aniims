@@ -181,7 +181,7 @@ export const signInWithEmail = async (email) => {
 };
 export const signInWithStaffId = async (id) => {
   const response = await getStaffById({ staffId: id });
-  console.log(response);
+  //console.log(response);
   return response?.data?.Email;
 };
 export const signInWithPhoneLine = async (id) => {

@@ -12,23 +12,34 @@
           label="Country"
           outlined=""
           :disabled="true"
+          stack-label=""
         />
       </div>
     </div>
     <q-separator spaced inset vertical dark />
-    <label>Location name</label>
     <q-input
       v-model="location.Name"
+      label="Location name *"
       type="text"
       outlined=""
-      :rules="[(val) => !!val || 'Address is required']"
+      stack-label=""
+      :rules="[(val) => !!val || 'Name is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
       name="locationName"
     />
     <q-separator spaced inset vertical dark />
-    <label>Location street address</label>
-    <q-input v-model="location.Address" type="text" outlined multiline>
+    <q-input
+      v-model="location.Address"
+      label="Location street address *"
+      type="text"
+      :rules="[(val) => !!val || 'Address is required']"
+      lazy-rules="ondemand"
+      hide-bottom-space=""
+      outlined
+      multiline
+      stack-label=""
+    >
       <q-btn
         unelevated
         glossy
@@ -39,43 +50,61 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         name="locationAddress"
+        :loading="loading"
         @click="onValidateAddress(location.Address)"
         v-if="location.Address"
-      />
+      >
+        <template v-slot:loading>
+          <q-spinner-hourglass class="on-left"> Wait... </q-spinner-hourglass>
+        </template>
+      </q-btn>
     </q-input>
     <q-separator spaced inset vertical dark />
-    <label>Location State</label>
     <q-select
       v-model="location.State"
+      label="Location State *"
       :options="states"
       options-dense=""
       outlined=""
+      stack-label=""
       :rules="[(val) => !!val || 'Address is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
     />
     <q-separator spaced inset vertical dark />
-    <label>Location City</label>
+
     <q-select
       v-model="location.City"
+      label="Location City *"
       :options="cities"
       options-dense=""
       outlined=""
+      stack-label=""
       :rules="[(val) => !!val || 'Address is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
     />
     <div class="row">
       <div class="col col-xs-12 col-sm-6 col-md-6 q-pr-xs">
-        <label>Latitude</label>
-        <q-input v-model="location.Lat" type="text" outlined="" />
+        <q-input
+          label="Latitude"
+          v-model="location.Lat"
+          type="text"
+          outlined=""
+          stack-label=""
+        />
       </div>
       <div class="col col-xs-12 col-sm-6 col-md-6">
-        <label>Longitude</label>
-        <q-input v-model="location.Lng" type="text" outlined="" />
+        <q-input
+          label="Longitude"
+          v-model="location.Lng"
+          type="text"
+          outlined=""
+          stack-label=""
+        />
       </div>
     </div>
-    <CircularProgress :loading="loading" :size="140" />
+    <!--<CircularProgress :loading="loading" :size="140" />-->
     <q-separator spaced inset vertical dark />
     <q-expansion-item
       expand-separator

@@ -57,6 +57,11 @@ export default route(function (/* { store, ssrContext } */) {
           return {
             path: "/applications",
           };
+        } else if (store.user?.claims?.level === 2 && to.name != "Cases") {
+          //console.log(from, to);
+          return {
+            path: "/cases",
+          };
         } else if (to.path.match(/\/admin/i) && !store.user?.claims?.admin) {
           throw { message: "Admin right required" };
         } else {

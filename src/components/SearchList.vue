@@ -9,9 +9,13 @@
             clickable
             v-ripple
             :inset-level="0"
-            :active-class="activeClass"
             :key="i"
-            :active="link === i"
+            :active="link === item?.id"
+            :active-class="
+              $q.dark.isActive
+                ? 'bg-red text-white'
+                : store.theme.bg.normal + ' text-white'
+            "
             style="
               border-bottom: 0px solid;
               border-radius: 2px 2px;
@@ -24,15 +28,11 @@
               top
               thumbnail=""
               class="q-pl-sm"
-              :class="$q.dark.isActive ? 'text-white' : 'text-teal'"
               style="color: inherit"
             >
               {{ i + 1 }}.
             </q-item-section>
-            <q-item-section
-              :class="$q.dark.isActive ? 'text-white' : 'text-teal'"
-              style="font-weight: bold"
-            >
+            <q-item-section style="font-weight: bold">
               <div>
                 {{
                   item["Title"] ||
@@ -41,10 +41,10 @@
                   item["Address"]
                 }}
               </div>
-              <q-item-label lines="2" caption="" style="font-size: 12px">{{
+              <q-item-label lines="2" style="font-size: 12px">{{
                 item["Address"]
               }}</q-item-label>
-              <q-item-label lines="2" caption="" style="font-size: 12px">{{
+              <q-item-label lines="2" style="font-size: 12px">{{
                 createdAt(item)
               }}</q-item-label>
             </q-item-section>
@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref } from "vue";
 import { useDefaultStore } from "src/stores/store";
 import { useDocument } from "vuefire";
 import { firestore } from "src/composables/firebase";
@@ -95,20 +95,20 @@ const props = defineProps({
 });
 
 const createdAt = function (item) {
-  const time = item.meta.CreatedAt;
+  const time = item.meta?.CreatedAt;
   return new Date(time).toDateString();
 };
 function isItemCurrent(item) {
   return (
-    item.meta.To === store.user.uid ||
-    (item.meta.CreatedBy === store.user.uid && item.meta.Status === "Created")
+    item.meta?.To === store.user.uid ||
+    (item.meta?.CreatedBy === store.user.uid && item.meta.Status === "Created")
   );
 }
 function selectItem(item, i) {
-  link.value = i;
-  //console.log(item);
+  link.value = item.id;
   //window.location.hash = "#" + item.id;
-  onLoad(item, i);
+  store.tabModel = "edit";
+  loadDocument(item.id);
 }
 
 const loadDocument = debounce(async (docId) => {
@@ -121,9 +121,10 @@ const loadDocument = debounce(async (docId) => {
   //tabPanelsRef.value="edit";
   store.tabModel = "edit";
 }, 500);
-async function onLoad(doc, i) {
+
+/*async function onLoad(doc, i) {
   window.location.hash = "#" + doc.id;
-  loadDocument(doc.id);
-}
-onMounted(() => {});
+  //loadDocument(doc.id);
+}*/
+//onMounted(() => {});
 </script>

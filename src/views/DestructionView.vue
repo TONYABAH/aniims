@@ -5,21 +5,29 @@
     :set-current-doc="setDocument"
     :updateFields="updateFields"
     :getDocument="getDocument"
+    :searchFields="SEARCH_FIELDS"
+    :commentable="true"
+    collectionName="Destructions"
   >
     <DestructionForm ref="form" :data="destruction" :setData="setDocument" />
   </FormCard>
 </template>
 <script setup>
 //import { Notify, Dialog } from "quasar";
-import { ref, provide } from "vue";
+import { useDefaultStore } from "src/stores/store";
+import { ref, provide, computed } from "vue";
 import FormCard from "src/components/FormCard.vue";
 import DestructionForm from "src/components/forms/DestructionForm.vue";
 //import ApplicationView from "src/views/ApplicationView.vue";
-
+const store = useDefaultStore();
 const form = ref(null);
 const updateFields = [];
-const destruction = ref({});
-
+//const destruction = ref({});
+const SEARCH_FIELDS = ["CoyName", "CoyAddress", "Title"];
+const destruction = computed({
+  get: () => store.currentDocument || {},
+  set: (v) => (store.currentDocument = v || {}),
+});
 const setDocument = (v) => (destruction.value = v);
 
 function getDocument() {
@@ -33,7 +41,7 @@ const validate = async () => await form.value?.validate();
 provide("iconName", "delete");
 provide("titleField", "Title");
 provide("secondTitle", "Date");
-provide("collection", "Destructions");
+//provide("collection", "Destructions");
 provide("searchFields", ["CoyName", "CoyAddress"]);
 defineExpose({
   reset,
