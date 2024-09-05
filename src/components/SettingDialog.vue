@@ -1,7 +1,7 @@
 <template>
   <div>
-    <q-dialog v-model="settingDialog">
-      <q-card flat>
+    <q-dialog v-model="settingDialog" position="right" class="full-height">
+      <q-card>
         <q-toolbar class="text-white" :class="'bg-' + themeModel">
           <q-avatar icon="settings" />
           <q-toolbar-title
@@ -28,25 +28,22 @@
                   :options="themeOptions"
                 />
               </q-item-section>
-              <q-item-section
-                avatar=""
-                :class="'bg-' + themeModel + '-8'"
-                class="text-white"
-              >
-              </q-item-section>
             </q-item>
           </q-list>
         </q-card-section>
-        <q-card-actions align="right" :class="'bg-' + themeModel + '-7'">
+        <q-card-actions align="right" class="q-pb-md">
           <q-btn
             unelevated=""
-            label="Save settings"
-            color="deep-purple"
+            label="Save"
+            icon-right="check"
+            icon=""
+            :color="themeModel"
             :loading="loading"
-            glossy=""
+            rounded
+            no-caps
             @click="set"
           />
-          <q-btn flat label="Cancel" color="white" @click="cancel" />
+          <q-btn flat no-caps="" label="Cancel" color="pink" @click="cancel" />
         </q-card-actions>
       </q-card>
     </q-dialog>

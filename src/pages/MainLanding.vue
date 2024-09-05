@@ -68,22 +68,16 @@
 
 <script setup>
 import { useDefaultStore } from "src/stores/store";
-import { onMounted, ref, computed } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { links } from "src/composables/links";
 import { useQuasar } from "quasar";
 import DashboardChip from "src/components/dashboard/DashboardChip.vue";
-//import { useTheme } from "src/composables/use-fn";
-//import CaseDetails from "src/components/CaseDetails.vue";
-//import ComplaintForm from "src/components/ComplaintForm.vue";
-//import StaffForm from "src/components/__StaffForm.vue";
-//import SuspectForm from "src/components/SuspectForm.vue";
-//const leftDrawerOpen = ref(false);
+
 const $q = useQuasar();
 const router = useRouter();
 const loading = ref(false);
 const store = useDefaultStore();
-//const theme = store.theme;
 const dashboardRef = ref(null);
 
 function navigateTo(link) {
@@ -112,10 +106,6 @@ function navigateTo(link) {
       .finally(() => (loading.value = false));
   }
 }
-
-onMounted(() => {
-  // options.value.push(...(locations.map(l => l.label)))
-});
 </script>
 <style scoped>
 .main {

@@ -1,13 +1,13 @@
 <template>
-  <q-header class="text-white">
-    <q-bar :class="store.theme.bg.light">
+  <q-header reveal :reveal-offset="40" class="text-white">
+    <q-toolbar :class="store.theme.bg.light">
       <q-btn
         flat
         dense
         icon="menu"
         aria-label="Menu"
         @click="toggleLeftDrawer"
-        v-if="$route.name !== 'Home'"
+        v-if="$route.name !== 'Home' && $route.name !== 'Dashboard'"
       />
       <q-btn flat dense to="/" :label="pkg.productName" />
       <q-toolbar-title></q-toolbar-title>
@@ -64,7 +64,9 @@
         :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
       ></q-btn>
       <SettingDialog />
-    </q-bar>
+    </q-toolbar>
+  </q-header>
+  <!--<q-page-sticky position="top" :offset="[18, 18]" expand>
     <q-toolbar :class="store.theme.bg.light" v-if="isDefaultRoute">
       <q-tabs
         align="left"
@@ -106,7 +108,7 @@
         @click="navigateTo('/admin')"
       />
     </q-toolbar>
-  </q-header>
+  </q-page-sticky>-->
 </template>
 
 <script setup>

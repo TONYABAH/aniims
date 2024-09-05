@@ -175,7 +175,8 @@ const units = computed(() => {
     ? store.units.filter((u) => u.Location === Case.value?.Location)
     : store.units;
 });
-
+//console.log(store.user);
+//Case.value.Location = store.user.Location;
 /*const suspectyQuery = computed(() =>
   query(
     collection(firestore, "Suspects"),

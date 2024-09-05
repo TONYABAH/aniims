@@ -46,11 +46,13 @@ const props = defineProps({
 });
 
 var snapshots = null;
-if (props.collectionName !== "Admin") {
+if (
+  props.collectionName.toLowerCase() !== "admin" &&
+  props.collectionName.toLowerCase() !== "dashboard"
+) {
   const filters = useDefaultSerachQuery(props.collectionName);
-  const dbRef = collection(db, props.collectionName);
+  const dbRef = collection(db, "Meta" /*props.collectionName*/);
   const dataSource = query(dbRef, and(...filters), limit(50));
-  //const snapshot = await getCountFromServer(q);
   snapshots = useCollection(dataSource);
 }
 

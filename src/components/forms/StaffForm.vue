@@ -25,7 +25,14 @@
         :rules="[validation.required]"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <FiledUpdateButton
+          field="Title"
+          collection="Users"
+          :id="staff.id"
+          :value="staff.Title"
+        />
+      </q-select>
       <q-input
         v-model="staff.Name"
         label="Full name *"
@@ -38,6 +45,13 @@
         hide-bottom-space=""
       >
         <template v-slot:append>
+          <q-btn
+            :loading="loading"
+            flat
+            color="secondary"
+            label="Update"
+            @click="() => onFieldChanged('Name', 'staff.Name', 'Users')"
+          />
           <q-icon name="person" />
         </template>
       </q-input>
@@ -82,6 +96,9 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
       >
+        <template v-slot:append>
+          <q-icon name="fingerprint"></q-icon>
+        </template>
       </q-input>
 
       <q-input
@@ -93,7 +110,18 @@
         :rules="[validation.required]"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <template v-slot:append>
+          <q-btn
+            unelevated
+            color="teal"
+            label="Update"
+            glossy
+            @click.stop="onRankChanged"
+            v-if="staff.id"
+          ></q-btn>
+        </template>
+      </q-input>
 
       <q-select
         label="Role *"
@@ -105,7 +133,11 @@
         :rules="[validation.required]"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <template v-slot:append>
+          <q-icon name="category" />
+        </template>
+      </q-select>
 
       <q-select
         label="Location *"
@@ -117,7 +149,19 @@
         :rules="[validation.required]"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <template v-slot:append>
+          <q-btn
+            unelevated
+            color="teal"
+            label="Update"
+            glossy
+            @click.stop="onLocationChanged"
+            v-if="staff.id"
+          ></q-btn>
+          <q-icon name="location_on" />
+        </template>
+      </q-select>
       <template v-if="staff.Role !== 'Director'">
         <q-select
           v-model="staff.Unit"
@@ -128,7 +172,19 @@
           option-label="Abbrev"
           label="Unit"
           outlined=""
-        />
+        >
+          <template v-slot:append>
+            <q-btn
+              unelevated
+              color="teal"
+              label="Update"
+              glossy
+              @click.stop="onUnitChanged"
+              v-if="staff.id"
+            ></q-btn>
+            <q-icon name="apartment" />
+          </template>
+        </q-select>
       </template>
       <q-select
         v-model="status"
@@ -146,108 +202,11 @@
             @click.stop="onStatusChanged"
             v-if="staff.id"
           ></q-btn>
+          <q-icon name="wifi" />
         </template>
       </q-select>
     </q-form>
   </AdminViewer>
-
-  <!--<q-toolbar class="bg-grey-9" style="border-radius: 6px">
-        <q-toolbar-title></q-toolbar-title>
-        <q-btn
-          color="teal"
-          label="Save changes"
-          unelevated=""
-          @click="save"
-          v-if="!!staff.id"
-        />
-        <q-separator spaced inset vertical dark />
-        <q-btn
-          unelevated=""
-          class="q-mr-xs"
-          color="negative"
-          label="Save"
-          glossy=""
-          @click.stop="save"
-          :disable="!staff.id || !store.user.claims.admin"
-        />
-        <q-btn
-          unelevated=""
-          class="q-mr-xs"
-          color="secondary"
-          label="Create"
-          glossy=""
-          @click.stop="create"
-          v-if="!staff.id"
-        />
-      </q-toolbar>-->
-
-  <!--<template v-if="staff.Role !== 'Director'">
-        <label>Divisions or Units *</label>
-        <q-select
-          outlined
-          v-model="staff.Units"
-          :options="store.units"
-          option-value="Abbrev"
-          option-label="Abbrev"
-          multiple
-          emit-value
-          map-options
-          options-=""
-          options-dense=""
-          name="units"
-          :use-chips="false"
-          :rules="[validation.required]"
-          lazy-rules="ondemand"
-          hide-bottom-space=""
-        >
-          <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
-            <q-item dense v-bind="itemProps">
-              <q-item-section thumbnail="">
-                <q-checkbox
-                  left-label
-                  :model-value="selected"
-                  @update:model-value="toggleOption(opt)"
-                  size="xs"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ opt.Abbrev }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-separator spaced inset vertical dark />
-
-        <label>Divisions or Units Headed (optional)</label>
-        <q-select
-          outlined
-          v-model="staff.Heads"
-          :options="staff.Units"
-          multiple
-          emit-value
-          map-options
-          options-=""
-          name="heads"
-          options-dense=""
-          :use-chips="false"
-        >
-          <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
-            <q-item dense v-bind="itemProps">
-              <q-item-section thumbnail="">
-                <q-checkbox
-                  left-label
-                  :model-value="selected"
-                  @update:model-value="toggleOption(opt)"
-                  size="xs"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ opt }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </template>-->
 </template>
 
 <script setup>
@@ -255,10 +214,11 @@ import { Notify, Dialog, debounce } from "quasar";
 import { computed, onMounted, ref, watch } from "vue";
 import { useDefaultStore } from "src/stores/store";
 import { createUser } from "src/composables/functions";
-import { update } from "src/composables/remote";
+import { update, listStaff } from "src/composables/remote";
 import { useValidation } from "src/composables/use-fn";
 import AdminViewer from "src/views/AdminViewer.vue";
-import { addSearch, lifeSearch } from "src/composables/searchProvider";
+import { addSearch, sortByName } from "src/composables/searchProvider";
+import FiledUpdateButton from "./FiledUpdateButton.vue";
 
 const form = ref(null);
 const store = useDefaultStore();
@@ -283,8 +243,7 @@ const TITLE_OPTIONS = ["Mr", "Mrs", "Miss", "Ms", "Dr", "Pharm", "Prof"];
 const STATUS_OPTIONS = ["Active", "Inactive"];
 const collection = "Staff";
 const searchFields = ["Name", "Rank", "Email", "Location"];
-const staffList = ref([]);
-
+const users = ref([]);
 const model = ref({});
 
 function setModel(s) {
@@ -299,9 +258,9 @@ const staff = computed({
 });
 
 const userList = computed({
-  get: () => staffList.value,
+  get: () => users.value,
   set: (v) => {
-    staffList.value = v;
+    users.value = v;
   },
 });
 const StaffId = computed({
@@ -316,15 +275,17 @@ const isAdmin = computed({
   get: () => staff.value.IsAdmin || undefined,
   set: (v) => (staff.value.IsAdmin = v),
 });
-/*async function onAdminStatusChanged() {
+async function onFieldChanged(field, value, collection) {
   if (!staff.value.id) return;
   loading.value = true;
-  update(staff.value.id, { IsAdmin: isAdmin.value }, "Users")
+  let obj = {};
+  obj[field] = value;
+  update(staff.value.id, obj, collection)
     .then(() => {
       Notify.create({
         timeout: 800,
-        message: "User admin status updated",
-        caption: "Update",
+        message: "Updated " + collection,
+        caption: "Update " + collection,
         color: "secondary",
         textColor: "white",
         icon: "check",
@@ -342,7 +303,87 @@ const isAdmin = computed({
     .finally(() => {
       loading.value = false;
     });
-}*/
+}
+async function onLocationChanged() {
+  if (!ipo.value.id) return;
+  loading.value = true;
+  update(ipo.value.id, { Rank: staff.value.Location }, "Users")
+    .then(() => {
+      Notify.create({
+        timeout: 800,
+        message: "Rank updated",
+        caption: "Update",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
+async function onRankChanged() {
+  if (!staff.value.id) return;
+  loading.value = true;
+  update(staff.value.id, { Rank: staff.value.Rank }, "Users")
+    .then(() => {
+      Notify.create({
+        timeout: 800,
+        message: "Updated user",
+        caption: "Update user",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      console.log(e);
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
+async function onUnitChanged() {
+  if (!staff.value.id) return;
+  loading.value = true;
+  update(staff.value.id, { Unit: staff.value.Unit }, "Users")
+    .then(() => {
+      Notify.create({
+        timeout: 800,
+        message: "Updated user",
+        caption: "Update user",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      console.log(e);
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
 async function onStatusChanged() {
   if (!staff.value.id) return;
   loading.value = true;
@@ -379,12 +420,14 @@ async function save() {
       Rank: staff.value.Rank,
       Role: staff.value.Role,
       Heads: staff.value.Heads || [],
-      Unit: staff.value.Unit,
+      Unit: staff.value.Unit || null,
       Location: staff.value.Location,
+      Name: staff.value.Name,
+      Title: staff.value.Title,
       //Admin: isAdmin.value,
       //CanEditPayment: staff.value.CanEditPayment || false,
       //CanConfirmPayment: staff.value.CanConfirmPayment || false,
-      CanReceiveMail: staff.value.CanReceiveMail || false,
+      //CanReceiveMail: staff.value.CanReceiveMail || false,
     },
     "Users"
   )
@@ -449,16 +492,46 @@ function reset() {
 }
 const validate = async () => await form.value?.validate(true);
 
-const handleSearch = debounce(async (d, active) => {
-  const whereFilters = [["Level", "==", 3]];
-  if (active) whereFilters.push(["Status", "==", "Active"]);
-  const _users = await lifeSearch("Users", {
-    searchText: d,
-    whereFilters,
-    limits: 100,
+const handleSearch = debounce((searchTerm, active) => {
+  const whereFilters = [];
+  //if (active) whereFilters.push(["Status", "==", "Active"]);
+  const list = store.staffList;
+  //listStaff(whereFilters).then((list) => {
+  users.value = list
+    .filter((s) => {
+      //let pattern = `${s.Name}|| ${s.Rank} || ${s.Location} || ${s.Unit}`
+      let d = searchTerm?.toLowerCase() || "";
+      let searchTerms = d.split(" ");
+      for (let x of searchTerms) {
+        return (
+          s.Name?.toLowerCase().indexOf(x) >= 0 ||
+          s.Rank?.toLowerCase().indexOf(x) === 0 ||
+          s.Location?.toLowerCase().indexOf(x) >= 0 ||
+          s.Unit?.toLowerCase().indexOf(x) >= 0
+        );
+      }
+    })
+    .sort(sortByName);
+}, 5);
+
+/*const handleSearch = debounce(async (d, active) => {
+  users.value = [];
+  if (!d || d.length === 0) return;
+  let searchTerms = d.split(" ");
+  allUsers.value.filter((u) => {
+    for (let x of searchTerms) {
+      let m = u.Name.toLowerCase().search(x.toLowerCase());
+      if (m > -1) {
+        users.value.push(u);
+        break;
+      }
+    }
   });
-  staffList.value = _users;
-}, 500);
+});
+
+const dbRef = collection(firestore, collectionId);
+const dataSource = query(dbRef, where("Status", "==", "Active"));
+allUsers = useCollection(dataSource);*/
 
 defineExpose({
   reset,
@@ -471,7 +544,6 @@ onMounted(async () => {
   if (staff.value.IsAdmin === undefined) {
     staff.value.IsAdmin = false;
   }
-  handleSearch("", true);
 });
 </script>
 

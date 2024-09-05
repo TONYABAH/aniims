@@ -18,15 +18,15 @@
         </q-item-label>
       </q-item-section>
 
-      <q-item-section side="" :class="miniMode ? 'q-mr-md' : 'q-ml-xl'">
+      <q-item-section side="" :class="miniMode ? 'q-mr-xs' : 'q-ml-xl'">
         <q-btn
           flat
           dense
           align="left"
           :color="store.settings.themeColor + '-1'"
-          :icon="miniMode && $q.screen.gt.xs ? 'apps' : 'close'"
+          :icon="miniMode && $q.screen.gt.sm ? 'apps' : 'close'"
           class="full-width"
-          @click="$q.screen.gt.xs ? toggleLeftMini() : toggleLeftDrawer()"
+          @click="$q.screen.gt.sm ? toggleLeftMini() : toggleLeftDrawer()"
         />
       </q-item-section>
     </q-item>

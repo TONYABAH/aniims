@@ -2,8 +2,8 @@
   <AdminViewer
     :set-model="setModel"
     :selected="user"
-    :title="collection"
-    :collection="collection"
+    :title="collectionId"
+    :collection="collectionId"
     :search-fields="['Name', 'Phone']"
     :list="users"
     :reset="reset"
@@ -14,6 +14,37 @@
     icon-name="perm_identity"
   >
     <q-form ref="form" class="q-gutter-xs">
+      <q-bar class="bg-transparent" v-if="user?.uid">
+        <q-space />
+        <q-btn
+          no-caps=""
+          unelevated=""
+          color="teal-8"
+          label="Password reset"
+          :loading="resetingPassword"
+          @click="sendPasswordResetEmail(user?.email)"
+        >
+          <template v-slot:loading>
+            <q-spinner-hourglass class="on-left" />
+            Wait...
+          </template>
+        </q-btn>
+        <q-separator spaced inset vertical dark />
+        <q-btn
+          no-caps=""
+          unelevated=""
+          color="red"
+          label="Delete account"
+          :loading="deletingAccount"
+          @click="deleteUserProfile(user?.uid)"
+        >
+          <template v-slot:loading>
+            <q-spinner-hourglass class="on-left" />
+            Wait...
+          </template>
+        </q-btn>
+      </q-bar>
+
       <q-input
         outlined
         v-model="user.displayName"
@@ -40,63 +71,78 @@
         label="Phone"
       />
       <q-separator spaced inset vertical dark />
+      <q-expansion-item
+        expand-separator
+        icon="perm_identity"
+        label="Previledges"
+        caption="User rights"
+      >
+        <div
+          style="display: flex; flex-direction: column"
+          v-if="user.customClaims?.level === 3"
+          class="q-pa-sm bg-pink-2"
+        >
+          <label class="text-uppercase">Previledges</label>
+          <q-checkbox
+            right-label
+            v-model="isAdmin"
+            indeterminate-icon=""
+            label="Is Admin"
+          />
+          <q-checkbox
+            right-label
+            v-model="canEditPay"
+            indeterminate-icon=""
+            label="Can Edit Payment"
+          />
+          <q-checkbox
+            right-label
+            v-model="canConfirmPay"
+            indeterminate-icon=""
+            label="Can Confirm Payment"
+          />
+          <q-checkbox
+            right-label
+            v-model="canEditMail"
+            indeterminate-icon=""
+            label="Can Receive Mail"
+          />
+          <q-checkbox
+            right-label
+            v-model="canDestroy"
+            indeterminate-icon=""
+            label="Handle Destruction"
+          />
+        </div>
+      </q-expansion-item>
+
+      <q-separator spaced inset vertical dark />
       <label class="text-uppercase"
         >Status:
         <q-radio v-model="disabled" :val="false" label="Active" color="teal" />
         <q-radio v-model="disabled" :val="true" label="Disable" color="grey" />
       </label>
-      <q-separator spaced inset vertical dark />
-      <div
-        style="display: flex; flex-direction: column"
-        v-if="user.customClaims?.level === 3"
-      >
-        <label class="text-uppercase">Previledges</label>
-        <q-checkbox
-          right-label
-          v-model="isAdmin"
-          indeterminate-icon=""
-          label="Is Admin"
-        />
-        <q-checkbox
-          right-label
-          v-model="canEditPay"
-          indeterminate-icon=""
-          label="Can Edit Payment"
-        />
-        <q-checkbox
-          right-label
-          v-model="canConfirmPay"
-          indeterminate-icon=""
-          label="Can Confirm Payment"
-        />
-        <q-checkbox
-          right-label
-          v-model="canEditMail"
-          indeterminate-icon=""
-          label="Can Receive Mail"
-        />
-        <q-checkbox
-          right-label
-          v-model="canDestroy"
-          indeterminate-icon=""
-          label="Handle Destruction"
-        />
-      </div>
     </q-form>
   </AdminViewer>
 </template>
 
 <script setup>
-import { debounce } from "quasar";
-import { Notify, Dialog } from "quasar";
-import { onMounted, watch, watchEffect, ref, computed } from "vue";
-import { useDefaultStore } from "src/stores/store";
-import { setUserRights } from "src/composables/functions";
+import { debounce, Notify, Dialog } from "quasar";
+import { onMounted, watch, ref, computed } from "vue";
 import AdminViewer from "src/views/AdminViewer.vue";
-import { listUsers, getUser } from "src/composables/functions";
-import { addSearch, lifeSearch } from "src/composables/searchProvider";
-
-const store = useDefaultStore();
+import {
+  getUser,
+  resetPassword,
+  deleteUser,
+  setUserRights,
+} from "src/composables/functions";
+import { sortByName } from "src/composables/searchProvider";
+import { useCollection } from "vuefire";
+import { query, collection, where } from "firebase/firestore";
+import { firestore } from "src/composables/firebase";
+//import LoadingButton from "../LoadingButton.vue";
+//import { deleteDoc } from "firebase/firestore";
+//const store = useDefaultStore();
 const model = ref();
 const form = ref(null);
 const disabled = ref(false);
@@ -105,10 +151,13 @@ const canEditPay = ref(false);
 const canConfirmPay = ref(false);
 const canEditMail = ref(false);
 const canDestroy = ref(false);
-const collection = "Users";
-const _list = ref([]);
-const users = ref([]);
+const collectionId = "Users";
+
 const loading = ref(false);
+const deletingAccount = ref(false);
+const resetingPassword = ref(false);
+var allUsers = [];
+const users = ref([]);
 
 const user = computed({
   get: () => model.value || {},
@@ -117,16 +166,9 @@ const user = computed({
   },
 });
 
-const userList = computed({
-  get: () => _list.value,
-  set: (v) => {
-    _list.value = v;
-  },
-});
 async function setModel(val) {
-  const u = await getUser({ uid: val.uid });
-  //console.log(u.data);
-  model.value = u.data;
+  const u = val?.uid ? await getUser({ uid: val.uid }) : null;
+  model.value = u?.data || {};
 }
 function save() {
   loading.value = true;
@@ -182,11 +224,76 @@ function reset() {
 function validate() {
   return true;
 }
+async function sendPasswordResetEmail(email) {
+  //let email = user.value?.email;
+  Dialog.create({
+    message: "Send user reset password?",
+    title: "Reset password",
+    ok: true,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    resetingPassword.value = true;
+    await resetPassword({ email })
+      .then(() => {
+        Notify.create({
+          message: "Success",
+          caption: "Send password reset",
+          color: "green",
+          position: "center",
+        });
+      })
+      .catch((e) => {
+        Notify.create({
+          message: e.message,
+          caption: "Send password reset",
+          color: "red",
+        });
+      })
+      .finally(() => (resetingPassword.value = false));
+    //console.log(result);
+  });
+}
+async function deleteUserProfile() {
+  let uid = model.value?.uid;
+  //let email = user.value?.email;
+  //console.log(model.value);
+  Dialog.create({
+    message: "Delete user profile?",
+    title: "Delete user",
+    ok: true,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    deletingAccount.value = true;
+    deleteUser({ uid })
+      .then(() => {
+        let index = users.value.findIndex((u) => u.uid === user.value.uid);
+        users.value.splice(index, 1);
+        user.value = null;
+        Notify.create({
+          message: "Success",
+          caption: "Delete user",
+          color: "green",
+          position: "center",
+        });
+      })
+      .catch((e) => {
+        Notify.create({
+          message: e.message,
+          caption: "Delete user",
+          color: "red",
+        });
+      })
+      .finally(() => (deletingAccount.value = false));
+    //console.log(result);
+  });
+}
 watch(
   user,
   (u) => {
     if (!u) return;
-    //console.log(u);
+    //console.log(JSON.stringify(u));
     isAdmin.value = u.customClaims?.admin || false;
     canEditPay.value = u.customClaims?.editpay || false;
     canConfirmPay.value = u.customClaims?.confirmpay || false;
@@ -196,65 +303,32 @@ watch(
   },
   { immediate: true }
 );
-/*const __handleSearch = debounce(async (d) => {
-  loading.value = true;
-  listUsers()
-    .then((users) => {
-      let filtered = users?.data?.filter(
-        (u) =>
-          d === "" ||
-          u.displayName?.toLowerCase().split(" ").includes(d.toLowerCase())
-      );
-
-      userList.value.splice(0, userList.value.length);
-
-      filtered.forEach((v) => {
-        let { customClaims, disabled, email, uid, displayName, phoneNumber } =
-          v;
-        userList.value.push({
-          customClaims,
-          disabled,
-          email,
-          uid,
-          displayName,
-          Name: displayName,
-          phoneNumber,
-        });
-      });
-    })
-    .catch((e) => {
-      Dialog.create({
-        message: e.message,
-        title: "Error",
-        timeout: 2000,
-        cancel: true,
-        ok: false,
-      });
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-}, 500);*/
 
 const handleSearch = debounce(async (d, active) => {
-  const whereFilters = [];
-  //whereFilters.push(["Status", "==", "Active"]);
-  const _users = await lifeSearch("Users", {
-    searchText: d,
-    whereFilters,
-    orderByFilters: [
-      ["Location", "asc"],
-      ["Name", "asc"],
-    ],
-    limits: 100,
-  });
-  users.value = _users;
-}, 500);
+  users.value = [];
+  if (!d || d.length === 0) return;
+  let searchTerms = d.split(" ");
+  users.value = allUsers.value
+    .filter((u) => {
+      for (let x of searchTerms) {
+        let m = u.Name.toLowerCase().search(x.toLowerCase());
+        if (m > -1) {
+          //users.value.push(u);
+          return u;
+        }
+      }
+    })
+    .sort(sortByName);
+});
+
+const dbRef = collection(firestore, collectionId);
+const dataSource = query(dbRef, where("Status", "==", "Active"));
+allUsers = useCollection(dataSource);
 
 onMounted(() => {
   disabled.value = false;
   isAdmin.value = false;
-  handleSearch("", true);
+  //handleSearch("", true);
 });
 defineExpose({
   reset,

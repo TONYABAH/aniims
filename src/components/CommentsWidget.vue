@@ -3,29 +3,31 @@
     <q-card
       v-for="(item, i) of comments"
       :key="i"
-      square=""
-      class="shadow-1 q-my-md"
-      :class="$q.dark.isActive ? 'bg-grey text-white' : 'bg-grey-1'"
-      style="border-radius: 12px 12px"
+      :class="
+        $q.dark.isActive ? 'bg-grey-8 text-white' : 'bg-grey-2 text-grey-10'
+      "
+      class="q-my-md"
+      style="border-radius: 8px 8px 0 0"
     >
       <div
-        class="text-white full-width q-px-sm"
-        :class="store.user.uid === item.uid ? 'bg-purple-7' : 'bg-purple-5'"
+        class="full-width q-px-sm"
         :style="
-          store.user.uid === item.uid
-            ? 'border-radius: 8px 8px 0 8px; text-align:right'
+          store.user.uid === item.From?.uid
+            ? 'border-radius: 8px 8px 0 8px;'
             : 'border-radius: 8px 8px 8px 0'
         "
       >
         <q-icon name="person" class="q-mr-sm" />
-        <label>{{ item.from }}</label>
+        <label>{{ item.From?.Name }}</label>
         <q-icon name="comment" class="q-mx-sm" />
-        <div rows="" type="text" dark readonly class="transparent">
+        <div rows="" type="text" dark readonly class="transparent text-teal">
           <q-editor
-            v-model="item.comment"
+            v-model="item.Comment"
             square=""
             :content-class="
-              store.user.uid === item.uid ? 'bg-purple-7' : 'bg-purple-5'
+              $q.dark.isActive
+                ? 'bg-grey-8 text-white'
+                : 'bg-grey-2 text-grey-9'
             "
             min-height="2rem"
             :toolbar="false"
@@ -33,10 +35,10 @@
           />
         </div>
 
-        <label class="text-grey-3" style="font-size: 12px">
+        <div class="text-" style="font-size: 12px">
           <q-icon name="timer" class="q-mr-sm" />
-          {{ new Date(item.time).toUTCString() }}</label
-        >
+          {{ new Date(item.Date).toLocaleString("en-GB") }}
+        </div>
       </div>
     </q-card>
   </template>
@@ -44,15 +46,15 @@
     <q-chat-message
       v-for="(item, i) of comments"
       :key="i"
-      :name="item.from"
+      :name="item.From?.Name"
       :text-html="true"
-      :text="[item.comment]"
-      :stamp="new Date(item.time).toUTCString()"
-      :sent="store.user?.uid === item.uid"
-      :bg-color="store.user?.uid === item.uid ? 'purple-7' : 'purple-5'"
-      :text-color="store.user?.uid === item.uid ? 'white' : 'grey-1'"
+      :text="[item.Comment]"
+      :stamp="new Date(item.Date).toLocaleString('en-GB')"
+      :sent="store.user?.uid === item.From?.uid"
+      :bg-color="store.user?.uid === item.From?.uid ? 'blue-3' : 'yellow-3'"
+      :text-color="store.user?.uid === item.From?.uid ? 'black' : 'grey-10'"
       :avatar="
-        store.user?.uid === item.uid
+        store.user?.uid === item.From?.uid
           ? '../assets/avatar1.jpg'
           : '../assets/avatar2.jpg'
       "

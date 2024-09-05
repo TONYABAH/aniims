@@ -35,7 +35,14 @@
         />
         <q-btn flat icon="close" color="white" v-close-popup style="" />
       </q-toolbar>
+      <q-img
+        :src="fileSource"
+        spinner-color="primary"
+        spinner-size="82px"
+        v-if="isImage"
+      />
       <iframe
+        v-else
         :src="fileSource"
         style="width: 100%; height: calc(100% - 60px)"
       ></iframe>
@@ -65,6 +72,9 @@ const props = defineProps({
   },
   setModel: Function,
 });
+const isImage = computed(() =>
+  props.fileSource.match(/\.jpg|.jpeg|.png|.svg|.gif/)
+);
 const fileViewerDialogModel = computed({
   get: () => props.model,
   set: (v) => props.setModel(v),
@@ -77,8 +87,6 @@ function openInWindow() {
 }
 
 onMounted(() => {
-  window.addEventListener("DOMContentLoaded", () => {
-    //makeDraggable(document.querySelector("dialogRef"));
-  });
+  console.log(props.fileSource);
 });
 </script>

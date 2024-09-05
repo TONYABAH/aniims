@@ -5,17 +5,16 @@ import {
   where,
   getDocs,
   orderBy,
-  or,
 } from "firebase/firestore";
 import { firestore } from "./firebase";
 import { useDefaultStore } from "src/stores/store";
-//import { array } from "i/lib/util";
-const db = firestore;
+//import { snapshotConstructor } from "firebase-functions/v1/firestore";
 
+const db = firestore;
 const GENERATION_OFFSET = new Date("5000-01-01").getTime();
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//const offset = 500;
-const EXCLUSION = [
+
+const EXCLUSION = [] || [
   "a",
   "i",
   "am",
@@ -24,6 +23,7 @@ const EXCLUSION = [
   "in",
   "at",
   "of",
+  "on",
   "and",
   "his",
   "him",
@@ -33,9 +33,38 @@ const EXCLUSION = [
   "the",
   "then",
   "this",
+  "that",
   "my",
   "me",
+  "we",
+  "was",
+  "were",
+  "has",
+  "had",
+  "rem",
 ];
+const MAX_OFFSET = 50;
+
+export function sortByLengthAscending(a, b) {
+  if (a.length < b.length) {
+    return -1;
+  } else if (a.length > b.length) {
+    return 1;
+  }
+  // a must be equal to b
+  return 0;
+}
+export function sortByName(a, b) {
+  if (a.Name < b.Name) {
+    return -1;
+  } else if (a.Name > b.Name) {
+    return 1;
+  }
+  // a must be equal to b
+  return 0;
+}
+
+
 // This will generate an id in chronological reverse order.
 // This means the default sort of objects added using this ID will return newest first.
 // If this code survives past year 5000, you will experience Y5K.
@@ -51,62 +80,56 @@ export const generateId = () => {
 };
 
 export const dataGram = (txt) => {
-  if (txt) txt = txt.trim();
+  if (txt) txt = txt?.trim().toLowerCase();
   if (!txt || txt.length === 0) return {};
   const map1 = [];
   if (txt.match(/^\"[^\"]+\"$/g)) {
-    //map[txt.replace(/\"/g, "").toLowerCase()] = true;
-    return [txt.replace(/\"/g, "").toLowerCase()];
+    return [txt.replace(/\"/g, "")];
   }
-  const s1 = (txt || "").toLowerCase();
-  const words = s1.split(/[\s\,\;\:\?!\-_\/]/g);
+  const s1 = txt || "";
+  let words = s1.split(/["'\s\,\;\:\?!\-_\.\/]/g);
   for (let i = 0; i < words.length; i++) {
     const wrds = [];
     for (let j = i; j < words.length; j++) {
+      //for (let j = i; j < i + 1; j++) {
       wrds.push(words[j]);
       const wd = wrds.join(" ").trim();
-      if (EXCLUSION.find((w) => w === wd) === undefined) {
-        if (wd.length > 0) {
-          if (!map1.includes(wd)) map1.push(wd);
-        }
+      //if (EXCLUSION.find((w) => w === wd) === undefined) {
+      if (wd.length > 0) {
+        if (!map1.includes(wd)) map1.push(wd);
       }
+      //}
     }
   }
   return map1;
 };
-// Generates a trigram
-const dataGramBasic = (txt) => {
-  //return (nGram(txt));
+
+export const dataGramBasic = (txt) => {
   if (!txt || txt.trim().length === 0) return {};
-  const map = {};
-  const regEx = new RegExp(EXCLUSION.join("|"), "ig");
-  const s1 = (txt || "").toLowerCase().replace(regEx, "");
-  const words = s1.split(/[\s\,\;\:\?!\-_\/]/g);
+  const map = [];
+  const s1 = (txt || "").toLowerCase(); //.replace(regEx, "");
+  const words = s1.split(/[\s+\,\;\:\?!\-_\.\/]/g);
   for (let word of words) {
-    if (EXCLUSION.find((w) => w === word) === undefined) {
-      map[word] = true;
-    }
+    //if (EXCLUSION.find((w) => w === word) === undefined) {
+    map.push(word);
+    //}
   }
   return map;
 };
+
 export const addSearch = (fields) => {
-  //const mergedField = [];
   const map = [];
   for (let field of fields) {
-    // mergedField.push(field || "");
     const d = dataGram(field);
     if (d.length > 0)
       d.map((v) => {
         if (!map.includes(v)) map.push(v);
       });
-    //Object.assign(map, d);
   }
-  //return dataGram(mergedField.join(" ").slice(0, offset));
-  return map;
+  map.sort(sortByLengthAscending);
+  return map.slice(0, MAX_OFFSET);
 };
-function filterQuery(field, op, value) {
-  return where(field, op, value);
-}
+
 export const advancedSearch = async (
   collectionName,
   { searchText, whereFilters, orderByFilters, start, limits }
@@ -118,9 +141,10 @@ export const advancedSearch = async (
   const _orderByFilters = [];
   // First we build out all our search constraints
   const searchConstraints = [];
-  const data = dataGram(searchText || "");
+  let data = dataGram(searchText || "") || [];
+  //data = data.sort(compareFn).slice(0, MAX_OFFSET);
   if (data && data.length > 0)
-    searchConstraints.push(where(`search`, "array-contains-any", data));
+    searchConstraints.push(where(`Search`, "array-contains-any", data));
   if (start) {
     _startAtFilters.push(startAt(...start));
   }
@@ -143,14 +167,6 @@ export const advancedSearch = async (
     ..._startAtFilters,
     limit(limits || 25)
   );
-  /*const querySnapshot = await getDocs(q);
-  const list = [];
-  querySnapshot.forEach((doc) => {
-    const document = doc.data();
-    document.id = doc.id;
-    list.push(document);
-  });
-  return list;*/
   store.query = q;
   return store.searchResults;
 };
@@ -165,10 +181,10 @@ export const lifeSearch = async (
   const _orderByFilters = [];
   // First we build out all our search constraints
   const searchConstraints = [];
-  const data = dataGram(searchText || "");
-
+  let data = dataGram(searchText || "");
+  //data = data.sort(compareFn).slice(0, MAX_OFFSET);
   if (data && data.length > 0)
-    searchConstraints.push(where(`meta.search`, "array-contains-any", data));
+    searchConstraints.push(where(`Search`, "array-contains-any", data));
   if (start) {
     _startAtFilters.push(startAt(...start));
   }
@@ -188,10 +204,10 @@ export const lifeSearch = async (
     ...searchConstraints,
     ..._orderByFilters,
     ..._startAtFilters,
-    limit(limits || 25)
+    limit(limits || 250)
   );
   const querySnapshot = await getDocs(q);
-
+  //console.log(_orderByFilters);
   const list = [];
   querySnapshot.forEach((doc) => {
     const document = doc.data();
@@ -240,7 +256,8 @@ export const simpleSearch = async (
   });
   return list;
 };
-export const loadDocuments = async (collectionName, staff, limits) => {
+
+/** export const loadDocuments = async (collectionName, staff, limits) => {
   if (!staff) return;
   const store = useDefaultStore();
   const dbRef = collection(db, collectionName);
@@ -260,8 +277,38 @@ export const loadDocuments = async (collectionName, staff, limits) => {
   store.query = q;
   return store.searchResults;
 };
+export const listAllDocuments = async (collectionName) => {
+  //const { update } = await import("./remote.js");
+  const dbRef = collection(db, collectionName);
+  const q = query(dbRef);
+  let querySnapshot = await getDocsFromServer(q);
+  const docs = [];
+  for (let i = 0; i < querySnapshot.docs.length; i++) {
+    let result = querySnapshot.docs[i];
+    let doc = result.data();
+    //let search = addSearch([doc.Title, doc.Address, doc.Source]);
+    //await update(result.id, { "meta.search": search }, collectionName, true);
+    docs.push(doc);
+  }
+  return docs;
+};*/
 
-/*function filterQueries(where_clauses = []) {
+/** console.log(
+  addSearch([
+    "A petition on the importation and sales of fake and counterfeit drugs at Idumota Lagos.",
+  ])
+);
+dataGram(title)
+  .concat(dataGram(doc.Role))
+  .concat(dataGram(doc.Rank))
+  .concat(dataGram(doc.Unit))
+  .concat(dataGram(doc.Location));
+
+//search.sort(compareFn)
+function filterQuery(field, op, value) {
+  return where(field, op, value);
+}
+function filterQueries(where_clauses = []) {
   const query = [];
   where_clauses.forEach((w) => {
     query.push(filterQuery(w[0], w[1], w[2]));

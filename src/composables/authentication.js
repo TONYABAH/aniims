@@ -78,7 +78,7 @@ export const getUserToken = async () => {
 export const sendSignInEmailLink = (email) => {
   const auth = getAuth(app);
   sendSignInLinkToEmail(auth, email, {
-    url: "https://ienforce.web.app/profile",
+    url: "https://aniims.web.app",
   })
     .then(() => {
       // The link was successfully sent. Inform the user.
@@ -176,8 +176,8 @@ export const signInWithEmailAndPasswrd = async (email, password) => {
   return { user };
 };
 export const signInWithEmail = async (email) => {
-  const response = await getuserByemail({ email });
-  return response?.data?.email;
+  //const response = await getuserByemail({ email });
+  return email; // response?.data?.email;
 };
 export const signInWithStaffId = async (id) => {
   const response = await getStaffById({ staffId: id });

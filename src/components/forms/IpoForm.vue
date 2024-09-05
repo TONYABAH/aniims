@@ -56,6 +56,14 @@
         outlined
       >
         <template v-slot:append>
+          <q-btn
+            unelevated
+            color="teal"
+            label="Update"
+            glossy
+            @click.stop="onEmailChanged"
+            v-if="ipo.id"
+          ></q-btn>
           <q-icon name="email" />
         </template>
       </q-input>
@@ -89,7 +97,11 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-      />
+      >
+        <template v-slot:append>
+          <q-icon name="category" />
+        </template>
+      </q-select>
 
       <q-select
         v-model="ipo.Location"
@@ -100,7 +112,19 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-      />
+      >
+        <template v-slot:append>
+          <q-icon name="location_on" />
+          <q-btn
+            unelevated
+            color="teal"
+            label="Update"
+            glossy
+            @click.stop="onLocationChanged"
+            v-if="ipo.id"
+          ></q-btn>
+        </template>
+      </q-select>
 
       <q-select
         v-model="ipo.Unit"
@@ -111,7 +135,11 @@
         lazy-rules="ondemand"
         hide-bottom-space=""
         outlined
-      />
+      >
+        <template v-slot:append>
+          <q-icon name="apartment" />
+        </template>
+      </q-select>
       <q-select
         v-model="status"
         label="Status *"
@@ -128,6 +156,7 @@
             @click.stop="save"
             v-if="ipo.id"
           ></q-btn>
+          <q-icon name="wifi" />
         </template>
       </q-select>
       <!--<q-toolbar class="bg-transparent text- q-mt-md">
@@ -164,7 +193,7 @@ import { addIPO } from "src/composables/functions";
 import { update } from "src/composables/remote";
 import { useValidation } from "src/composables/use-fn";
 import AdminViewer from "src/views/AdminViewer.vue";
-import { addSearch, lifeSearch } from "src/composables/searchProvider";
+import { addSearch, sortByName } from "src/composables/searchProvider";
 
 const validation = useValidation();
 const store = useDefaultStore();
@@ -211,7 +240,58 @@ const status = computed({
   get: () => ipo.value.Status || "Active",
   set: (v) => (ipo.value.Status = v),
 });
-
+async function onLocationChanged() {
+  if (!ipo.value.id) return;
+  loading.value = true;
+  update(ipo.value.id, { Rank: ipo.value.Location }, "Users")
+    .then(() => {
+      Notify.create({
+        timeout: 800,
+        message: "Rank updated",
+        caption: "Update",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
+async function onEmailChanged() {
+  if (!ipo.value.id) return;
+  loading.value = true;
+  update(ipo.value.id, { Rank: ipo.value.Email }, "Users")
+    .then(() => {
+      Notify.create({
+        timeout: 800,
+        message: "Rank updated",
+        caption: "Update",
+        color: "secondary",
+        textColor: "white",
+        icon: "check",
+        position: "right",
+      });
+    })
+    .catch((e) => {
+      Dialog.create({
+        title: "Error",
+        message: e.message,
+        color: "red",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
 async function onRankChanged() {
   if (!ipo.value.id) return;
   loading.value = true;
@@ -239,9 +319,12 @@ async function onRankChanged() {
     });
 }
 async function save() {
-  if (!ipo.value.id) return;
+  if (!ipo.value?.id) return;
   loading.value = true;
-  update(ipo.value.id, { Status: status.value }, "Users")
+  delete ipo.value?.meta;
+  delete ipo.value?.Email;
+  //console.log(ipo.value);
+  update(ipo.value.id, { ...ipo.value }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -300,51 +383,25 @@ async function create() {
       loading.value = false;
     });
 }
-/*function filter(val) {
-  const needle = val?.toLowerCase() || "";
-  if (!needle || needle.trim().length === 0) {
-    userList.value = store.ipos;
-    return userList.value;
-  }
-  const filtered = store.ipos?.filter((v) => {
-    return (
-      v.Email?.toLowerCase().indexOf(needle) > -1 ||
-      v.Location?.toLowerCase().indexOf(needle) > -1 ||
-      v.Name?.toLowerCase().indexOf(needle) >= 0
-    );
-  });
-  userList.value = filtered;
-  return filtered;
-}*/
-//watch(searchText, (val) => filter(val), { immediate: true });
 
-const handleSearch = debounce(async (d, active) => {
-  loading.value = true;
-  const whereFilters = [["Level", "==", 2]];
-  if (active) whereFilters.push(["Status", "==", "Active"]);
-  lifeSearch("Users", {
-    searchText: d,
-    whereFilters,
-    limits: 100,
-  })
-    .then((_users) => {
-      ipoList.value = _users;
+const handleSearch = debounce((searchTerm, active) => {
+  const list = store.ipos;
+  ipoList.value = list
+    .filter((s) => {
+      //let pattern = `${s.Name}|| ${s.Rank} || ${s.Location} || ${s.Unit}`
+      let d = searchTerm?.toLowerCase() || "";
+      let searchTerms = d.split(" ");
+      for (let x of searchTerms) {
+        return (
+          s.Name?.toLowerCase().indexOf(d) >= 0 ||
+          s.Rank?.toLowerCase().indexOf(d) === 0 ||
+          s.Location?.toLowerCase().indexOf(d) >= 0 ||
+          s.Unit?.toLowerCase().indexOf(d) >= 0
+        );
+      }
     })
-    .catch((e) => {
-      Dialog.create({
-        message: e.message,
-        title: "Error",
-        timeout: 2000,
-        cancel: true,
-        ok: false,
-      });
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-}, 500);
-
-handleSearch("");
+    .sort(sortByName);
+}, 5);
 
 defineExpose({
   reset,

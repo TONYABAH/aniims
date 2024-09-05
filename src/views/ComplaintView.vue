@@ -10,7 +10,7 @@
     :showPrevious="showPrevious"
     :onSaved="onDocumentSaved"
     :onPrevious="onPrevious"
-    :commentable="true"
+    :commentable="complaint.id !== undefined"
     saveButtonLabel="Save & continue"
     collectionName="Complaints"
   >

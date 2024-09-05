@@ -9,7 +9,7 @@
     :hide-save-button="hideSaveButton"
     :showPrevious="showPrevious"
     :onPrevious="onPrevious"
-    :commentable="true"
+    :commentable="Case.id !== undefined"
     collectionName="Investigations"
   >
     <q-toolbar

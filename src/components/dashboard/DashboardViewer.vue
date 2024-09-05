@@ -1,5 +1,14 @@
 <template>
   <div class="q-py-md q-px-sm">
+    <div class="row">
+      <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-3">
+        <!--<MonthlyRevenue :collection="collection" />
+        <InterQuarterRevenue :collection="collection" />-->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-3"></div>
+    </div>
     <div
       class="row"
       :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-md'"
@@ -35,12 +44,13 @@
           :title="'Jan - Dec ' + year"
         />
       </div>
-      <!-- <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
-        <LineChartViewer
-          :area="true"
+      <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <BarChartViewer
           :data="barChartData"
-          name="AreaChart"
-          title="Area chart"
+          :vertical="true"
+          name="LineChart"
+          title="Last three months"
+          :download="true"
         />
       </div>
       <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
@@ -53,13 +63,13 @@
       </div>
       <div class="col col-xs-12 col-sm-12 col-md-8 col-lg-6">
         <BarChartViewer
-          :data="barChartData"
-          name="BarChart"
-          title="Bar chart"
+          :data="YearData"
+          name="JanDecBarChart"
+          :title="'Jan - Dec ' + year"
           :vertical="true"
         />
-      </div>-->
-      <!-- <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      </div>
+      <!--<div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
         <GoogleMapViewer
           :data="geoData"
           :options="geoChartOptions"
@@ -75,11 +85,14 @@
 </template>
 
 <script setup>
+import { watch, computed } from "vue";
+//import MonthlyRevenue from "../billboard-chart/MonthlyRevenue.vue";
+//import InterQuarterRevenue from "../billboard-chart/InterQuarterRevenue.vue";
 import LineChartViewer from "./LineChartViewer.vue";
 import PieChartViewer from "./PieChartViewer.vue";
 import BarChartViewer from "./BarChartViewer.vue";
 //import GoogleGeoViewer from "./GoogleGeoViewer.vue";
-import { computed, ref, onMounted, watch } from "vue";
+//import { computed, ref, onMounted, watch } from "vue";
 //import GoogleMapViewer from "./GoogleMapViewer.vue";
 import {
   lastQuarterData,
@@ -89,7 +102,54 @@ import {
   YearData,
   interQuarterData,
   useDashboardData,
-} from "src/components/dashboard/dashboard-data";
+} from "./dashboard-data";
+import { useRoute } from "vue-router";
+import {
+  getAggregateFromServer,
+  getCountFromServer,
+  collection,
+  sum,
+  average,
+  count,
+  where,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { firestore } from "src/composables/firebase";
+const route = useRoute();
+const year = computed(() => new Date().getFullYear());
+/*const collection = computed(() =>
+  route.path.substring(1, route.path.length - 1)
+);*/
+watch(
+  () => route.fullPath,
+  (p) => {
+    if (p) useDashboardData();
+  },
+  { immediate: true }
+);
+async function init() {
+  const coll = collection(firestore, "Mails");
+  const locations = ["Lagos", "Asaba", "Abuja", "Kaduna"];
+  const promises = [];
+  for (let loc of locations) {
+    const q = query(coll, where("Location", "==", loc), orderBy("Location"));
+    const snapshot = getAggregateFromServer(q, {
+      count: count(),
+      //sum: sum("Amount"),
+      //average: average("Amount"),
+    });
+    promises.push(snapshot);
+  }
+  const results = await Promise.all(promises);
+  let i = 0;
+  for (let p of results) {
+    console.log(locations[i], p.data());
+    i++;
+  }
+}
+init();
+
 //import ScatterChartViewer from "./ScatterChartViewer.vue";
 //import PieChart3DhartViewer from "./PieChart3DViewer.vue";
 //import LocationForm from "../forms/LocationForm.vue";
@@ -97,7 +157,7 @@ import {
 //import AnalogClock from "../AnalogClock.vue";
 //import { useDefaultStore } from "src/stores/store";
 //const store = useDefaultStore();
-const geoChartOptions = {
+/*const geoChartOptions = {
   chart: {
     title: "Company Performance",
     subtitle: "Sales, Expenses, and Profit: 2014-2017",
@@ -141,7 +201,48 @@ const geoChartOptions = {
     },
   },
 };
-useDashboardData();
-const year = computed(() => new Date().getFullYear());
-onMounted(async () => {});
+
+//
+onMounted(async () => {
+  // Load the Visualization API and the corechart package.
+  google.charts.load("current", { packages: ["corechart"] });
+
+  // Set a callback to run when the Google Visualization API is loaded.
+  google.charts.setOnLoadCallback(drawChart);
+
+  // Callback that creates and populates a data table,
+  // instantiates the pie chart, passes in the data and
+  // draws it.
+  function drawChart() {
+    // Create the data table.
+    var data = new google.visualization.DataTable();
+    data.addColumn("string", "Topping");
+    data.addColumn("number", "Slices");
+    data.addRows([
+      ["Mushrooms", 3],
+      ["Onions", 1],
+      ["Olives", 1],
+      ["Zucchini", 1],
+      ["Pepperoni", 2],
+    ]);
+
+    // Set chart options
+    var options = {
+      title: "How Much Pizza I Ate Last Night",
+      width: 400,
+      height: 300,
+    };
+
+    // Instantiate and draw our chart, passing in some options.
+    var chart = new google.visualization.PieChart(
+      document.getElementById("google_chart_div")
+    );
+    chart.draw(data, options);
+  }
+});*/
 </script>
+
+<script type="text/javascript"></script>
+<style>
+@import "billboard.js/dist/billboard.css";
+</style>

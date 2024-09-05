@@ -6,7 +6,7 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
     :searchFields="SEARCH_FIELDS"
-    :commentable="true"
+    :commentable="file.id !== undefined"
     collectionName="Files"
   >
     <label>
@@ -51,7 +51,7 @@
                     unelevated
                     color="secondary"
                     id="copy_btn"
-                    @click="copyToClipboard(file.Number)"
+                    @click="copyToClipboard(file.FileNumber)"
                   >
                     <svg
                       width="24px"

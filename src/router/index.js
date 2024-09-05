@@ -40,6 +40,7 @@ export default route(function (/* { store, ssrContext } */) {
 
   Router.beforeEach((to, from) => {
     const store = useDefaultStore();
+    //console.log(store.user);
     // instead of having to check every route record with
     // to.matched.some(record => record.meta.requiresAuth)
     if (to.meta.requiresAuth) {

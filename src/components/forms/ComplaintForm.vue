@@ -152,7 +152,7 @@
 
 <script setup>
 import { Notify, Dialog as dialog } from "quasar";
-import { useDefaultStore } from "src/stores/store";
+//import { useDefaultStore } from "src/stores/store";
 import { computed, onMounted, onBeforeUnmount, provide, ref, watch } from "vue";
 import { getById } from "src/composables/remote";
 import Clipboard from "src/utils/clipboard.js";
@@ -164,8 +164,8 @@ const props = defineProps({
   setData: Function,
 });
 const uploadDialogModel = ref(false);
-const loading = ref(false);
-const store = useDefaultStore();
+//const loading = ref(false);
+//const store = useDefaultStore();
 const fileTypes = ref("");
 const form = ref(null);
 const clipboard_show = ref(false);

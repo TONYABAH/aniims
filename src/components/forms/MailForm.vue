@@ -5,7 +5,7 @@
     :set-current-doc="setMail"
     :getDocument="getDocument"
     :searchFields="SEARCH_FIELDS"
-    :commentable="true"
+    :commentable="commentable"
     collectionName="Mails"
   >
     <q-form ref="form" class="q-gutter-md q-pt-md">
@@ -59,16 +59,25 @@
       />
       <q-input
         v-model="mail.FileNumber"
-        label="File number *"
+        label="File number"
         type="text"
         color=""
         name="fileNumber"
         outlined
         stack-label=""
       >
-        <template v-slot:append>
+        <template v-slot:append v-if="mail?.id">
           <q-btn
-            v-if="update_fileNumber && mail?.id"
+            v-if="mail?.FileNumber"
+            no-caps=""
+            unelevated=""
+            color="secondary"
+            icon-right="campaign"
+            label="View complaint"
+            :to="'/files/#' + mail?.FileNumber"
+          />
+          <q-btn
+            v-if="update_fileNumber"
             flat
             color="primary"
             label="Update"
@@ -161,48 +170,105 @@
         :documentId="mail?.id"
         :status="mail?.Status"
         :set-status="(v) => (mail.Status = v)"
+        :options="statusOptions"
         outlined
+        dense
       />
     </q-form>
-    <!--<q-toolbar class="q-mt-sm">
-      <q-toolbar-title> </q-toolbar-title>
-      <q-btn
-        no-caps=""
-        unelevated=""
-        color="primary"
-        icon="campaign"
-        label="Generate Complaint"
-        v-if="store.currentDocument?.id"
-        @click="generateComplaint"
-      />
-    </q-toolbar>-->
+    <q-separator spaced inset vertical dark />
+    <q-btn
+      v-if="mail?.ComplaintId"
+      no-caps=""
+      unelevated=""
+      color="secondary"
+      icon-right="campaign"
+      label="View complaint"
+      :to="'/complaints/#' + mail?.ComplaintId"
+    />
+    <q-btn
+      v-else
+      no-caps=""
+      unelevated=""
+      color="secondary"
+      icon-right="campaign"
+      label="File complaint"
+      @click="() => generateComplaint()"
+    />
+    <q-btn
+      v-if="mail?.id && mail.Status === 'Created'"
+      no-caps=""
+      unelevated=""
+      color="purple"
+      icon-right="arrow_right"
+      label="Send to Head"
+      :loading="loading"
+      class="q-mx-xs"
+      @click="sendToDirector"
+    />
+    <q-dialog v-model="complaintDialog" persistent>
+      <q-card>
+        <q-toolbar class="bg-purple text-white">
+          <q-toolbar-title> Create complaint </q-toolbar-title>
+        </q-toolbar>
+        <q-scroll-area
+          class="q-pa-md q-mr-xs"
+          style="width: 400px; height: calc(100vh - 200px)"
+        >
+          <ComplaintForm
+            ref="complaintFormRef"
+            :data="complaint"
+            :setData="(d) => (complaint = d)"
+          />
+        </q-scroll-area>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn
+            flat
+            label="Create"
+            color="primary"
+            @click="() => generateComplaint(complaint)"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </FormCard>
 </template>
 
 <script setup>
-import { Dialog as dialog } from "quasar";
-import { ref, onBeforeMount, watch, provide, computed } from "vue";
+import { Notify, Dialog as dialog } from "quasar";
+import { ref, onBeforeMount, onMounted, watch, provide, computed } from "vue";
 import FormCard from "src/components/FormCard.vue";
-import { update } from "src/composables/remote";
+import {
+  update,
+  create,
+  onSubmit,
+  getMailComplaints,
+} from "src/composables/remote";
 import { simpleSearch } from "src/composables/searchProvider";
 import { useDefaultStore } from "src/stores/store";
 import Clipboard from "src/utils/clipboard.js";
 import StatusInput from "./StatusInput.vue";
+import ComplaintForm from "./ComplaintForm.vue";
 
 const store = useDefaultStore();
-//const mail = ref({});
+const complaintDialog = ref(false);
 const form = ref(null);
 const update_fileNumber = ref(false);
 const update_outdate = ref(false);
 const clipboard_show = ref(false);
 const clipboard = new Clipboard("#copy_btn");
 const SEARCH_FIELDS = ["Title", "Source", "Address"];
-
+const complaint = ref({});
+//const complaints = ref([]);
+const complaintFormRef = ref(null);
+const statusOptions = ["Open", "Dispatched", "Treated", "KIV", "Closed"];
+const loading = ref(false);
 const mail = computed({
-  get: () => store.currentDocument || {},
-  set: (v) => (store.currentDocument = v || {}),
+  get: () => store.currentDocument || { IsComplaint: false },
+  set: (v) => (store.currentDocument = v || { IsComplaint: false }),
 });
-const setMail = (v) => (mail.value = v || {});
+const commentable = ref(true);
+const setMail = (v) => (mail.value = v || { IsComplaint: false });
 
 const validate = async () => await form.value?.validate(true);
 
@@ -215,20 +281,54 @@ function copyToClipboard(val) {
     clipboard_show.value = false;
   }, 1000);
 }
+async function sendToDirector() {
+  loading.value = true;
+  let assigned = null;
+  let action = "Submit";
+  let comment = "Sir, please find this mail for your attention. Thank you.";
+  if (mail.value?.Location === "Lagos") {
+    assigned = store.staffList.find((s) => s.Role === "Director");
+  } else {
+    assigned = store.staffList.find((s) => s.Role === "Head Location");
+  }
+  //console.log(mail);
+  //if (true) return;
+  onSubmit(comment, assigned, "", mail.value?.id, action)
+    .then(() => {
+      Notify.create({
+        message: "Success",
+        caption: "Send Mail",
+        color: "teal",
+      });
+      store.tabModel = "search";
+    })
+    .catch((error) => {
+      console.log(error);
+      dialog.create({
+        timeout: 3000,
+        textColor: "white",
+        message: error.message,
+        icon: "error",
+        iconColor: "white",
+        color: "red",
+        position: "right",
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
+
 function updateFileNumber() {
   store.loading = true;
   update(mail.value.id, { FileNumber: mail.value.FileNumber }, "Mails")
     .then((d) => {
-      const dl = dialog.create({
-        title: "Success",
-        message: "Update succeeded",
-        ok: {
-          color: "teal",
-        },
+      Notify.create({
+        title: "File number",
+        message: "Updated successfully",
+        color: "teal",
+        icon: "info",
       });
-      setTimeout(() => {
-        dl.hide();
-      }, 1000);
     })
     .catch((e) => {
       dialog.create({
@@ -244,17 +344,13 @@ function updateOutDate() {
   // send update file number field
   store.loading = true;
   update(mail.value.id, { OutDate: mail.value.OutDate }, "Mails")
-    .then((d) => {
-      const dl = dialog.create({
-        title: "Success",
-        message: "Update succeeded",
-        ok: {
-          color: "teal",
-        },
+    .then(() => {
+      Notify.create({
+        title: "Outgoing date",
+        message: "Updated successfully",
+        color: "teal",
+        icon: "info",
       });
-      setTimeout(() => {
-        dl.hide();
-      }, 1000);
     })
     .catch((e) => {
       dialog.create({
@@ -272,7 +368,57 @@ function reset() {
   mail.value = {};
 }
 
-function generateComplaint() {}
+async function generateComplaint(data) {
+  if (data) {
+    complaintFormRef.value
+      .validate()
+      .then(() => {
+        create(data, "Complaints", ["Title", "CoyName"])
+          .then((id) => {
+            complaint.value.id = id;
+            complaintDialog.value = false;
+            update(
+              mail.value.id,
+              { ComplaintId: id, IsComplaint: true },
+              "Mails"
+            )
+              .then(() => {})
+              .catch((e) => {
+                dialog.create({
+                  title: "Error",
+                  message: e.message,
+                });
+              });
+            Notify.create({
+              title: "Complaint",
+              message: "Created successfully",
+              color: "teal",
+              icon: "info",
+            });
+            store.tabModel = "search";
+          })
+          .catch((e) => {
+            dialog.create({
+              title: "Error",
+              message: e.message,
+              color: "red",
+              icon: "error",
+            });
+          });
+      })
+      .catch(() => {
+        // Do nothing
+      });
+  } else {
+    let _mail = Object.assign({}, mail.value);
+    complaint.value.Title = _mail.Title;
+    complaint.value.MailId = _mail.id;
+    complaint.value.Source = _mail.Source;
+    complaint.value.Address = _mail.Address;
+    complaint.value.Status = "Open";
+    complaintDialog.value = true;
+  }
+}
 
 watch(
   () => mail.value?.FileNumber,
@@ -300,15 +446,38 @@ watch(
     update_outdate.value = newValue ? true : false;
   }
 );
-
+watch(
+  () => mail.value?.id,
+  async (newValue) => {
+    if (newValue) {
+      // Load complaint
+      if (mail.value?.ComplaintId) commentable.value = false;
+      /*getMailComplaints(newValue)
+        .then((_complaints) => {
+          if (_complaints.length > 0) {
+            complaint.value = _complaints[0];
+            complaints.value.push(..._complaints);
+            commentable.value = false;
+          } else {
+            complaint.value = {};
+            complaints.value = [];
+            if (mail.value.id) commentable.value = true;
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });*/
+    }
+  },
+  { immediate: true }
+);
 provide("iconName", "mail");
 provide("titleField", "title");
 provide("secondTitle", "date");
 provide("collection", "Mails");
 //provide("searchFields", ["Title", "Source", "Address"]);
-
+onMounted(async () => {});
 onBeforeMount(() => {
-  //if (!mail.value) mail.value = {};
   store.loading = false;
 });
 

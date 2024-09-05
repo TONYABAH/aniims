@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject, provide, watch } from "vue";
+import { ref} from "vue";
 //import AnimateOnScroll from "src/components/AnimateOnScroll.vue";
 //const chartref = ref(null);
 const chartContainer = ref(null);

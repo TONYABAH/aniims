@@ -7,7 +7,7 @@
     :set-model="setModel"
     :filter="filter"
     :input-debounce="400"
-    icon="search"
+    icon="perm_identity"
     option-value="uid"
     option-label="Name"
   />

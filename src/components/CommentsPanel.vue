@@ -2,26 +2,21 @@
   <div class="text-bold">
     <div v-if="store.minutes?.length > 0" class="full-width">
       <q-expansion-item
+        v-model="expanded"
         expand-separator
         icon="comment"
         label="Minutes"
         caption=""
-        v-model="expanded"
         dense=""
         dense-toggle=""
         style="border-radius: 2px 2px"
+        class="q-pb-xl q-pr-md"
       >
         <template v-slot:header>
           <q-toolbar class="full-width">
             <q-icon name="comment" />
             <q-toolbar-title>Minutes</q-toolbar-title>
-            <q-checkbox
-              left-label
-              v-model="store.chatMode"
-              label="Conversational"
-              color="orange"
-            />
-            <!--<q-toggle v-model="store.chatMode" color="primary" label="Chat" />-->
+            <q-toggle v-model="store.chatMode" color="primary" label="Chat" />
           </q-toolbar>
         </template>
         <CommentsWidget :comments="store.minutes" />
@@ -37,7 +32,7 @@ import CommentsWidget from "./CommentsWidget.vue";
 import { ref, watch } from "vue";
 import { useDefaultStore } from "src/stores/store";
 import { useCollection, useDocument } from "vuefire";
-import { collection, query, orderBy, doc } from "firebase/firestore";
+import { collection, query, where, orderBy, doc } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
 
 const store = useDefaultStore();
@@ -57,11 +52,12 @@ watch(
         query(
           collection(
             firestore,
-            store.currentCollection,
-            store.currentDocument.id,
+            //store.currentCollection,
+            //store.currentDocument.id,
             "Minutes"
           ),
-          orderBy("time", "asc")
+          where("DocId", "==", store.currentDocument.id),
+          orderBy("Date", "asc")
         )
       );
     }

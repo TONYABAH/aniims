@@ -2,39 +2,41 @@
   <q-dialog
     v-model="dialogMmodel"
     persistent=""
-    position="right"
     :seamless="false"
     :maximized="false"
   >
-    <q-card style="max-width: 250px">
-      <q-toolbar class="bg-transparent">
-        <q-avatar
+    <q-card class="full-width">
+      <q-bar class="bg-teal text-white">
+        <!--<q-avatar
           :icon="iconName"
-          color="primary"
-          text-color="white"
+          color=""
+          text-color="primary"
           size="32px"
           font-size="22px"
-        />
+        />-->
         <span class="q-ml-sm">{{ action }}</span>
         <q-space />
         <q-btn flat color="" icon="close" v-close-popup />
-      </q-toolbar>
+      </q-bar>
       <q-card-section>
         <q-form ref="form" class="q-gutter-sm">
           <q-select
             v-model="location"
+            dense
             :options="store.locations"
             options-dense=""
             label="Location"
             :dark="$q.dark.isActive"
             outlined=""
-            clearable=""
+            :clearable="false"
             clear-icon="close"
+            icon="location_on"
             :color="$q.dark.isActive ? 'white' : 'grey-10'"
             v-show="isDirector || isHod || isAdmin"
           />
           <q-select
             v-model="whereTo"
+            dense
             options-dense
             :options="['Division', 'Police']"
             label="Where to?"
@@ -54,7 +56,9 @@
               title="Unit"
               label="Unit in charge"
               placeholder=""
+              icon="apartment"
               :search-options="{ location: location }"
+              dropdown-icon="search"
             />
             <staff-input
               :set-model="(v) => (assigned = v)"
@@ -62,8 +66,10 @@
               dense
               outlined
               title="Minuted to who?"
-              label="name"
+              label="Name"
               placeholder=""
+              dropdown-icon="search"
+              icon="perm_identity"
               :search-options="{
                 location: location,
                 unit: unit?.Abbrev,
@@ -79,10 +85,12 @@
               clearable=""
               clear-icon="close"
               outlined=""
+              icon="apartment"
               :rules="[(val) => !!val || 'This field is required']"
               lazy-rules="ondemand"
               hide-bottom-space=""
               :color="$q.dark.isActive ? 'white' : 'grey-10'"
+              dropdown-icon="search"
             />
             <IpoInput
               :set-model="(v) => (assigned = v)"
@@ -90,8 +98,10 @@
               dense
               outlined
               title="Minuted to who?"
-              label="name"
+              label="Name"
               placeholder=""
+              dropdown-icon="search"
+              icon="perm_identity"
               :search-options="{
                 location: location,
                 unit: unit,
@@ -102,7 +112,7 @@
       </q-card-section>
       <q-card-actions align="right" :vertical="$q.screen.lt.sm" class="q-pr-md">
         <q-btn
-          v-if="unit && assigned"
+          v-if="assigned"
           no-caps=""
           unelevated=""
           color="primary"
@@ -118,14 +128,14 @@
             Wait...
           </template>
         </q-btn>
+        <q-space />
         <q-btn
+          flat
           no-caps=""
           unelevated=""
           label="Cancel"
           color="negative"
           v-close-popup
-          icon=""
-          icon-right="close"
           @click="reset"
         />
       </q-card-actions>
@@ -137,7 +147,7 @@
 import { useQuasar } from "quasar";
 import { ref, computed, inject } from "vue";
 import { useDefaultStore } from "src/stores/store";
-import { useIpoList, useStaffList } from "src/composables/use-fn";
+//import { useIpoList, useStaffList } from "src/composables/use-fn";
 import UnitInput from "src/components/forms/UnitInput.vue";
 import StaffInput from "src/components/forms/StaffInput.vue";
 import IpoInput from "src/components/forms/IpoInput.vue";
@@ -145,10 +155,17 @@ import IpoInput from "src/components/forms/IpoInput.vue";
 const store = useDefaultStore();
 const form = ref(null);
 const location = ref(store.currentDocument?.Location);
-const assigned = ref(getFromUser());
+
 const whereTo = ref("Division");
 const $q = useQuasar();
 const unit_options = ["NAFDAC Police", "FTF Police"];
+const getFromUser = computed(() => {
+  return (
+    store.staffList.find((s) => s.uid === store.currentDocument?.meta?.From) ||
+    null
+  );
+});
+const assigned = ref(null);
 const props = defineProps({
   onOk: {
     type: Function,
@@ -177,9 +194,9 @@ const unit = computed({
   get: () => _unit.value,
   set: (v) => (_unit.value = v),
 });
-const style = computed(() =>
+/*const style = computed(() =>
   $q.screen.lt.sm ? "max-width:600px" : "max-width:250px"
-);
+);*/
 
 const dialogMmodel = computed({
   get: () => props.model,
@@ -188,7 +205,7 @@ const dialogMmodel = computed({
 const isDirector = computed(() => store.user.claims.role === "Director");
 const isAdmin = computed(() => store.user.claims.admin === true);
 const isHod = computed(() => store.user.claims.role === "Head Location");
-
+//assigned.value = getFromUser;
 /*const units = computed(() => {
   if (whereTo.value === "Police") {
     return ["NAFDAC Police", "FTF Police"];
@@ -215,16 +232,11 @@ const staffList = computed(() => {
 
   return results || [];
 });*/
-function getFromUser() {
-  return (
-    store.staffList.find((s) => s.uid === store.currentDocument?.meta?.From) ||
-    null
-  );
-}
 
 async function submitDocument() {
   if (!form.value.validate()) return;
-  props.onOk(assigned.value, unit.value);
+  //console.log(assigned.value);
+  props.onOk(assigned.value);
 }
 
 async function validate() {

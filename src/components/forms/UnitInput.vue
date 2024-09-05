@@ -7,7 +7,7 @@
     :set-model="setModel"
     :filter="filter"
     :input-debounce="400"
-    icon="search"
+    icon="apartment"
     option-value="Abbrev"
     option-label="Name"
   />

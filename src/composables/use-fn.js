@@ -117,7 +117,7 @@ export const useStaffList = (options = {}) => {
     }
     if (options.search) {
       whereClause.push(
-        where("meta.search", "array-contains-any", options.search.split(" "))
+        where("Search", "array-contains-any", options.search.split(" "))
       );
     }
   }
@@ -151,7 +151,7 @@ export const useIpoList = (options = {}) => {
     }
     if (options.search) {
       whereClause.push(
-        where("meta.search", "array-contains-any", options.search.split(" "))
+        where("Search", "array-contains-any", options.search.split(" "))
       );
     }
   }
@@ -183,7 +183,7 @@ export const useUserList = (options = {}) => {
     }
     if (options.search) {
       whereClause.push(
-        where("meta.search", "array-contains-any", options.search.split(" "))
+        where("Search", "array-contains-any", options.search.split(" "))
       );
     }
   }
@@ -205,7 +205,7 @@ export const useSuspects = (options = {}) => {
 
   if (options?.search) {
     whereClause.push(
-      where("meta.search", "array-contains-any", options.search.split(" "))
+      where("Search", "array-contains-any", options.search.split(" "))
     );
   }
   const suspectQuery = computed(() =>
@@ -226,14 +226,14 @@ export const useUnits = (options = {}) => {
       whereClause.push(where("Name", "==", options.name));
     }
     if (options?.search) {
-      whereClause.push(where("meta.search", "array-contains", options.search));
+      whereClause.push(where("Search", "array-contains", options.search));
     }
     if (options?.status) {
       whereClause.push(where("Status", "==", options.status));
     }
   }
   const unitQuery = computed(() =>
-    query(collection(firestore, "Units"), ...whereClause)
+    query(collection(firestore, "Meta"), ...whereClause)
   );
   return useCollection(unitQuery);
 };
@@ -259,66 +259,99 @@ export const useValidation = () => {
   };
 };
 
-export function useSearchQuery(search = {}) {
-  const searchConstraints = [];
+export function useSearchQuery(collectionName, search = {}) {
+  const searchConstraints = [where("CollId", "==", collectionName)];
   //console.log(search.date2,new Date(search.date2),Date.parse(new Date(search.date2)));
   if (search.date1) {
     searchConstraints.push(
-      where("meta.CreatedAt", ">=", Date.parse(new Date(search.date1)))
+      where("CreatedAt", ">=", Date.parse(new Date(search.date1)))
     );
   }
   if (search.date2) {
     searchConstraints.push(
-      where("meta.CreatedAt", "<=", Date.parse(new Date(search.date2)))
+      where("CreatedAt", "<=", Date.parse(new Date(search.date2)))
     );
   }
+  // console.log(store.user);
+  if (store.user.claims?.admin) {
+    // Do nothing here
+  }
   if (search.staff) {
-    //console.log(search);
-    searchConstraints.push(where("meta.To", "==", search.staff.uid));
-  } else if (search.unit) {
-    searchConstraints.push(where("meta.Unit", "==", search.unit.Abbrev));
+    searchConstraints.push(where("To", "==", search.staff.uid));
+  } else if (search.unit?.Abbrev) {
+    searchConstraints.push(where("Unit", "==", search.unit.Abbrev));
   } else if (search.location) {
-    searchConstraints.push(where("meta.Location", "==", search.location));
+    searchConstraints.push(where("Location", "==", search.location));
   }
   if (search.status) {
     searchConstraints.push(where("Status", "==", search.status));
   }
-
+  //console.log(searchConstraints);
   return searchConstraints;
 }
 export function useDefaultSerachQuery(collectionName) {
-  let caseFilters = [];
-  if (
-    collectionName == "Samples" ||
-    collectionName == "Raids" ||
-    collectionName == "Payments"
-  ) {
-    caseFilters.push(where("CaseId", "==", ""));
-  } else if (collectionName == "Mails") {
-    caseFilters.push(where("FileNumber", "==", ""));
-    //} else if (collectionName == "Cases") {
-    //caseFilters.push(where("Status", "==", "In progress"));
-    //} else if (
-    // collectionName == "Complaints" ||
-    // collectionName == "Destructions" ||
-    // collectionName == "Applications"
-    //) {
-    //caseFilters.push(where("Status", "!=", "Treated"));
-  }
-  let filters = [
-    or(
-      and(
-        where("meta.To", "==", store.user.uid),
-        where("Status", "==", "Open"),
-        //where("Status", "!=", "KIV"),
-        ...caseFilters
-      ),
-      and(
-        where("meta.CreatedBy", "==", store.user.uid),
-        where("meta.Status", "==", "Created"),
-        ...caseFilters
-      )
-    ),
-  ];
-  return filters;
+  //console.log(collectionName);
+  return store.user.claims.admin
+    ? [where("CollId", "==", collectionName)]
+    : [
+        and(
+          where("CollId", "==", collectionName),
+          where("To.uid", "==", store.user.uid)
+        ),
+      ];
+}
+
+export function useMeta() {
+  return {
+    CollId: "",
+    DocId: "",
+    Title: "",
+    Search: [],
+    Assigned: false,
+    CreatedAt: 1718880612070,
+    CreatedBy: "",
+    From: "YRh0OnWnU3NuSS6NA5enrkKGdjs1",
+    Location: "",
+    Status: "",
+    Time: 1718880688469,
+    To: "YRh0OnWnU3NuSS6NA5enrkKGdjs1",
+    Unit: "",
+  };
+}
+export function useHistory() {
+  return {
+    CollId: "",
+    DocId: "",
+    Date: 1718880688487,
+    Op: "",
+    Unit: "",
+    User: {
+      uid: "",
+      Name: "",
+    },
+  };
+}
+export function useMinute() {
+  return {
+    CollId: String,
+    DocId: String,
+    Date: 1718880688487,
+    User: {
+      uid: "YRh0OnWnU3NuSS6NA5enrkKGdjs1",
+      Name: "",
+      Unit: "LOD",
+      Loc: "Lagos",
+    },
+    To: {
+      uid: "YRh0OnWnU3NuSS6NA5enrkKGdjs1",
+      Name: "",
+      Unit: "LOD",
+      Loc: "Lagos",
+    },
+    //ToId: "YRh0OnWnU3NuSS6NA5enrkKGdjs1",
+    //ToRole: "",
+    //ToUnit: "LOD",
+    //ToLoc: "Lagos",
+    Comment: "",
+  };
 }

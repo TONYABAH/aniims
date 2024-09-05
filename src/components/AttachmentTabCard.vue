@@ -5,12 +5,15 @@
       <span class="text-h6"> {{ store.currentCollection }} / Attachments</span>
     </q-toolbar>
     <q-card-section>
-      <q-card class="my-card shadow-22">
+      <q-card
+        class="my-card bg-grey-3"
+        :class="$q.dark.isActive ? 'shadow-0 bg-grey-9' : 'shadow-1'"
+      >
         <q-card-section>
           <label>Documents</label>
           <TableView
             :editable="false"
-            :deletable="false"
+            :deletable="store.user.claims?.admin"
             :data="attachedDocuments"
             :columns="document_columns"
             :onAddItem="() => addAttachment('doc')"
@@ -22,12 +25,15 @@
         </q-card-section>
       </q-card>
 
-      <q-card class="my-card q-mt-sm shadow-22">
+      <q-card
+        class="my-card q-my-md bg-grey-3"
+        :class="$q.dark.isActive ? 'shadow-0 bg-grey-9' : 'shadow-1'"
+      >
         <q-card-section>
           <label>Images</label>
           <TableView
             :editable="false"
-            :deletable="false"
+            :deletable="store.user.claims?.admin"
             :data="attachedImages"
             :columns="document_columns"
             :onAddItem="() => addAttachment('image')"
@@ -39,12 +45,15 @@
         </q-card-section>
       </q-card>
 
-      <q-card class="my-card q-mt-sm shadow-22">
+      <q-card
+        class="my-card bg-grey-3"
+        :class="$q.dark.isActive ? 'shadow-0 bg-grey-9' : 'shadow-1'"
+      >
         <q-card-section>
           <label>Videos</label>
           <TableView
             :editable="false"
-            :deletable="false"
+            :deletable="store.user.claims?.admin"
             :data="attachedVideos"
             :columns="document_columns"
             :onAddItem="() => addAttachment('mp4')"
@@ -120,10 +129,13 @@ const currentDocument = computed({
 //const Attachments = useCollection(db, store.currentCollection)
 const dbRef = collection(
   db,
-  store.currentCollection + "/" + currentDocument.value?.id,
+  /*store.currentCollection + "/" + currentDocument.value?.id,*/
   "/Attachments"
 );
-//const dataSource = query(dbRef);
+const dataSource = query(
+  dbRef,
+  where("DocId", "==", currentDocument.value?.id)
+);
 var Attachments = useCollection(dbRef);
 //console.log(Attachments);
 const attachedDocuments = computed(() => {
@@ -169,6 +181,7 @@ function deleteAttachment(d) {
           icon: "check",
           iconColor: "secondary",
           position: "right",
+          timeout: 1000,
         });
       })
       .catch((error) => {
@@ -179,6 +192,7 @@ function deleteAttachment(d) {
           icon: "error",
           iconColor: "red",
           position: "right",
+          timeout: 2000,
         });
       });
   });
@@ -215,6 +229,7 @@ function onDocumentUploaded(doc) {
           icon: "check",
           iconColor: "secondary",
           position: "right",
+          timeout: 1000,
         });
       })
       .catch((error) => {
@@ -225,6 +240,7 @@ function onDocumentUploaded(doc) {
           icon: "error",
           iconColor: "red",
           position: "right",
+          timeout: 2000,
         });
       });
   }

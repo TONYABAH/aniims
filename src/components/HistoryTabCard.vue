@@ -13,11 +13,11 @@
         <q-timeline-entry
           v-for="(h, i) of store.history"
           :key="i"
-          :title="h.op"
-          :subtitle="new Date(h.date).toLocaleString('en-GB')"
+          :title="h.Op"
+          :subtitle="new Date(h.Date).toLocaleString('en-GB')"
         >
-          <div>By: {{ h.user }}</div>
-          <div v-if="h.op === 'Minuted'">To: {{ h.to }}</div>
+          <div>User: {{ h.User.Name }}</div>
+          <!--<div v-if="h.op === 'Minuted'">To: {{ h.to }}</div>-->
         </q-timeline-entry>
       </q-timeline>
     </q-card-section>
@@ -28,7 +28,7 @@
 import { useDefaultStore } from "src/stores/store";
 import { onMounted, watch } from "vue";
 import { useCollection, useDocument } from "vuefire";
-import { collection, query, orderBy, doc } from "firebase/firestore";
+import { collection, query, where, orderBy, doc } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
 const store = useDefaultStore();
 
@@ -38,8 +38,10 @@ watch(
     if (doc?.id) {
       //console.log(store.currentCollection + "/" + doc.id + "/History");
       const histSource = query(
-        collection(firestore, store.currentCollection, doc.id, "History"),
-        orderBy("date", "asc")
+        collection(firestore, /*store.currentCollection, doc.id,*/ "History"),
+        //where("CollId", "==", store.currentCollection),
+        where("DocId", "==", doc.id),
+        orderBy("Date", "asc")
       );
       store.history = useCollection(histSource);
     }

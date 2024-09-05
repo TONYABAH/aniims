@@ -12,6 +12,7 @@ const routes = [
         name: "Home",
         component: () => import("../pages/MainLanding.vue"),
       },
+
       {
         path: "mails",
         name: "Mails",
@@ -85,13 +86,18 @@ const routes = [
     ],
   },
   {
-    path: "/my_destruction",
+    path: "/dashboard",
+    name: "Dashboard",
+    component: () => import("../components/dashboard/MainDashboard.vue"),
+  },
+  {
+    path: "/destruction",
     meta: { requiresAuth: false },
     name: "CustomerApplication",
     component: () => import("src/pages/ApplicationPage.vue"),
   },
   {
-    path: "/my_petition",
+    path: "/petition",
     meta: { requiresAuth: false },
     name: "CustomerComplaint",
     component: () => import("src/pages/PetitionPage.vue"),
@@ -133,6 +139,11 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import("../layouts/AdminLayout.vue"),
     children: [
+      {
+        path: "",
+        name: "Users",
+        component: () => import("../components/forms/UserForm.vue"),
+      },
       {
         path: "ipos",
         name: "IPO",

@@ -41,9 +41,9 @@
 //import SuspectForm from "src/components/SuspectForm.vue";
 import { useDefaultStore } from "src/stores/store";
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-const router = useRouter();
-const selectedCase = ref();
+//import { useRouter } from "vue-router";
+//const router = useRouter();
+//const selectedCase = ref();
 const store = useDefaultStore();
 const actions = [
   {

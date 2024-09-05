@@ -124,7 +124,35 @@ service cloud.firestore {
       allow update: if isSignedIn();
       allow delete: if canDelete();
     }
-    match /{collection}/{document}/{subcollection}/{subdocument} {
+    match /Meta/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+    match /History/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+    match /Minutes/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+    match /Attachments/{id} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+    match /{collection}/{documentid}/{subcollection}/{subdocument} {
       allow create: if isSignedIn();
       allow get: if isSignedIn();
       allow list: if isSignedIn();

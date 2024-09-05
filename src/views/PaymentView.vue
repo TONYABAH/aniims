@@ -6,8 +6,8 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
     :hide-tabs="false"
-    :commentable="true"
     :search-fields="searchFields"
+    :commentable="payment.id !== undefined"
     collectionName="Payments"
   >
     <PaymentForm ref="form" :model="payment" :setModel="setDocument" />

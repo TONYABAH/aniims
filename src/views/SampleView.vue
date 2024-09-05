@@ -6,8 +6,8 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
     :hide-tabs="true"
-    :commentable="true"
     :search-fields="SEARCH_FIELDS"
+    :commentable="sample.id !== undefined"
     collectionName="Samples"
   >
     <SampleForm ref="form" :model="sample" :setModel="setDocument" />

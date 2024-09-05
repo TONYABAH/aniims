@@ -64,9 +64,7 @@ function filterQuery(filters) {
   if (isDirector || isAdmin) {
     // do not filter
   } else if (isHOD) {
-    filters.push(
-      where("meta.Unit", "==", store.user.claims.unit)
-    );
+    filters.push(where("meta.Unit", "==", store.user.claims.unit));
   } else {
     filters.push(where("meta.CreatedBy", "==", store.user.uid));
   }
@@ -86,10 +84,10 @@ export async function getDateData(date, month, year, collectionId) {
   return snapshot?.data()?.count || 0;
 }
 export async function getMonthData(month, year, collectionId) {
-  const date1 = new Date(year, month, 1, 0, 0, 0, 0);
+  const date1 = new Date(year, month - 1, 1, 0, 0, 0, 0);
   const date2 = new Date(
     year,
-    month,
+    month - 1,
     getDaysInTheMonth(month, year),
     23,
     59,
@@ -140,13 +138,13 @@ export async function getDailyData(month, year, collectionId) {
   }
   return data;
 }
-export async function getMonthlyData(year, collectionId) {
-  const data = [];
-  for (let month = 0; month < 12; month++) {
+export async function getMonthlyData(year, collectionId, data) {
+  const _data = data || [];
+  for (let month = 1; month <= 12; month++) {
     let d = await getMonthData(month, year, collectionId);
-    data.push([month + 1, d]);
+    _data.push([month, d]);
   }
-  return data;
+  return _data;
 }
 export async function getQuarterlyData(year, collectionId) {
   const data = [];

@@ -5,6 +5,7 @@ const functions = getFunctions(app);
 
 export const createUser = httpsCallable(functions, "register");
 export const listUsers = httpsCallable(functions, "listusers");
+export const deleteUser = httpsCallable(functions, "deleteuser");
 export const deleteUsers = httpsCallable(functions, "deleteusers");
 export const getUser = httpsCallable(functions, "getuser");
 export const getStaffById = httpsCallable(functions, "getstaffbyid");
@@ -21,5 +22,5 @@ export const sendSMS = httpsCallable(functions, "sendtextmessage");
 export const addIPO = httpsCallable(functions, "addipo");
 export const addUnit = httpsCallable(functions, "addunit");
 export const addUser = httpsCallable(functions, "adduser");
-export const createDocument = httpsCallable(functions, "createdocument");
-export const updateDocument = httpsCallable(functions, "updatedocument");
+//export const createDocument = httpsCallable(functions, "createdocument");
+//export const updateDocument = httpsCallable(functions, "updatedocument");

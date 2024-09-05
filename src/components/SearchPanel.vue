@@ -1,6 +1,5 @@
 <template>
   <q-card
-    dark
     class="search-card shadow-22"
     :class="$q.dark.isActive ? '' : 'bg-grey-1'"
     style="
@@ -62,8 +61,65 @@
         @click="expandModel = !expandModel"
       />
     </q-toolbar>
+    <q-bar class="bg-transparent">
+      <q-space />
+      <q-checkbox
+        v-model="wholeWord"
+        left-label=""
+        label="Match whole phrase"
+        :color="store.theme.color.default"
+        keep-color=""
+      />
+      <q-space />
+    </q-bar>
     <q-slide-transition>
       <q-form class="q-px-sm q-py-sm q-gutter-xs" v-if="expandModel">
+        <q-select
+          v-model="search.location"
+          :options="store.locations"
+          options-dense=""
+          label="Location"
+          dense
+          outlined=""
+          clearable=""
+          clear-icon="close"
+          :disable="!isDirector && !isAdmin"
+        />
+        <unit-input
+          :set-model="(v) => (search.unit = v)"
+          :model="search.unit"
+          dense
+          outlined
+          title="Unit"
+          label="Unit in charge"
+          placeholder=""
+          :search-options="{ location: search.location }"
+          :disable="!isDirector && !isAdmin"
+        />
+        <!--<staff-input
+          :set-model="(v) => (search.staff = v)"
+          :model="search.staff"
+          dense
+          outlined
+          title="Minuted to who?"
+          label="Staff name"
+          placeholder=""
+          :search-options="{
+            location: search.location,
+            unit: search.unit?.Abbrev,
+          }"
+          :disable="!isDirector && !isHead && !isAdmin"
+        />-->
+        <q-select
+          v-model="search.status"
+          :options="status_options"
+          options-dense=""
+          label="Status"
+          outlined=""
+          dense=""
+          clearable=""
+          clear-icon="clear"
+        />
         <q-input
           dense
           outlined=""
@@ -79,52 +135,6 @@
           stack-label=""
           v-model="search.date2"
           type="date"
-        />
-        <q-select
-          v-model="search.location"
-          :options="store.locations"
-          options-dense=""
-          label="Location"
-          dense
-          outlined=""
-          clearable=""
-          clear-icon="close"
-          :disable="!isDirector"
-        />
-        <unit-input
-          :set-model="(v) => (search.unit = v)"
-          :model="search.unit"
-          dense
-          outlined
-          title="Unit"
-          label="Unit in charge"
-          placeholder=""
-          :search-options="{ location: search.location }"
-          :disable="!isDirector"
-        />
-        <staff-input
-          :set-model="(v) => (search.staff = v)"
-          :model="search.staff"
-          dense
-          outlined
-          title="Minuted to who?"
-          label="Staff name"
-          placeholder=""
-          :search-options="{
-            location: search.location,
-            unit: search.unit?.Abbrev,
-          }"
-          :disable="!isDirector"
-        />
-        <q-select
-          v-model="search.status"
-          :options="status_options"
-          options-dense=""
-          label="Status"
-          outlined=""
-          dense=""
-          clearable=""
-          clear-icon="clear"
         />
         <div class="q-px-xs q-pt-xs">
           <q-input
@@ -179,7 +189,7 @@
     icon="add"
     icon-right="arrow_right"
     label="Add new"
-    class="q-ma-xs"
+    class="q-ma-xs q-mb-xl"
     @click="addNewItem"
   />
 </template>
@@ -194,26 +204,18 @@ import {
   defineAsyncComponent,
   onMounted,
 } from "vue";
-import {
-  limit,
-  collection,
-  doc,
-  query,
-  where,
-  or,
-  and,
-} from "firebase/firestore";
+import { limit, collection, query, where } from "firebase/firestore";
 
 import { useCollection } from "vuefire";
 import { useDefaultStore } from "src/stores/store";
-import { dataGram } from "src/composables/searchProvider";
+import { dataGramBasic } from "src/composables/searchProvider";
 import { firestore } from "src/composables/firebase";
 import UnitInput from "./forms/UnitInput.vue";
-import StaffInput from "./forms/StaffInput.vue";
+//import StaffInput from "./forms/StaffInput.vue";
 import {
   useSearchQuery,
   useDefaultSerachQuery,
-  useStaffList,
+  //useStaffList,
 } from "src/composables/use-fn";
 import { getById } from "src/composables/remote";
 const SearchList = defineAsyncComponent(() =>
@@ -227,16 +229,17 @@ const expandModel = ref(false);
 const searchText = ref("");
 const search = ref({});
 const loading = ref(false);
+const wholeWord = ref(true);
 var searchResults = [];
 
 const status_options = ["Active", "Assigned", "Submitted", "Open", "Closed"];
-
+//console.log(store.theme);
 if (route.params.id && route.path.indexOf("Reports") > -1) {
   store.currentCollection = "Reports";
 }
-const isDirector = computed(() => store.user.claims.role === "Director");
-const isHead = computed(() => store.user.claims.role.indexOf("Head") === 0);
-const isAdmin = computed(() => store.user.claims.admin === true);
+const isDirector = computed(() => store.user.claims?.role === "Director");
+const isHead = computed(() => store.user.claims?.role?.indexOf("Head") === 0);
+const isAdmin = computed(() => store.user.claims?.admin === true);
 
 const expandIconRotation = computed(
   () =>
@@ -247,30 +250,30 @@ const expandIconRotation = computed(
 
 function onSearch(filter) {
   loading.value = true;
-
-  setTimeout(() => {
+  setTimeout(async () => {
     expandModel.value = false;
     const searchConstraints = [];
-
     const dbRef = collection(
       db,
-      route.params.id && route.path.indexOf("Reports") > 0
-        ? `Investigations/${route.params.id}/Reports`
-        : store.currentCollection
+      "Meta"
+      //route.params.id && route.path.indexOf("Reports") > 0? `Investigations/${route.params.id}/Reports`:
+      //store.currentCollection
     );
-    const data = dataGram(searchText.value || "");
+    let searchPhrase = searchText.value?.trim();
+    const data = wholeWord.value
+      ? searchPhrase.length > 0
+        ? [searchPhrase.toLowerCase()]
+        : null
+      : dataGramBasic(searchPhrase);
     if (data && data.length > 0)
-      searchConstraints.push(where(`meta.search`, "array-contains-any", data));
-    const filters = filter || useSearchQuery(search.value);
-    const dataSource = query(
-      dbRef,
-      ...filters,
-      ...searchConstraints,
-      limit(1000)
-    );
+      searchConstraints.push(where(`Search`, "array-contains-any", data));
+    const filters =
+      filter || useSearchQuery(store.currentCollection, search.value);
+    filters.unshift(...searchConstraints);
 
+    const dataSource = query(dbRef, ...filters, limit(1000));
     searchResults = useCollection(dataSource);
-
+    //getDocs(dataSource).then((s) => console.log(s.docs));
     let count = 0;
     let interval = setInterval(() => {
       count++;
@@ -282,7 +285,6 @@ function onSearch(filter) {
         clearInterval(interval);
         loading.value = false;
       }
-      //console.log(searchResults.value);
     }, 100);
   }, 0);
 }
@@ -303,14 +305,16 @@ watch(
 );
 onMounted(async () => {
   let staff = await getById(store.user.uid, "Users");
-  //console.log(staff);
-  search.value.unit = {
-    Abbrev: staff?.Unit,
-    Name: staff?.Unit,
-  };
-  //const { uid, displayName } = store.user;
-  search.value.staff = staff; // || { uid, Name: displayName };
-  search.value.location = staff?.Location; // store.user.claims.location;
+  if (staff) {
+    search.value.unit = {
+      Abbrev: store.user.claims?.unit || null,
+      Name: store.user.claims?.unit || null,
+    };
+    //const { uid, displayName } = store.user;
+    //search.value.staff = staff; // || { uid, Name: displayName };
+    search.value.location = store.user.claims?.location || null; // store.user.claims.location;
+    //search.value.date1 = Date.parse("01/04/2024");
+  }
 });
 defineExpose({
   //onSearch,

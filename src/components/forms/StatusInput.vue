@@ -37,7 +37,7 @@ const props = defineProps({
   },
 });
 const _status = computed({
-  get: () => props.status,
+  get: () => props.status || "Open",
   set: (v) => props.setStatus(v),
 });
 const status = ref(_status);

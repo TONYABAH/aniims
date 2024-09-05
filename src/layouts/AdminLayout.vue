@@ -1,16 +1,17 @@
 <template>
-  <q-layout view="lHh Lpr fFf">
+  <q-layout view="HHh Lpr fFf">
     <default-header />
     <q-drawer
       v-model="leftDrawerOpen"
       :show-if-above="true"
       :mini-width="68"
       :mini="miniMode"
-      :width="$q.screen.width > 800 ? 180 : $q.screen.width"
-      dark
-      flat
+      :width="$q.screen.width > 600 ? 280 : $q.screen.width"
       :bordered="false"
-      class="elevation-1 bg-deep-purple-10"
+      flat
+      dark
+      class="elevation-1"
+      :class="store.theme.bg.normal"
       style="opacity: 0.8"
       elevated=""
     >
@@ -23,12 +24,19 @@
           <q-btn
             flat
             dense
-            color="teal"
+            color=""
             :icon="miniMode && $q.screen.gt.xs ? 'arrow_right' : 'close'"
             @click="$q.screen.gt.sm ? toggleMiniMode() : toggleLeftDrawer()"
           />
         </q-item-section>
       </q-item>
+      <!--<q-btn
+        color="primary"
+        icon="settings"
+        label="Configure"
+        class="full-width"
+        @click="configure"
+      />-->
       <q-list>
         <q-item
           v-for="link in links"
@@ -41,7 +49,7 @@
             link.link !== '/admin'
               ? $q.dark.isActive
                 ? store.theme.bg.dark + ' text-white'
-                : store.theme.bg.xlight + ' text-white'
+                : store.theme.bg.dark + ' text-white'
               : ''
           "
         >
@@ -58,43 +66,26 @@
 
     <q-page-container class="modern-bg2">
       <div style="width: 100%; height: calc(100vh - 48px); overflow: auto">
-        <!--<q-banner
-          v-if="banner"
-          class="bg-deep-purple text-white"
-          style="opacity: 0.8"
-        >
-          <div class="text-h5">
-            Welcome {{ store.user?.displayName || store.user?.email }}
-          </div>
-          <template v-slot:action>
-            <q-btn
-              unelevated=""
-              color="grey-10"
-              label="Dismiss"
-              @click="() => (banner = false)"
-            />
-          </template>
-        </q-banner>-->
         <router-view />
       </div>
     </q-page-container>
-    <DefaultFooter />
+    <default-footer />
   </q-layout>
 </template>
 
 <script setup>
 import { useQuasar } from "quasar";
 import { useDefaultStore } from "src/stores/store";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import pkg from "../../package.json";
 import DefaultHeader from "./DefaultHeader.vue";
 import DefaultFooter from "./DefaultFooter.vue";
 //import { data } from "autoprefixer";
-
+//import { listAllDocuments } from "src/composables/searchProvider.js";
 const $q = useQuasar();
 const store = useDefaultStore();
 const miniMode = ref(false);
-const banner = ref(true);
+//const banner = ref(true);
 const leftDrawerOpen = computed({
   get: () => store.leftDrawerOpen,
   set: (v) => (store.leftDrawerOpen = v),
@@ -111,6 +102,7 @@ const links = [
     caption: "User entry",
     icon: "perm_identity",
     link: "/admin/users",
+    active: true,
   },
   {
     title: "Staff",
@@ -143,6 +135,15 @@ const links = [
     link: "/admin",
   },*/
 ];
+/*async function configure() {
+  let collections =
+    "Mails Files Complaints Investigations Raids Payments Samples Destructions Applications Users Units".split(
+      " "
+    );
+  for (let c of collections) await listAllDocuments("Mails");
+}*/
+onMounted(() => (document.body.style.overflow = "hidden"));
+onUnmounted(() => (document.body.style.overflow = "auto"));
 </script>
 <style scoped>
 .maron-bg {

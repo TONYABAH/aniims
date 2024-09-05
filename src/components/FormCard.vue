@@ -2,7 +2,7 @@
   <q-card
     flat
     square
-    class="my-card"
+    class="my-card bg-transparent"
     style="opacity: 0.85"
     :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-white'"
   >
@@ -23,11 +23,19 @@
         :active-color="$q.dark.isActive ? 'grey-1' : 'red'"
       >
         <q-tab
-          name="edit"
+          name="editor"
           icon="edit"
-          title="Editor"
-          :label="$q.screen.lt.sm ? '' : 'Editor'"
+          title="Edit"
+          :label="$q.screen.lt.sm ? '' : 'Edit'"
           style="border-radius: 4px 4px 0 0"
+        />
+        <q-tab
+          name="minutes"
+          icon="comment"
+          title="Minute"
+          :label="$q.screen.lt.sm ? '' : 'Minute'"
+          style="border-radius: 4px 4px 0 0"
+          v-if="isDocumentSaved && !hideTabs && commentable"
         />
 
         <q-tab
@@ -46,14 +54,6 @@
           style="border-radius: 4px 4px 0 0"
           v-if="isDocumentSaved"
         />
-        <q-tab
-          name="minutes"
-          icon="comment"
-          title="Minute"
-          :label="$q.screen.lt.sm ? '' : 'Minutes'"
-          style="border-radius: 4px 4px 0 0"
-          v-if="isDocumentSaved && !hideTabs && commentable"
-        />
       </q-tabs>
     </q-toolbar>
     <q-tab-panels
@@ -68,9 +68,18 @@
       class="bg-transparent"
     >
       <q-tab-panel
-        name="edit"
+        v-if="isDocumentSaved && !hideTabs && commentable"
+        name="minutes"
+        style="overflow: auto; padding-bottom: 120px"
+        :class="$q.screen.lt.sm ? 'padding:0' : 'q-px-md q-pb-xl'"
+      >
+        <MinutesTabCard :onMinuted="onMinuted" />
+      </q-tab-panel>
+
+      <q-tab-panel
+        name="editor"
         style="overflow: auto"
-        :class="$q.screen.lt.sm ? 'padding:0' : 'q-px-xl q-pb-xl'"
+        :class="$q.screen.lt.sm ? 'padding:0' : 'q-px-md q-pb-xl'"
       >
         <q-card class="my-card shadow-22" :flat="$q.screen.lt.sm">
           <q-card-section :style="$q.screen.lt.sm ? 'padding:0px;' : ''">
@@ -128,7 +137,7 @@
       </q-tab-panel>
 
       <q-tab-panel
-        v-if="!hideTabs"
+        v-if="isDocumentSaved && !hideTabs && commentable"
         name="attachments"
         style="overflow: auto; padding-bottom: 120px"
       >
@@ -141,14 +150,6 @@
       >
         <HistoryTabCard />
       </q-tab-panel>
-
-      <q-tab-panel
-        v-if="!hideTabs"
-        name="minutes"
-        style="overflow: auto; padding-bottom: 120px"
-      >
-        <MinutesTabCard :onMinuted="onMinuted" />
-      </q-tab-panel>
     </q-tab-panels>
   </q-card>
 </template>
@@ -160,27 +161,19 @@ import { useDocument } from "vuefire";
 import { collection, doc } from "firebase/firestore";
 import { useDefaultStore } from "src/stores/store";
 import { firestore } from "src/composables/firebase";
-//import MinutesTabCard from "src/components/MinutesTabCard.vue";
-//import HistoryTabCard from "src/components/HistoryTabCard.vue";
-//import AttachmentTabCard from "src/components/AttachmentTabCard.vue";
+import MinutesTabCard from "src/components/MinutesTabCard.vue";
+import HistoryTabCard from "src/components/HistoryTabCard.vue";
+import AttachmentTabCard from "src/components/AttachmentTabCard.vue";
 import {
   onMounted,
-  onBeforeMount,
   ref,
   computed,
-  inject,
   provide,
   watch,
   defineAsyncComponent,
 } from "vue";
-import {
-  update,
-  create,
-  getById,
-  addChildDocument,
-  updateChildDocument,
-} from "src/composables/remote";
-const MinutesTabCard = defineAsyncComponent(() =>
+import { update, create } from "src/composables/remote";
+/*const MinutesTabCard = defineAsyncComponent(() =>
   import("src/components/MinutesTabCard.vue")
 );
 const HistoryTabCard = defineAsyncComponent(() =>
@@ -188,19 +181,16 @@ const HistoryTabCard = defineAsyncComponent(() =>
 );
 const AttachmentTabCard = defineAsyncComponent(() =>
   import("src/components/AttachmentTabCard.vue")
-);
-//const router = useRouter();
+);*/
+
 const $q = useQuasar();
 const store = useDefaultStore();
-const tab = ref("edit");
+const tab = ref("editor");
 const tabPanelsRef = ref(null);
 const searchText = ref("");
 const whereFilters = ref([]);
 const route = useRoute();
 const comment = ref("");
-//const readOnly = ref(false);
-//var collectionName = inject("collection");
-//currentCollection.value = props.collectionName;
 
 const LoadingButton = defineAsyncComponent(() =>
   import("src/components/LoadingButton.vue")
@@ -217,7 +207,7 @@ const props = defineProps({
   hideTabs: Boolean,
   commentable: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   hideSaveButton: {
     type: Boolean,
@@ -299,58 +289,6 @@ function resetValues() {
   store.searchResults = [];
   store.minutes = [];
 }
-/*async function onSaveCaseDocument() {
-  //const result = await props.validate();
-  try {
-    loading.value = true;
-
-    let data = props.getDocument();
-    data.CaseId = caseId;
-
-    if (docId.value) {
-      await updateChildDocument(
-        caseCollection.value,
-        caseId.value,
-        childCollection.value,
-        docId.value,
-        data
-      );
-    } else {
-      let response = await addChildDocument(
-        caseCollection.value,
-        caseId.value,
-        childCollection.value,
-        data
-      );
-      if (store.currentDocument) store.currentDocument.id = response;
-      //store.currentDocument = {};
-    }
-
-    Notify.create({
-      timeout: 3000,
-      closeBtn: true,
-      caption: "Success",
-      message: "Document saved",
-      icon: "check",
-      iconColor: "secondary",
-      position: "right",
-    });
-    props.onSaved();
-  } catch (error) {
-    console.error(store.user, error);
-    Dialog.create({
-      title: "Error",
-      timeout: 2000,
-      message: error.message,
-      icon: "error",
-      iconColor: "warning",
-      color: "red",
-      position: "right",
-    });
-  } finally {
-    loading.value = false;
-  }
-}*/
 async function onSave() {
   const result = await props.validate();
 
@@ -410,7 +348,7 @@ async function onSave() {
 }
 function close() {
   loading.value = false;
-  tab.value = "edit";
+  tab.value = "editor";
   store.tabModel = "search";
   currentDocument.value = {};
   props.setCurrentDoc({});
@@ -433,8 +371,6 @@ watch(
   { immediate: true }
 );
 
-//this.gradient = this.$refs.canvas.getContext("2d").createLinearGradient(0, 0, 0, 450);
-//console.log(this.gradient);
 provide("searchText", searchText);
 provide("whereFilters", whereFilters);
 provide("comment", comment);
@@ -443,11 +379,9 @@ provide("on-load", onLoad);
 onMounted(async () => {
   resetValues();
   store.currentCollection = currentCollection.value;
-  //store.currentDocument = {};
-  //let params = route.path.split(/\/|\#/);
-  //if (route.params.id) childCollection.value = params[3];
 });
 </script>
+
 <style scoped>
 td,
 th {

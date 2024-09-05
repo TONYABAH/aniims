@@ -23,7 +23,11 @@
         :rules="[(val) => !!val || 'Name is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <template v-slot:append>
+          <q-icon name="apartment" />
+        </template>
+      </q-input>
 
       <q-input
         v-model="unit.Abbrev"
@@ -44,7 +48,11 @@
         :rules="[(val) => !!val || 'Location is required']"
         lazy-rules="ondemand"
         hide-bottom-space=""
-      />
+      >
+        <template v-slot:append>
+          <q-icon name="location_on" />
+        </template>
+      </q-select>
 
       <q-select
         label="Status *"
@@ -88,12 +96,8 @@ import { useDefaultStore } from "src/stores/store";
 import { addUnit } from "src/composables/functions";
 import { update } from "src/composables/remote";
 import AdminViewer from "src/views/AdminViewer.vue";
-import {
-  addSearch,
-  dataGram,
-  lifeSearch,
-} from "src/composables/searchProvider";
-import { useUnits } from "src/composables/use-fn";
+import { addSearch, sortByName } from "src/composables/searchProvider";
+//import { useUnits } from "src/composables/use-fn";
 
 const STATUS_OPTIONS = ["Active", "Deleted", "Deactivated"];
 const searchFields = ["Name", "Abbrev", "Location"];
@@ -121,6 +125,7 @@ const status = computed({
 });
 function setModel(m) {
   unit.value = m;
+  console.log(m);
 }
 function reset() {
   form.value.resetValidation();
@@ -130,6 +135,7 @@ const validate = async () => await form.value?.validate(true);
 async function save() {
   if (!unit.value.id) return;
   loading.value = true;
+  delete unit.value.meta;
   let data = Object.assign({}, unit.value);
   //delete data.meta;
   update(unit.value.id, data, "Units")
@@ -219,41 +225,26 @@ async function create() {
     loading.value = false;
   }
 }
-
-/*const __handleSearch = debounce(async (d) => {
-  loading.value = true;
-  lifeSearch("Units", { searchText: d, limits: 100 })
-    .then((_units) => {
-      units.value = _units;
+const handleSearch = debounce((searchTerm, active) => {
+  //if (active) whereFilters.push(["Status", "==", "Active"]);
+  const list = store.units;
+  //listStaff(whereFilters).then((list) => {
+  units.value = list
+    .filter((s) => {
+      //let pattern = `${s.Name}|| ${s.Rank} || ${s.Location} || ${s.Unit}`
+      let d = searchTerm?.toLowerCase() || "";
+      let searchTerms = d.split(" ");
+      for (let x of searchTerms) {
+        return (
+          s.Name?.toLowerCase().indexOf(x) >= 0 ||
+          s.Abbrev?.toLowerCase().indexOf(x) === 0 ||
+          s.Location?.toLowerCase().indexOf(x) >= 0
+          //s.Unit?.toLowerCase().indexOf(x) >= 0
+        );
+      }
     })
-    .catch((e) => {
-      Dialog.create({
-        message: e.message,
-        title: "Error",
-        timeout: 2000,
-        cancel: true,
-        ok: false,
-      });
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-}, 500);*/
-
-const handleSearch = debounce(async (s) => {
-  const whereFilters = [];
-  //whereFilters.push(["Status", "==", "Active"]);
-  const _units = await lifeSearch("Units", {
-    searchText: s,
-    whereFilters,
-    limits: 25,
-    orderByFilters: [
-      ["Location", "asc"],
-      ["Abbrev", "asc"],
-    ],
-  });
-  units.value = _units;
-}, 500);
+    .sort(sortByName);
+}, 5);
 
 watch(
   () => unit.value.Status,
@@ -267,7 +258,7 @@ watch(
   { immediate: true }
 );
 
-handleSearch();
+handleSearch(" ");
 defineExpose({
   reset,
   validate,

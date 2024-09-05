@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="LHh Lpr Fff" style="overflow: hidden">
+  <q-layout view="LHH Lpr Fff" style="overflow: hidden" class="modern-bg">
     <default-header />
     <DefaultDrawer />
     <q-page-container style="overflow: auto">
@@ -10,11 +10,11 @@
         vertical=""
         transition-prev="scale"
         transition-next="scale"
-        :keep-alive="true"
-        class="modern-bg fits"
-        style="padding: 0"
+        :keep-alive="false"
+        class="bg-transparent"
+        style="padding: 0; margin-top: 40px"
       >
-        <q-tab-panel name="search" class="fits" style="opacity: 1">
+        <q-tab-panel name="search" class="" style="opacity: 1">
           <SearchPanel />
         </q-tab-panel>
         <q-tab-panel
@@ -32,21 +32,31 @@
           <DashboardForm />
         </q-tab-panel>
       </q-tab-panels>
+      <q-page-sticky
+        position="top"
+        :offset="[0, 0]"
+        expand
+        v-if="isDefaultRoute"
+      >
+        <MainTabs :isDefaultRoute="isDefaultRoute" />
+      </q-page-sticky>
     </q-page-container>
     <DefaultFooter />
   </q-layout>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed } from "vue";
 import { useDefaultStore } from "../stores/store.js";
 import DefaultHeader from "./DefaultHeader.vue";
 import DefaultDrawer from "./DefaultDrawer.vue";
 import DefaultFooter from "./DefaultFooter.vue";
 import DashboardForm from "src/components/forms/DashboardForm.vue";
 import SearchPanel from "src/components/SearchPanel.vue";
-
+import MainTabs from "./MainTabs.vue";
+import { useRoute } from "vue-router";
 const store = useDefaultStore();
+const route = useRoute();
 //import FormWrapper from "src/components/FormWrapper.vue";
 /*const DashboardViewer = defineAsyncComponent(() =>
   import("src/components/forms/DashboardForm.vue")
@@ -57,7 +67,15 @@ const SearchPanel = defineAsyncComponent(() =>
 const SearchList = defineAsyncComponent(() =>
   import("src/components/SearchList.vue")
 );*/
-const drawerLeft = ref(true);
+//const drawerLeft = ref(true);
+const isDefaultRoute = computed(() => {
+  return (
+    route.name !== "Home" &&
+    route.name !== "Cases" &&
+    route.path.indexOf("/admin") === -1
+    //&& route.path.indexOf("/applications") === -1
+  );
+});
 </script>
 
 <style scoped>
@@ -65,26 +83,4 @@ const drawerLeft = ref(true);
   height: calc(100vh - 88px);
 }
 </style>
-<style>
-.modern-bg {
-  background: url(../assets/modernbg.jpg);
-}
-.design-bg {
-  background: url(../assets/designbg.jpg);
-}
-.exortic-bg {
-  background: url(../assets/exorticbg.jpg);
-}
-.patterns-bg {
-  background: url(../assets/patterns.jpg);
-}
-.modern-bg,
-.exortic-bg,
-.design-bg,
-.patterns-bg {
-  background-repeat: no-repeat;
-  background-position-y: top;
-  background-size: cover;
-  background-attachment: scroll;
-}
-</style>
+<style></style>

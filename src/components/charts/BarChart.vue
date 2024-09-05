@@ -1,9 +1,10 @@
 <template>
-  <Bar :data="data" :options="options" />
+  <canvas class="bg-" :id="id"></canvas>
+  <!--<Bar :data="data" :options="options" />-->
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeMount } from "vue";
 import {
   Chart as ChartJS,
   Title,
@@ -12,10 +13,7 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
-  ChartData,
 } from "chart.js";
-import { Bar } from "vue-chartjs";
-import * as chartConfig from "./chartConfig.js";
 
 ChartJS.register(
   Title,
@@ -25,9 +23,46 @@ ChartJS.register(
   CategoryScale,
   LinearScale
 );
+const id = "_" + Math.random().toString(16).substring(3);
+function drawChart() {
+  const ctx = document.getElementById(id);
+  const data = {
+    labels: ["January", "February", "March", "April"],
+    datasets: [
+      {
+        type: "bar",
+        label: "Complaints",
+        data: [10, 20, 30, 40],
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.2)",
+      },
+      {
+        type: "line",
+        label: "Raids",
+        data: [10, 20, 40, 30],
+        fill: false,
+        borderColor: "rgb(54, 162, 235)",
+        tension: 0.3,
+      },
+    ],
+  };
+  const mixedChart = new ChartJS(ctx, {
+    type: "bar",
+    data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+}
 
 //const options = chartConfig.options
- /*options = {
+/*options = {
   responsive: true,
   maintainAspectRatio: false
 }*/
@@ -53,30 +88,15 @@ ChartJS.register(
       backgroundColor: '#f87979',
       data: [
         getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt(),
-        getRandomInt()
       ]
     }
   ]
 })
  */
-//const data = ref<ChartData<'bar'>>({datasets: []})
-props = defineProps({
-  options,
-  data,
-});
 onMounted(() => {
   setInterval(() => {
-    //data.value = chartConfig.randomData();
+    drawChart();
   }, 3000);
 });
+onBeforeMount(() => {});
 </script>

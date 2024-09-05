@@ -6,7 +6,7 @@
     :updateFields="updateFields"
     :getDocument="getDocument"
     :searchFields="SEARCH_FIELDS"
-    :commentable="true"
+    :commentable="destruction.id !== undefined"
     collectionName="Applications"
   >
     <DestructionApplicationForm
