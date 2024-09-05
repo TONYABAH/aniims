@@ -1,7 +1,0 @@
-{
-  "appId": "com.aniims.app",
-  "appName": "Aniims",
-  "bundledWebRuntime": false,
-  "npmClient": "yarn",
-  "webDir": "www"
-}

@@ -35,6 +35,7 @@
     "quasar": "^2.6.0",
     "rxfire": "^6.0.5",
     "rxjs": "^7.8.1",
+    "vis-graph3d": "^6.0.6",
     "vue": "^3.0.0",
     "vue-chartkick": "^1.1.0",
     "vue-google-charts": "^1.1.0",
