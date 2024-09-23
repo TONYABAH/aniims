@@ -48,29 +48,18 @@ export default route(function (/* { store, ssrContext } */) {
         // this route requires auth, check if logged in
         // if not, redirect to login page.
         return {
-          path: "/login",
+          path: "/app/login",
           // save the location we were at to come back later
           query: { redirect: to.fullPath },
         };
+      } else if (to.path.match(/\/admin/i) && !store.user?.claims?.admin) {
+        throw { message: "Admin right required" };
       } else {
-        if (store.user?.claims?.level < 2 && to.name != "Applications") {
-          //console.log(from, to);
-          return {
-            path: "/applications",
-          };
-        } else if (store.user?.claims?.level === 2 && to.name != "Cases") {
-          //console.log(from, to);
-          return {
-            path: "/cases",
-          };
-        } else if (to.path.match(/\/admin/i) && !store.user?.claims?.admin) {
-          throw { message: "Admin right required" };
-        } else {
-          return true;
-        }
+        return true;
       }
     }
   });
+
   /*Router.beforeEach(async (to, from) => {
     //const store = useDefaultStore();
     //console.log(isAuthenticated());

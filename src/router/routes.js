@@ -3,6 +3,12 @@
 const routes = [
   {
     path: "/",
+    component: () => import("src/pages/HomePage.vue"),
+    meta: { requiresAuth: false },
+    name: "HomePage",
+  },
+  {
+    path: "/app",
     component: () => import("src/layouts/DefaultLayout.vue"),
     meta: { requiresAuth: true },
     name: "Default",
@@ -104,37 +110,37 @@ const routes = [
   },
 
   {
-    path: "/action",
+    path: "/app/action",
     name: "Action",
     meta: { requiresAuth: false },
     component: () => import("src/pages/CodeAction.vue"),
   },
   {
-    path: "/login",
+    path: "/app/login",
     name: "Login",
     meta: { requiresAuth: false },
     component: () => import("src/pages/LoginPage.vue"),
   },
   {
-    path: "/register",
+    path: "/app/register",
     name: "Register",
     meta: { requiresAuth: false },
     component: () => import("src/pages/RegisterUser.vue"),
   },
   {
-    path: "/password_reset",
+    path: "/app/password_reset",
     name: "Password",
     meta: { requiresAuth: false },
     component: () => import("src/pages/PasswordReset.vue"),
   },
   {
-    path: "/cases",
+    path: "/app/cases",
     name: "Cases",
     meta: { requiresAuth: true },
     component: () => import("src/pages/CasePage.vue"),
   },
   {
-    path: "/admin",
+    path: "/app/admin",
     name: "Admin",
     meta: { requiresAuth: true },
     component: () => import("../layouts/AdminLayout.vue"),
@@ -166,7 +172,7 @@ const routes = [
       },
     ],
   },
-  /*{
+  /* {
     path: "/my_applications",
     meta: { requiresAuth: true },
     name: "MyApplications",

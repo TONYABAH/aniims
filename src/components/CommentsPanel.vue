@@ -10,7 +10,7 @@
         dense=""
         dense-toggle=""
         style="border-radius: 2px 2px"
-        class="q-pb-xl q-pr-md"
+        class="q-pb-xl"
       >
         <template v-slot:header>
           <q-toolbar class="full-width">

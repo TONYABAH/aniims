@@ -23,12 +23,13 @@ function getParameterByName(param, level) {
   if (level && level < 2) {
     return "/applications";
   }
-  if (!param) return "/";
+  if (!param) return "/app";
   const paramsString = location.search;
   const searchParams = new URLSearchParams(paramsString);
   let path = searchParams.get(param);
+
   if (!path) {
-    return null;
+    return "/";
   }
   return path;
 }
@@ -39,7 +40,8 @@ onAuthStateChanged(auth, async (user) => {
     const userCollection = collection(db, "Users");
     const staffDataSource = query(userCollection, where("Level", "==", 3));
     const policeDataSource = query(userCollection, where("Level", "==", 2));
-    let d = Object.assign({}, user);
+
+    const d = Object.assign({}, user);
     const idTokenResult = await user.getIdTokenResult();
     d.claims = idTokenResult.claims;
     store.user = d;
@@ -71,19 +73,12 @@ onAuthStateChanged(auth, async (user) => {
 watch(
   () => route.path,
   (path) => {
-    let segments = path.toString().split(/\//);
-    let collectionName = "Files";
-    segments.pop();
-    segments.shift();
-    if (segments.length === 3) {
-      let p = segments[2];
-      collectionName = p.substring(0, 1).toUpperCase() + p.substring(1);
-      store.currentCollection = collectionName;
-    } else if (segments.length === 1) {
-      let p = segments[0];
-      collectionName = p.substring(0, 1).toUpperCase() + p.substring(1);
-      store.currentCollection = collectionName;
-    }
+    let segments = path.toString().split(/\//).reverse();
+    segments.pop(); // remove trailing empty string
+    segments.shift(); // remove begining empty string
+    const collectionName = segments[0];
+    store.currentCollection = collectionName;
+    //console.log(path, segments, collectionName, route);
   },
   { immediate: true }
 );

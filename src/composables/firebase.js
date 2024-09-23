@@ -30,11 +30,10 @@ export const firestore = getFirestore(app);
 export const storage = getStorage(app);
 export const database = getDatabase(app);
 
-/**const analytics = getAnalytics(app);*/
+//const analytics = getAnalytics(app);
 const functions = getFunctions(getApp());
 connectFunctionsEmulator(functions, "localhost", 5001);
 connectAuthEmulator(auth, "http://localhost:9099");
 connectFirestoreEmulator(firestore, "localhost", 8080);
-connectStorageEmulator(storage, "localhost", 9199);
-connectDatabaseEmulator(database, "localhost", 9090);
-/**/
+//connectStorageEmulator(storage, "localhost", 9199);
+//connectDatabaseEmulator(database, "localhost", 9090);

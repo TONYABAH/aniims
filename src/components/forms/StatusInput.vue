@@ -1,6 +1,6 @@
 <template>
   <q-select
-    v-model="status"
+    v-model="_status"
     label="Status *"
     options-dense=""
     :options="options"
@@ -24,7 +24,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { update } from "src/composables/remote";
-import { Notify, Dialog } from "quasar";
+import { Notify } from "quasar";
 
 const props = defineProps({
   collectionName: String,
@@ -40,7 +40,7 @@ const _status = computed({
   get: () => props.status || "Open",
   set: (v) => props.setStatus(v),
 });
-const status = ref(_status);
+//const status = ref(_status);
 const loading = ref(false);
 
 async function updateStatus() {

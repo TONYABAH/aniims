@@ -8,12 +8,12 @@
       :mini="miniMode"
       :width="$q.screen.width > 600 ? 280 : $q.screen.width"
       :bordered="false"
+      behavior="mobile"
       flat
       dark
       class="elevation-1"
       :class="store.theme.bg.normal"
       style="opacity: 0.8"
-      elevated=""
     >
       <q-item :clickable="false">
         <q-item-section>
@@ -101,39 +101,39 @@ const links = [
     title: "Users",
     caption: "User entry",
     icon: "perm_identity",
-    link: "/admin/users",
+    link: "/app/admin/users",
     active: true,
   },
   {
     title: "Staff",
     caption: "Staff entry",
     icon: "people",
-    link: "/admin/staff",
+    link: "/app/admin/staff",
   },
 
   {
     title: "Ipos",
     caption: "IPO entry",
     icon: "balance",
-    link: "/admin/ipos",
+    link: "/app/admin/ipos",
   },
   {
     title: "Units",
     caption: "Unit entry",
     icon: "work",
-    link: "/admin/units",
+    link: "/app/admin/units",
   },
   {
-    title: "Home",
+    title: "App",
+    icon: "apps",
+    link: "/app/",
+  },
+  {
+    title: "home",
+    caption: "Home",
     icon: "house",
     link: "/",
   },
-  /* {
-    title: "Admin home",
-    caption: "Admin home",
-    icon: "key",
-    link: "/admin",
-  },*/
 ];
 /*async function configure() {
   let collections =

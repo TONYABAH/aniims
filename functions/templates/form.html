@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .header {
+        border-radius: 8px 8px 0 0;
+        border-bottom: 1px solid #333;
+      }
+      .footer {
+        font-size: 12px;
+        padding-top: 14px;
+        border-top: 1px solid #333;
+      }
+      p {
+        font-size: 16px;
+      }
+      body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h4>ANIIMS&trade; Investigation and Enforcement, NAFDAC</h4>
+      <h3><b>{{title}}</b></h3>
+    </div>
+    <h3>Subject: {{subject}}</h3>
+    <b>Message</b>
+    <p>{{message}}</p>
+    <p>Sincerely, {{senderName}}</p>
+    <b>Contacts</b>
+    <p>Phone: {{phone}}</p>
+    <p>Email: {{to}}</p>
+    <div class="footer">Copyright&copy;NAFDAC Investigation & Enforcement</div>
+  </body>
+</html>

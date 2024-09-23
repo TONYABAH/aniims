@@ -19,6 +19,8 @@ import {
   runTransaction,
   arrayRemove,
   arrayUnion,
+  addDoc,
+  setDoc,
   /*deleteDoc, getCountFromServer, serverTimestamp,
     Timestamp, setDoc, addDoc, startAt, deleteField,
     updateDoc, getFirestore, onSnapshot,
@@ -49,7 +51,10 @@ const reoveStorageReference = async (collectionName, documentId, data) => {
     );
   });
 };
-
+export const submitForm = async (data) => {
+  let docRef = doc(db, "Forms", generateId());
+  return setDoc(docRef, data);
+};
 export function filterResults(docs) {
   let results = [];
   of(
@@ -78,7 +83,7 @@ export async function addHistory(operation, collectionId, docId, transaction) {
     Unit: store.user.claims?.unit || null,
     User: {
       uid: store.user.uid,
-      Name: store.user.displayName,
+      Name: store.user.displayName || store.user.email,
     },
   };
   const historyRef = doc(db, "History", generateId());
@@ -315,7 +320,7 @@ export async function onAddAttachment(collectionName, documentId, data) {
     generateId()
   );
   data.CollId = collectionName;
-  data.docId = documentId;
+  data.DocId = documentId;
   await runTransaction(db, async (t) => {
     t.set(_ref, data);
     addHistory(

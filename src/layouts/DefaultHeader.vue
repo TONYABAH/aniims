@@ -9,15 +9,18 @@
         @click="toggleLeftDrawer"
         v-if="$route.name !== 'Home' && $route.name !== 'Dashboard'"
       />
-      <q-btn flat dense to="/" :label="pkg.productName" />
-      <q-toolbar-title></q-toolbar-title>
+      <q-btn flat dense color="" icon="home" to="/" />
+
+      <q-toolbar-title>
+        <q-btn flat dense to="/" :label="pkg.productName"
+      /></q-toolbar-title>
+      <q-btn flat dense color="" icon="apps" to="/app" />
       <q-btn
         flat
         dense
         no-caps=""
         icon-right="person"
-        :label="online ? 'Online' : 'Offline'"
-        :color="online ? 'amber' : 'white'"
+        :color="online ? 'cyan' : 'grey'"
       >
         <q-menu dark square="" class="q-pa-sm bg-blue-grey-9 shadow-0">
           <q-list dense style="min-width: 220px">

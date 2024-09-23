@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+>
+  <head>
+    <meta charset="utf-8" />
+    <!-- utf-8 works for most cases -->
+    <meta name="viewport" content="width=device-width" />
+    <!-- Forcing initial-scale shouldn't be necessary -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Use the latest (edge) version of IE rendering engine -->
+    <meta name="x-apple-disable-message-reformatting" />
+    <!-- Disable auto-scale in iOS 10 Mail entirely -->
+    <title></title>
+    <!-- The title tag shows in email notifications, like Android 4.4. -->
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Lato:300,400,700"
+      rel="stylesheet"
+    />
+
+    <!-- CSS Reset : BEGIN -->
+    <style>
+      /* What it does: Remove spaces around the email design added by some email clients. */
+      /* Beware: It can remove the padding / margin and add a background color to the compose a reply window. */
+      html,
+      body {
+        margin: 0 auto !important;
+        padding: 0px 0px !important;
+        height: 100% !important;
+        width: 100% !important;
+      }
+
+      /* What it does: Stops email clients resizing small text. */
+      * {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      /* What it does: Centers email on Android 4.4 */
+      div[style*="margin: 16px 0"] {
+        margin: 0 !important;
+      }
+
+      /* What it does: Stops Outlook from adding extra spacing to tables. */
+      table,
+      td {
+        mso-table-lspace: 0pt !important;
+        mso-table-rspace: 0pt !important;
+      }
+
+      /* What it does: Fixes webkit padding issue. */
+      table {
+        border-spacing: 0 !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+        margin: 0 auto !important;
+      }
+
+      /* What it does: Uses a better rendering method when resizing images in IE. */
+      img {
+        -ms-interpolation-mode: bicubic;
+      }
+
+      /* What it does: Prevents Windows 10 Mail from underlining links despite inline CSS. Styles for underlined links should be inline. */
+      a {
+        text-decoration: none;
+      }
+
+      /* What it does: A work-around for email clients meddling in triggered links. */
+      *[x-apple-data-detectors],  /* iOS */
+		.unstyle-auto-detected-links *,
+		.aBn {
+        border-bottom: 0 !important;
+        cursor: default !important;
+        color: inherit !important;
+        text-decoration: none !important;
+        font-size: inherit !important;
+        font-family: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+      }
+
+      /* What it does: Prevents Gmail from displaying a download button on large, non-linked images. */
+      .a6S {
+        display: none !important;
+        opacity: 0.01 !important;
+      }
+
+      /* What it does: Prevents Gmail from changing the text color in conversation threads. */
+      .im {
+        color: inherit !important;
+      }
+
+      /* If the above doesn't work, add a .g-img class to any image in question. */
+      img.g-img + div {
+        display: none !important;
+      }
+      .email-header {
+        padding: 0;
+      }
+      .text-uppercase {
+        font-variant: small-caps;
+      }
+    </style>
+
+    <!-- CSS Reset : END -->
+
+    <!-- Progressive Enhancements : BEGIN -->
+    <style>
+      .bg-red {
+        background: linear-gradient(#256, #256, #256);
+        background: rgb(231, 19, 89);
+        color: white;
+      }
+      .email-container {
+        font-size: 16px;
+      }
+
+      .primary {
+        background: #0e9281;
+      }
+      .bg_black {
+        background: #000000;
+      }
+      .bg-dark {
+        background: rgb(4, 53, 93);
+        color: #fff;
+      }
+      /*BUTTON*/
+      .btn {
+        padding: 10px 25px;
+        display: inline-block;
+        border-radius: 25px 25px;
+      }
+      .btn.btn-primary {
+        background: rgb(231, 19, 89);
+        color: #ffffff;
+        font-weight: 400;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Lato", sans-serif;
+        margin-top: 0;
+        font-weight: 400;
+      }
+
+      body {
+        font-family: "Lato", sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 1.8;
+        overflow-x: hidden;
+      }
+
+      a {
+        color: blue;
+      }
+      .banner {
+        display: block;
+        border-radius: 2px 2px 0 0;
+        background-color: rgb(163, 18, 115);
+        padding: 1em;
+        color: white;
+        width: auto;
+        font-variant: small-caps;
+      }
+      /*LOGO*/
+
+      .logo h1 {
+        margin: 0;
+      }
+      .logo h1 a {
+        color: blue;
+        font-size: 24px;
+        font-weight: 700;
+        font-family: "Lato", sans-serif;
+      }
+
+      /*HERO*/
+      .hero {
+        position: relative;
+        z-index: 0;
+        font-size: 20px;
+      }
+
+      .hero .text {
+        color: rgba(0, 0, 0, 1);
+      }
+      .hero .text h2 {
+        color: #000;
+        margin-bottom: 0;
+        font-weight: 200;
+      }
+      .hero .text h3 {
+        font-weight: 200;
+        color: #000;
+      }
+      .hero .text p {
+        font-weight: 200;
+        color: #000;
+      }
+
+      .hero.bg_white {
+        background-color: rgb(245, 245, 241);
+      }
+      /*FOOTER*/
+
+      .footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .footer .heading {
+        font-size: 20px;
+      }
+      .footer ul {
+        margin: 0;
+        padding: 0;
+      }
+      .footer ul li {
+        list-style: none;
+        margin-bottom: 10px;
+      }
+      .footer ul li a {
+        color: rgba(250, 2500, 2500, 1);
+      }
+      .footnote {
+        padding-left: 2em;
+        padding-right: 2em;
+        background-color: rgb(20, 102, 185);
+        background-color: #256;
+        color: #fff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+
+      .flex-container {
+        display: flex;
+        flex-direction: row;
+        font-size: 14px;
+        text-align: left;
+        padding-left: 1em;
+        padding-right: 1em;
+        padding-top: 1em;
+        background: rgb(4, 53, 93);
+        background-color: rgb(163, 18, 115);
+      }
+      .email-body {
+        margin: 0.1em;
+      }
+      .flex-item-left {
+        padding: 10px;
+        flex: 50%;
+      }
+      .flex-item-center {
+        /*background-color: dodgerblue;*/
+        padding: 10px;
+        flex: 33%;
+      }
+
+      .flex-item-right {
+        /*background-color: dodgerblue;*/
+        padding: 10px;
+        flex: 50%;
+      }
+      .flex-container ul {
+        list-style-position: outside;
+        list-style-type: square;
+      }
+      .flex-container a {
+        color: aqua;
+      }
+
+      /* Responsive layout - makes a one column-layout instead of two-column layout */
+      /* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */
+      /* Create one of these media queries for each additional viewport size you'd like to fix */
+      /* iPhone 4, 4S, 5, 5S, 5C, and 5SE */
+      /* iPhone 6, 6S, 7, 8, and X */
+      /* iPhone 6+, 7+, and 8+ */
+      @media screen and (min-width: 800px) {
+        .email-container {
+          border-radius: 1px;
+          margin: 2em;
+        }
+        .email-body {
+          margin: 2em;
+        }
+      }
+      @media (max-width: 800px) {
+        .flex-container {
+          flex-direction: column;
+        }
+        .flex-item-left {
+          border-bottom: 1px solid aquamarine;
+        }
+        .flex-item-right {
+          border-top: 1px solid aquamarine;
+        }
+        .banner {
+          border-radius: 0 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body
+    width="100%"
+    style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly"
+  >
+    <div
+      style="
+        display: none;
+        font-size: 1px;
+        max-height: 0px;
+        max-width: 0px;
+        opacity: 0;
+        overflow: hidden;
+        mso-hide: all;
+        font-family: sans-serif;
+      "
+    >
+      &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+    </div>
+    <div align="center">
+      <div style="overflow: auto" class="email-container">
+        <!-- BEGIN BODY -->
+        <table
+          align="left"
+          class="email-"
+          role="presentation"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          width="100%"
+          style="margin: auto"
+        >
+          <tr class="bg-">
+            <td valign="top">
+              <div class="banner" align="center">
+                <h2>Aniims&trade;</h2>
+                <h3 style="line-height: 1.1em">
+                  Advanced Nafdac Investigation Information Management System
+                </h3>
+              </div>
+            </td>
+          </tr>
+          <!-- end tr -->
+          <tr>
+            <td valign="top" class="hero bg_white" style="padding: 0 0em">
+              <div
+                class="text email-body"
+                style="text-align: left; padding: 1em; padding-top: 1.5em"
+              >
+                <h4>Hi, {{recipientName}}</h4>
+                <p>{{message}}.</p>
+                <p>
+                  <strong
+                    ><a
+                      href="{{link}}"
+                      style="
+                        display: block;
+                        font-size: 14px;
+                        word-break: break-word;
+                        word-wrap: break-word;
+                        padding: 0.6em 0.6em;
+                      "
+                      >{{link}}</a
+                    ></strong
+                  >
+                </p>
+                <p><a href="{{link}}" class="btn btn-primary">{{button}}</a></p>
+                <p>
+                  If you haven't made this request, you can ignore this
+                  email.<br /><br />Thanks.
+                </p>
+                <p><b>ANIIMS Team.</b></p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="bg-dark">
+              <p
+                align="center"
+                style="
+                  padding-left: 2em;
+                  padding-right: 2em;
+                  line-height: 1.2em;
+                  font-weight: 200;
+                "
+              >
+                * You got this email because you registered on NAFDAC
+                Investigation and Enforcement (ANIIMS) platform. If you no
+                longer want to receive these emails, you can contact &nbsp;<a
+                  href="mailto:support@aniims.net"
+                  style="color: aqua"
+                  >support.</a
+                >
+              </p>
+
+              <div class="flex-container">
+                <div class="flex-item-left">
+                  <h3 class="heading">About</h3>
+                  <p>NAFDAC investigation information management system</p>
+                  <h3 class="heading">Contact Info</h3>
+                  <address>
+                    &#9875;&nbsp;10-15 Mobil Road Apapa, Lagos, Nigeria
+                    <div class="text">
+                      &#128231;
+                      <a href="mailto: enforcement@nafdac.gov.ng"
+                        >enforcement@nafdac.gov.ng</a
+                      >
+                    </div>
+                    <phone>&#x260E;&nbsp;+234 000 000 0000</phone>
+                  </address>
+                </div>
+                <div class="flex-item-right">
+                  <h3 class="heading">Useful Links</h3>
+                  <ul>
+                    <li><a href="https://aniims.net">Home</a></li>
+                    <li><a href="https://nafdac.gov.ng">NAFDAC</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div
+                align="center"
+                class="footer"
+                align="left"
+                style="padding-left: 2em; font-size: 12px"
+              >
+                Copyright<sup>&copy;</sup>&nbsp; {{year}} &nbsp;NAFDAC
+                Investigation and Enforcement
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

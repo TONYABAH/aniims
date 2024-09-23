@@ -24,10 +24,12 @@ ChartJS.register(
   LinearScale
 );
 const id = "_" + Math.random().toString(16).substring(3);
+var mixedChart = null;
 function drawChart() {
   const ctx = document.getElementById(id);
   const data = {
     labels: ["January", "February", "March", "April"],
+    backgroundColor: "#f87979",
     datasets: [
       {
         type: "bar",
@@ -46,7 +48,7 @@ function drawChart() {
       },
     ],
   };
-  const mixedChart = new ChartJS(ctx, {
+  mixedChart = new ChartJS(ctx, {
     type: "bar",
     data,
     options: {
@@ -94,9 +96,12 @@ function drawChart() {
 })
  */
 onMounted(() => {
-  setInterval(() => {
+  setTimeout(() => {
+    if (mixedChart) mixedChart.destroy();
     drawChart();
   }, 3000);
 });
-onBeforeMount(() => {});
+onBeforeMount(() => {
+  if (mixedChart) mixedChart.destroy();
+});
 </script>

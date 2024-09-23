@@ -134,9 +134,10 @@ const dbRef = collection(
 );
 const dataSource = query(
   dbRef,
+  where("CollId", "==", store.currentCollection),
   where("DocId", "==", currentDocument.value?.id)
 );
-var Attachments = useCollection(dbRef);
+var Attachments = useCollection(dataSource);
 //console.log(Attachments);
 const attachedDocuments = computed(() => {
   return Attachments.value?.filter((f) => f.Type.indexOf("application/") > -1);

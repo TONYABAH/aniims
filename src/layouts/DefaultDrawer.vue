@@ -7,9 +7,9 @@
     :mini-width="80"
     :elevated="false"
     :behavior="$q.screen.gt.sm ? 'desktop' : 'mobile'"
-    :width="$q.screen.width > 600 ? 280 : $q.screen.width"
+    :width="$q.screen.width > 600 ? 320 : $q.screen.width"
     style="letter-spacing: 1.2px; overflow: hidden"
-    class="text-grey-1 exortic-bg"
+    class="text-grey-1 exortic-bg fits"
   >
     <q-item style="" :class="store.theme.bg.normal">
       <q-item-section class="text-grey-1 q-pl-md">
@@ -32,7 +32,7 @@
     </q-item>
     <q-scroll-area
       :class="$q.dark.isActive ? 'bg-blue-grey-9' : store.theme.bg.dark"
-      style="width: 100%; height: calc(100vh - 80px); opacity: 0.96"
+      style="width: 100%; height: calc(100vh - 40px); opacity: 0.96"
     >
       <q-list>
         <q-item
@@ -45,7 +45,9 @@
               ? store.theme.bg.dark + ' border-right'
               : store.theme.bg.normal + ' border-right'
           "
-          :active="store.currentCollection === link.name"
+          :active="
+            store.currentCollection.toLowerCase() === link.name.toLowerCase()
+          "
           class="text-white"
           @click="navigateTo(link)"
         >
@@ -109,6 +111,8 @@ const toggleLeftMini = () => {
   miniMode.value = !miniMode.value;
 };
 function navigateTo(link) {
+  store.currentCollection = link.name;
+  //console.log(link, store.currentCollection);
   if (router.currentRoute.value.path !== link.path) {
     setTimeout(() => {
       loading.value = false;

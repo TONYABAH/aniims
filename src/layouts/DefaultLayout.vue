@@ -3,8 +3,9 @@
     <default-header />
     <DefaultDrawer />
     <q-page-container style="overflow: auto">
-      <router-view v-if="$route.path === '/'"></router-view>
+      <router-view v-if="$route.path === '/app'"></router-view>
       <q-tab-panels
+        v-else
         v-model="store.tabModel"
         animated
         vertical=""
@@ -69,6 +70,7 @@ const SearchList = defineAsyncComponent(() =>
 );*/
 //const drawerLeft = ref(true);
 const isDefaultRoute = computed(() => {
+  //console.log(route);
   return (
     route.name !== "Home" &&
     route.name !== "Cases" &&

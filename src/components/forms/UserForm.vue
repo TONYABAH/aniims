@@ -14,62 +14,132 @@
     icon-name="perm_identity"
   >
     <q-form ref="form" class="q-gutter-xs">
-      <q-bar class="bg-transparent" v-if="user?.uid">
+      <q-toolbar dense class="bg-transparent" v-if="user?.uid">
+        <div v-if="$q.screen.gt.xs">
+          <q-btn
+            no-caps=""
+            unelevated=""
+            color="teal-8"
+            label="Send password reset link"
+            :loading="resetingPassword"
+            @click="sendPasswordResetEmail(user)"
+          >
+            <template v-slot:loading>
+              <q-spinner-hourglass class="on-left" />
+              Wait...
+            </template>
+          </q-btn>
+          <q-btn
+            no-caps=""
+            unelevated=""
+            color="teal-8"
+            label="Reset user password"
+            class="q-ml-xs"
+            :loading="resetingPassword"
+            @click="() => generatePassword()"
+          >
+            <template v-slot:loading>
+              <q-spinner-hourglass class="on-left" />
+              Wait...
+            </template>
+          </q-btn>
+          <!--<q-btn
+            no-caps=""
+            unelevated=""
+            color="red"
+            label="Delete account"
+            class="q-ml-xs"
+            :loading="deletingAccount"
+            @click="deleteUserProfile(user)"
+          >
+            <template v-slot:loading>
+              <q-spinner-hourglass class="on-left" />
+              Wait...
+            </template>
+          </q-btn>-->
+        </div>
+        <q-toolbar-title v-else class="text-uppercase">
+          User account</q-toolbar-title
+        >
         <q-space />
-        <q-btn
-          no-caps=""
-          unelevated=""
-          color="teal-8"
-          label="Password reset"
-          :loading="resetingPassword"
-          @click="sendPasswordResetEmail(user?.email)"
-        >
-          <template v-slot:loading>
-            <q-spinner-hourglass class="on-left" />
-            Wait...
-          </template>
+        <q-btn flat round dense icon="more_vert">
+          <q-menu style="width: 240px">
+            <q-list>
+              <q-item
+                clickable
+                v-close-popup
+                @click="sendPasswordResetEmail(user)"
+              >
+                <q-item-section avatar="">
+                  <q-avatar
+                    size="36px"
+                    font-size="32px"
+                    color=""
+                    text-color="teal"
+                    icon="mail"
+                  />
+                </q-item-section>
+                <q-item-section>Send reset link</q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup @click="passwordDialog = true">
+                <q-item-section avatar="">
+                  <q-avatar
+                    size="36px"
+                    font-size="32px"
+                    color=""
+                    text-color="teal"
+                    icon="key"
+                  />
+                </q-item-section>
+                <q-item-section>Change password</q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup @click="deleteUserProfile(user)">
+                <q-item-section avatar="">
+                  <q-avatar
+                    size="36px"
+                    font-size="32px"
+                    color=""
+                    text-color="teal"
+                    icon="delete"
+                  />
+                </q-item-section>
+                <q-item-section>Delete account</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
         </q-btn>
-        <q-separator spaced inset vertical dark />
-        <q-btn
-          no-caps=""
-          unelevated=""
-          color="red"
-          label="Delete account"
-          :loading="deletingAccount"
-          @click="deleteUserProfile(user?.uid)"
-        >
-          <template v-slot:loading>
-            <q-spinner-hourglass class="on-left" />
-            Wait...
-          </template>
-        </q-btn>
-      </q-bar>
-
+      </q-toolbar>
       <q-input
         outlined
         v-model="user.displayName"
         type="text"
-        :disable="true"
         label="Display Name"
       />
-
-      <q-input
-        outlined
-        dense=""
-        v-model="user.email"
-        type="text"
-        :disable="true"
-        label="Email"
-      />
+      <q-input outlined dense="" v-model="user.email" type="text" label="Email">
+        <q-btn
+          flat
+          color=""
+          label="Update"
+          @click="updateUser({ email: user?.email })"
+        />
+      </q-input>
 
       <q-input
         outlined
         dense
         v-model="user.phoneNumber"
         type="text"
-        :disable="true"
-        label="Phone"
-      />
+        label="Update"
+      >
+        <q-btn
+          flat
+          color=""
+          label="Change"
+          @click="updateUser({ phoneNumber: user?.phoneNumber })"
+        />
+      </q-input>
       <q-separator spaced inset vertical dark />
       <q-expansion-item
         expand-separator
@@ -124,6 +194,50 @@
       </label>
     </q-form>
   </AdminViewer>
+
+  <q-dialog v-model="passwordDialog">
+    <q-card class="my-card">
+      <q-card-section> </q-card-section>
+      <q-card-section>
+        <q-toolbar class="bg-transparent">
+          <q-toolbar-title>
+            <q-input
+              v-model="newPassword"
+              type="text"
+              placeholder="New password"
+              rounded=""
+              outlined=""
+              dense
+            >
+              <template v-slot:prepend>
+                <q-btn flat icon="key" @click.stop="generatePassword()" />
+              </template>
+            </q-input>
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-card-section>
+      <q-card-section align="center">
+        <q-btn
+          unelevated=""
+          no-caps
+          label="Set password"
+          color="pink"
+          icon="check"
+          v-close-popup
+          @click.stop="resetPasswordForUser(user)"
+        />
+        <q-btn
+          no-caps
+          unelevated=""
+          label="Cancel"
+          color="orange"
+          icon="close"
+          class="q-ml-xs"
+          v-close-popup
+        />
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -133,6 +247,7 @@ import AdminViewer from "src/views/AdminViewer.vue";
 import {
   getUser,
   resetPassword,
+  updateUser,
   deleteUser,
   setUserRights,
 } from "src/composables/functions";
@@ -152,10 +267,11 @@ const canConfirmPay = ref(false);
 const canEditMail = ref(false);
 const canDestroy = ref(false);
 const collectionId = "Users";
-
+const newPassword = ref();
 const loading = ref(false);
 const deletingAccount = ref(false);
 const resetingPassword = ref(false);
+const passwordDialog = ref(false);
 var allUsers = [];
 const users = ref([]);
 
@@ -224,8 +340,8 @@ function reset() {
 function validate() {
   return true;
 }
-async function sendPasswordResetEmail(email) {
-  //let email = user.value?.email;
+async function sendPasswordResetEmail(user) {
+  let email = user?.email;
   Dialog.create({
     message: "Send user reset password?",
     title: "Reset password",
@@ -234,16 +350,26 @@ async function sendPasswordResetEmail(email) {
     persistent: true,
   }).onOk(async () => {
     resetingPassword.value = true;
-    await resetPassword({ email })
-      .then(() => {
+    await resetPassword({ uid: user.uid, email })
+      .then((info) => {
+        //console.log(info);
         Notify.create({
           message: "Success",
           caption: "Send password reset",
           color: "green",
           position: "center",
+          html: true,
         });
+        /*Dialog.create({
+          message: "Success <br/>" + info,
+          title: "Send password reset",
+          color: "green",
+          position: "center",
+          html: true,
+        });*/
       })
       .catch((e) => {
+        console.log(e);
         Notify.create({
           message: e.message,
           caption: "Send password reset",
@@ -254,8 +380,47 @@ async function sendPasswordResetEmail(email) {
     //console.log(result);
   });
 }
-async function deleteUserProfile() {
-  let uid = model.value?.uid;
+function generatePassword() {
+  newPassword.value = Math.floor(Math.random() * 99999999).toString(16);
+  passwordDialog.value = true;
+}
+async function resetPasswordForUser(user) {
+  //let email = user?.email;
+  Dialog.create({
+    message: "Reset password for user?",
+    title: "Reset password",
+    ok: true,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    resetingPassword.value = true;
+    updateUser({ uid: user.uid, password: newPassword.value })
+      .then(() => {
+        Dialog.create({
+          title: "Password reset",
+          caption: "Send password reset",
+          message: `<div>Please copy and send the new password to user. </div><div>New password: ${newPassword.value}</div><br/>`,
+          color: "green",
+          position: "standard",
+
+          html: true,
+          persistent: true,
+        });
+      })
+      .catch((e) => {
+        console.trace(e);
+        Notify.create({
+          message: e.message,
+          caption: "Send password reset",
+          color: "red",
+        });
+      })
+      .finally(() => (resetingPassword.value = false));
+    //console.log(result);
+  });
+}
+async function deleteUserProfile(user) {
+  let uid = user?.uid;
   //let email = user.value?.email;
   //console.log(model.value);
   Dialog.create({
@@ -275,7 +440,7 @@ async function deleteUserProfile() {
           message: "Success",
           caption: "Delete user",
           color: "green",
-          position: "center",
+          position: "standard",
         });
       })
       .catch((e) => {

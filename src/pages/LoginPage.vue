@@ -4,13 +4,12 @@
     :class="$q.screen.gt.xs ? 'row' : ''"
     style="padding: 0px"
   >
-    <div class="col col-sm-6 col-md-5 col-lg-4 col-xl-3 q-px-xs">
+    <div class="col col-sm-6 col-md-5 col-lg-4 col-xl-3 full-height">
       <q-card
         square
         :flat="true"
-        :style="$q.screen.lt.sm ? 'width: calc(100vw + 10px);' : ''"
-        style="height: calc(100vh - 0px);margin-left:-10px;padding:0; border 2px solid red"
-        class="my-card"
+        style="border: 1px solid purple"
+        class="my-card full-height"
       >
         <q-banner class="bg-negative text-white" v-if="error">
           {{ error }}
@@ -22,15 +21,17 @@
           v-else
           align="center"
           class=""
-          :class="$q.screen.gt.xs ? store.theme.bg.normal : ''"
+          :class="
+            $q.screen.gt.xs ? store.theme.bg.normal : store.theme.bg.normal
+          "
         >
           <q-avatar
             flat
-            size="74px"
+            size="84px"
             font-size="56px"
             icon="lock"
-            :text-color="$q.screen.gt.xs ? 'white' : 'teal-8'"
-            :color="$q.screen.gt.xs ? '' : ''"
+            :text-color="$q.screen.gt.xs ? 'purple' : 'purple'"
+            :color="$q.screen.gt.xs ? 'white' : 'white'"
           />
         </q-card-section>
         <q-card-section class="q-px-" style="padding: 0">
@@ -155,6 +156,12 @@
             </q-item-section>
           </q-item>
         </q-card-section>
+
+        <div class="text-center flex flex-center">
+          <q-btn fab color="cyan-9" to="/">
+            <q-icon name="house" />
+          </q-btn>
+        </div>
       </q-card>
     </div>
   </div>

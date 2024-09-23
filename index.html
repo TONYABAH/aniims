@@ -38,11 +38,21 @@
       href="icons/favicon-16x16.png"
     />
     <link rel="icon" type="image/ico" href="favicon.ico" />
+
     <!-- Animate on scroll
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
      <script src="https://www.gstatic.com/charts/loader.js"></script>
-    -->
+    <script src="https://unpkg.com/sequelize-browser@6.x/sequelize.script.js"></script>
+
+    <script>
+      const SQ_CLOUD =
+        "sqlitecloud://chkb4aa6iz.sqlite.cloud:8860?apikey=cNUM10Z3hD1L81XWAvPWQTx1EPQsJ9axJ2UDfQ1mCzI";
+      const sequelize = new Sequelize("sqlite://" + SQ_CLOUD);
+      console.log(sequelize);
+      console.log(Sequelize);
+    </script>-->
+
     <script src="chart-loader.js"></script>
     <style>
       * {

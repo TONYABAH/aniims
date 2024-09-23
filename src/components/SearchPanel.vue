@@ -297,6 +297,8 @@ watch(
   () => route.path,
   async (path, old) => {
     if (path) {
+      //console.log(store.currentCollection, path);
+      if (!path) return;
       onSearch(useDefaultSerachQuery(store.currentCollection));
       return;
     }
@@ -315,6 +317,7 @@ onMounted(async () => {
     search.value.location = store.user.claims?.location || null; // store.user.claims.location;
     //search.value.date1 = Date.parse("01/04/2024");
   }
+  //if (store.currentCollection) onSearch(useDefaultSerachQuery(store.currentCollection));
 });
 defineExpose({
   //onSearch,

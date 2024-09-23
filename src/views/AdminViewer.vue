@@ -1,9 +1,9 @@
 <template>
   <div class="row q-col-gutter-xs q-mb-xl q-pb-xl bg-">
-    <div class="col col-xs-12 col-sm-6 col-md-5 col-lg-5">
+    <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-5">
       <q-card
         flat
-        class="my-card q-ma-sm q-pb-sm q-pr-sm full-height"
+        class="my-card q-ma-sm q-pb-sm q-pr-sm bg-red"
         :class="
           $q.dark.isActive ? 'bg-grey-10 q-ma-xs' : 'bg-grey-1 text-grey-10'
         "
@@ -18,10 +18,10 @@
               placeholder="Search..."
               outlined=""
               autocapitalize="words"
-              @update:model-value="handleSearch(search)"
               :debounce="400"
               class="q-mb-sm"
               input-class="q-pl-sm"
+              @update:model-value="handleSearch(search)"
             >
               <template v-slot:append>
                 <q-btn
@@ -39,7 +39,14 @@
             </q-input>
           </q-item-section>
         </q-item>
-        <q-scroll-area style="width: 100%; height: calc(100vh - 180px)">
+        <q-expansion-item
+          expand-separator
+          icon=""
+          label="Results"
+          caption=""
+          default-opened=""
+          dense
+        >
           <q-list class="text-h6 q-pb-md q-pt-xs" style="border-radius: 4px">
             <q-item
               clickable
@@ -47,7 +54,9 @@
               v-for="(item, i) of list"
               :key="item.uid"
               :v-bind="item"
-              :to="'/admin/' + collection + '/#' + (item.uid || item.Abbrev)"
+              :to="
+                '/app/admin/' + collection + '/#' + (item.uid || item.Abbrev)
+              "
               :active-class="store.theme.bg.dark + ' text-white'"
               :active="active === i"
               style="font-size: medium"
@@ -74,14 +83,15 @@
             </q-item-section>-->
             </q-item>
           </q-list>
-        </q-scroll-area>
+        </q-expansion-item>
       </q-card>
     </div>
-    <div class="col col-xs-12 col-sm-6 col-md-7 col-lg-7">
+    <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-7">
       <q-card
-        class="my-card q-mt-sm q-mr-md q-mb-xl full-height"
+        class="my-card q-mt-sm q-mx-sm q-mb-xl full-height"
         :class="$q.dark.isActive ? 'bg-blue-grey-9' : 'bg-grey-'"
         style="opacity: 0.8"
+        ref="formCard"
       >
         <q-toolbar class="bg-deep-purple text-white">
           <q-toolbar-title>
@@ -149,12 +159,13 @@ import { ref, computed } from "vue";
 import { useDefaultStore } from "src/stores/store";
 import LoadingButton from "src/components/LoadingButton.vue";
 import { remove } from "src/composables/remote";
-//import { createUser, addIPO, addCompany } from "src/composables/functions";
-//import { addipo } from "app/altfunctions";
 import { Notify, Dialog } from "quasar";
+
 const store = useDefaultStore();
 const search = ref("");
 const deletingAccount = ref(false);
+const formCard = ref(null);
+
 const _selected = computed({
   get: () => props.selected || {},
   set: (val) => props.setModel(val),
@@ -179,6 +190,12 @@ const active = ref(0);
 function _setModel(m, i) {
   active.value = i;
   _selected.value = m;
+  //document.getElementById().scrollIntoView();
+  formCard.value?.$el?.scrollIntoView(true, {
+    behavior: "smooth",
+    block: "end",
+    inline: "nearest",
+  });
   //console.log(i);
 }
 async function onReset() {

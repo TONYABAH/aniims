@@ -3,18 +3,18 @@
     <q-card
       v-for="(item, i) of comments"
       :key="i"
-      :class="
-        $q.dark.isActive ? 'bg-grey-8 text-white' : 'bg-grey-2 text-grey-10'
-      "
-      class="q-my-md"
+      class="q-mb-md q-pa-sm q-mt-xs bg-transparent"
       style="border-radius: 8px 8px 0 0"
     >
       <div
         class="full-width q-px-sm"
+        :class="
+          $q.dark.isActive ? 'bg-grey-8 text-white' : 'bg-blue-2 text-grey-10'
+        "
         :style="
           store.user.uid === item.From?.uid
-            ? 'border-radius: 8px 8px 0 8px;'
-            : 'border-radius: 8px 8px 8px 0'
+            ? 'border-radius: 6px 6px 0 8px;'
+            : 'border-radius: 6px 6px 8px 0'
         "
       >
         <q-icon name="person" class="q-mr-sm" />
@@ -27,10 +27,10 @@
             :content-class="
               $q.dark.isActive
                 ? 'bg-grey-8 text-white'
-                : 'bg-grey-2 text-grey-9'
+                : 'bg-blue-2 text-grey-9'
             "
             min-height="2rem"
-            :toolbar="false"
+            :toolbar="[]"
             style="border: 0; border-top: 1px solid"
           />
         </div>
@@ -55,10 +55,11 @@
       :text-color="store.user?.uid === item.From?.uid ? 'black' : 'grey-10'"
       :avatar="
         store.user?.uid === item.From?.uid
-          ? '../assets/avatar1.jpg'
-          : '../assets/avatar2.jpg'
+          ? '/assets/avatar1.jpg'
+          : '/assets/avatar2.jpg'
       "
-    ></q-chat-message>
+      class="q-pa-sm"
+    />
   </template>
 </template>
 

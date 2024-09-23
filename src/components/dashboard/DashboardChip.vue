@@ -50,6 +50,7 @@ if (
   props.collectionName.toLowerCase() !== "admin" &&
   props.collectionName.toLowerCase() !== "dashboard"
 ) {
+  //console.log(props.collectionName);
   const filters = useDefaultSerachQuery(props.collectionName);
   const dbRef = collection(db, "Meta" /*props.collectionName*/);
   const dataSource = query(dbRef, and(...filters), limit(50));

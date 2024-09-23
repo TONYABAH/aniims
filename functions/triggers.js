@@ -12,9 +12,11 @@ const { getAuth } = require("firebase-admin/auth");
 const logger = require("firebase-functions").logger;
 const { HttpsError } = require("firebase-functions/v2/https");
 const BASE_URL = require("./baseurl.js").BASE_URL;
+const { MESSAGE_TYPE } = require("./emailservice.js");
+const sendEmail = require("./emailservice.js");
+const { sendPasswordResetEmail } = require("./password-reset-email.js");
 
 async function sendAccountDeleteEmail(accountEmail, recipientName) {
-  const sendEmail = require("./emailservice.js").sendEmail;
   const options = {
     title: "Account deleted",
     recipientName,
@@ -24,7 +26,7 @@ async function sendAccountDeleteEmail(accountEmail, recipientName) {
     link,
     button: false,
   };
-  const info = await sendEmail(accountEmail, options);
+  const info = await sendEmail(`${accountEmail}, 'admin@aniims.net'`, options);
 
   return info;
 }
@@ -145,8 +147,6 @@ exports.onusercreated = onDocumentCreated("Users/{uid}", async (event) => {
     })
     .then(() => {
       if (data.Email) {
-        const sendPasswordResetEmail =
-          require("./password-reset-email.js").sendPasswordResetEmail;
         sendPasswordResetEmail(data.Email, data.Name).catch((e) =>
           logger.log(e.message)
         );
@@ -162,7 +162,8 @@ exports.onusercreated = onDocumentCreated("Users/{uid}", async (event) => {
       logger.log(e.message);
     });
 });
-exports.onuserdeleted = onDocumentDeleted("Users/{uid}", async (event) => {
+
+/*exports.onuserdeleted = onDocumentDeleted("Users/{uid}", async (event) => {
   const snapshot = event.data;
 
   if (!snapshot) {
@@ -175,7 +176,7 @@ exports.onuserdeleted = onDocumentDeleted("Users/{uid}", async (event) => {
       logger.log(e);
     });
   }
-});
+});*/
 
 exports.oncomplaintcreated = onDocumentCreated(
   "Complaints/{sid}",
@@ -190,15 +191,15 @@ exports.oncomplaintcreated = onDocumentCreated(
     let recipientName = data.CoyName || "";
 
     if (!receiverEmail) return;
-    const { MESSAGE_TYPE } = await import("./emailservice.js");
-    const link = `${BASE_URL}/petition`;
-    const body = `Your complaint received. Visit. ${link} to view status`;
+    //const { MESSAGE_TYPE } = await import("./emailservice.js");
+    //const sendEmail = require("./emailservice.js").sendEmail;
+    const link = `${BASE_URL}/my_petition`;
+    const message = `Your complaint has been received and is being reviewed. Visit. ${link} to view status`;
 
-    const sendEmail = require("./emailservice.js").sendEmail;
     const options = {
       title: "Complaint received",
       recipientName,
-      message: "Your complaint has been received and is being reviewed.",
+      message,
       message2:
         "If you have not filed this complaint, please contact NAFDAC Investigation and Enforcement Directorate.",
       link,
@@ -224,17 +225,14 @@ exports.ondestructioncreated = onDocumentCreated(
     let recipientName = data.ContactName;
 
     if (!receiverEmail) return;
-    const { MESSAGE_TYPE } = await import("./emailservice.js");
+    //const { MESSAGE_TYPE } = await import("./emailservice.js");
+    //const sendEmail = require("./emailservice.js").sendEmail;
     const link = `${BASE_URL}/petition`;
-
-    const body = `Your complaint received. Visit. ${link} to view status`;
-
-    const sendEmail = require("./emailservice.js").sendEmail;
+    const message = `Your application for destruction of your obsolete products has been received and is being reviewed. Visit. ${link} to view status`;
     const options = {
       title: "Application received",
       recipientName,
-      message:
-        "Your application for destruction of your obsolete products have been reviewed.",
+      message,
       message2:
         "For further information, please contact NAFDAC Investigation and Enforcement Directorate.",
       link,
@@ -245,8 +243,34 @@ exports.ondestructioncreated = onDocumentCreated(
     return info;
   }
 );
+exports.sendcustumemail = onDocumentCreated("Forms/{id}", async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) {
+    //console.log("No data associated with the event");
+    return;
+  }
+  const data = snapshot.data();
+  const sendEmail = require("./emailservice.js").sendEmail;
 
-
+  const options = {
+    title: data.Title,
+    subject: data.Subject,
+    receiverName: "Aniims Team",
+    senderName: data.Name,
+    message: data.Message || "",
+    phone: data.Phone,
+    senderEmail: data.Email,
+    to: "support@aniims.net",
+    type: "contact-form",
+  };
+  try {
+    const info = await sendEmail("support@aniims.net", options);
+    console.log(info);
+    //return info;
+  } catch (e) {
+    console.log(e);
+  }
+});
 /*function isPhoneNumber(data) {
   if (!data) return false;
   const regEx = new RegExp(/^(\+234)?[0-9]+/);

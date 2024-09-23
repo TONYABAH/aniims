@@ -1,13 +1,9 @@
-const {
-  onCall,
-  HttpsError,
-} = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
 
 const { logger } = require("firebase-functions");
-const ACTION_URL = "https://aniims.net/";
-
+//const ACTION_URL = "https://aniims.net/";
 function formatPhoneNumber(number) {
   return number ? number.toString().replace(/^0/, "+234") : "";
 }
@@ -75,48 +71,6 @@ async function createUser(email, password, phone, name, emailVerified) {
   return userRecord;
 }
 
-async function sendEmailRecoveryEmail(accountEmail, newEmail, recipientName) {
-  const sendEmail = require("./emailservice.js").sendEmail;
-  const link = await getAuth().generateVerifyAndChangeEmailLink(
-    accountEmail,
-    newEmail
-  );
-  const options = {
-    title: "Recover email",
-    recipientName,
-    message: "You have requested to recover your email.",
-    message2: `Follow this link to reset your ANIIMS login email.`,
-    //"Please follow the link below to change your account email.",
-    link,
-    button: "Recover my email",
-  };
-  const info = await sendEmail(accountEmail, options);
-  //logger.info("Message sent: %s", receiverEmail, info);
-  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-  return info;
-}
-
-exports.resetpassword = onCall(async (request) => {
-  if (!request.data?.email)
-    throw new HttpsError("bad-request", "Email required");
-  try {
-    const userRecord = await getAuth().getUserByEmail(request.data.email);
-    if (!userRecord) {
-      throw new HttpsError("invalid-argument", "User record not found");
-    }
-    const sendPasswordResetEmail =
-      require("./password-reset-email.js").sendPasswordResetEmail;
-    const info = await sendPasswordResetEmail(
-      userRecord.email,
-      userRecord.displayName
-    );
-    return info;
-  } catch (error) {
-    logger.log(error);
-    throw new HttpsError("unknown", error.message);
-  }
-});
-
 exports.register = onCall(async (request) => {
   try {
     if (!request.auth?.uid || !request.auth?.token?.admin) {
@@ -154,38 +108,6 @@ exports.register = onCall(async (request) => {
     throw new HttpsError("unknown", error.message);
   }
 });
-
-exports.deleteusers = onCall(async (request) => {
-  try {
-    return await deleteUsers(request.data.uids);
-  } catch (error) {
-    logger.error(error.message);
-    throw new HttpsError("unknown", error.message);
-  }
-});
-exports.deleteuser = onCall(async (request) => {
-  try {
-    await getAuth().deleteUser(request.data.uid);
-    let result = await getFirestore()
-      .collection("Users")
-      ?.doc(request.data.uid)
-      ?.delete();
-    return result;
-  } catch (error) {
-    logger.error(error.message);
-    throw new HttpsError("unknown", error.message);
-  }
-});
-
-exports.listusers = onCall(async (request) => {
-  try {
-    const users = [];
-    return await listAllUsers(users);
-  } catch (error) {
-    logger.error(error.message);
-    throw new HttpsError("unknown", error.message);
-  }
-});
 exports.getstaffbyid = onCall(async (request) => {
   try {
     if (!request.data?.staffId)
@@ -217,67 +139,94 @@ exports.getstaffbyid = onCall(async (request) => {
     throw new HttpsError("unknown", error.message);
   }
 });
+exports.deleteusers = onCall(async (request) => {
+  try {
+    return await deleteUsers(request.data.uids);
+  } catch (error) {
+    logger.error(error.message);
+    throw new HttpsError("unknown", error.message);
+  }
+});
+exports.deleteuser = onCall(async (request) => {
+  try {
+    await getAuth().deleteUser(request.data.uid);
+    let result = await getFirestore()
+      .collection("Users")
+      ?.doc(request.data.uid)
+      ?.delete();
+    return result;
+  } catch (error) {
+    logger.error(error.message);
+    throw new HttpsError("unknown", error.message);
+  }
+});
+
+exports.listusers = onCall(async (request) => {
+  try {
+    const users = [];
+    return await listAllUsers(users);
+  } catch (error) {
+    logger.error(error.message);
+    throw new HttpsError("unknown", error.message);
+  }
+});
+
 exports.getuser = onCall(async (request) => {
   try {
-    let uid = request.data.uid;
-    if (!uid) throw new HttpsError("bad-request", "User ID required");
-    const userRecord = await getAuth().getUser(request.data.uid);
+    let { uid, email, phone } = request.data;
+    let userRecord = null;
+    if (uid) {
+      //if (!uid) throw new HttpsError("bad-request", "User ID required");
+      userRecord = await getAuth().getUser(request.data.uid);
+    } else if (email) {
+      userRecord = await getAuth().getUserByEmail(request.data.email);
+    } else if (phone) {
+      if (isPhoneNumber(phone)) phone = formatPhoneNumber(phone);
+      userRecord = await getAuth().getUserByPhoneNumber(phone);
+    }
     return userRecord?.toJSON();
   } catch (error) {
     logger.error(error.message);
     throw new HttpsError("unknown", error.message);
   }
 });
-exports.getuserbyemail = onCall(async (request) => {
-  try {
-    let email = request.data.email;
-    if (!email) throw new HttpsError("bad-request", "Email address required");
-    const userRecord = await getAuth().getUserByEmail(request.data.email);
-    return userRecord?.toJSON();
-  } catch (error) {
-    logger.error(error.message);
-    throw new HttpsError("unknown", error.message);
-  }
-});
-exports.getuserbyphonenumber = onCall(async (request) => {
-  try {
-    let phone = request.data.phone;
-    if (!phone) throw new HttpsError("bad-request", "Phone number required");
-    if (isPhoneNumber(phone)) phone = formatPhoneNumber(phone);
-    //if (!phone)throw new HttpsError("bad-request", "Phone number not valid");
 
-    const userRecord = await getAuth().getUserByPhoneNumber(phone);
-    return userRecord?.toJSON();
-  } catch (error) {
-    //logger.error(error.message);
-    throw new HttpsError("unknown", error.message);
+/**
+ * @param {string} uid The ID of the user
+ * @param {object} data User data, at least one field must be present
+ {
+    email: 'modifiedUser@example.com',
+    phoneNumber: '+11234567890',
+    emailVerified: true,
+    password: 'newPassword',
+    displayName: 'Jane Doe',
+    photoURL: 'http://www.example.com/12345678/photo.png',
+    disabled: true,
   }
-});
-
+ */
 exports.updateuser = onCall(async (request) => {
   if (request?.auth?.token?.admin !== true)
     throw "Admin previaledge is needed to update user.";
   const uid = request.data.uid;
-  const data = {};
-  /*const {
-    email,
-    phoneNumber,
-    emailVerified,
-    password,
-    displayName,
-    photoURL,
-    disabled,
-  } = request.data;*/
+  const data = Object.assign({}, request.data);
+  delete data.uid;
 
-  Object.keys(request.data).forEach((k) => {
-    if (request.data[k] && k !== "uid") {
-      data[k] = request.data[k];
-    }
-  });
   try {
-    await getAuth().updateUser(uid, {
-      ...data,
-    });
+    await getAuth().updateUser(uid, data);
+    let _data = {};
+    if (data.phone) {
+      _data.Phone = data.phoneNumber;
+    }
+    if (data.email) {
+      _data.Email = data.email;
+    }
+    if (!data.phone && !data.email) return;
+    await getFirestore()
+      .collection("Users")
+      .doc(uid)
+      .set(_data, { merge: true });
+    //.update()
+    //.where("id", "==", uid).get()
   } catch (e) {
     logger.error(error.message);
     throw new HttpsError("unknown", error.message);
@@ -435,6 +384,53 @@ exports.resetpassword = onCall(async (request) => {
   }
 });
 
+/*
+async function sendEmailRecoveryEmail(accountEmail, newEmail, recipientName) {
+  const sendEmail = require("./emailservice.js").sendEmail;
+  const link = await getAuth().generateVerifyAndChangeEmailLink(
+    accountEmail,
+    newEmail
+  );
+  const options = {
+    title: "Recover email",
+    recipientName,
+    message: "You have requested to recover your email.",
+    message2: `Follow this link to reset your ANIIMS login email.`,
+    //"Please follow the link below to change your account email.",
+    link,
+    button: "Recover my email",
+  };
+  const info = await sendEmail(accountEmail, options);
+  //logger.info("Message sent: %s", receiverEmail, info);
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+  return info;
+}
+exports.getuserbyemail = onCall(async (request) => {
+  try {
+    let email = request.data.email;
+    let phone = request.data.phone;
+    if (!email) throw new HttpsError("bad-request", "Email address required");
+    const userRecord = await getAuth().getUserByEmail(request.data.email);
+    return userRecord?.toJSON();
+  } catch (error) {
+    logger.error(error.message);
+    throw new HttpsError("unknown", error.message);
+  }
+});
+exports.getuserbyphonenumber = onCall(async (request) => {
+  try {
+    let phone = request.data.phone;
+    if (!phone) throw new HttpsError("bad-request", "Phone number required");
+    if (isPhoneNumber(phone)) phone = formatPhoneNumber(phone);
+    //if (!phone)throw new HttpsError("bad-request", "Phone number not valid");
+
+    const userRecord = await getAuth().getUserByPhoneNumber(phone);
+    return userRecord?.toJSON();
+  } catch (error) {
+    //logger.error(error.message);
+    throw new HttpsError("unknown", error.message);
+  }
+});
 exports.recoveremail = onCall(async (request) => {
   if (!request.data?.email)
     throw new HttpsError("bad-request", "Email required");
@@ -454,7 +450,7 @@ exports.recoveremail = onCall(async (request) => {
   }
 });
 
-/*const sendVerifyEmailLink = async function (accountEmail, recipientName) {
+const sendVerifyEmailLink = async function (accountEmail, recipientName) {
   const link = await getAuth().generateEmailVerificationLink(
     accountEmail,
     {

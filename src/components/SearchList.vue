@@ -100,10 +100,7 @@ const createdAt = function (item) {
   return new Date(time).toDateString();
 };
 function isItemCurrent(item) {
-  return (
-    item.meta?.To === store.user.uid ||
-    (item.meta?.CreatedBy === store.user.uid && item.meta.Status === "Created")
-  );
+  return item?.To?.uid === store.user.uid && item?.Status !== "Closed";
 }
 function selectItem(item, i) {
   link.value = item.id;

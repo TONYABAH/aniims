@@ -1,27 +1,27 @@
 export const links = [
-  { path: "/Files/", name: "Files", title: "Files", icon: "folder" },
-  { path: "/mails/", name: "Mails", title: "Mails", icon: "mail" },
+  { path: "/app/Files/", name: "Files", title: "Files", icon: "folder" },
+  { path: "/app/Mails/", name: "Mails", title: "Mails", icon: "mail" },
   {
-    path: "/Complaints/",
+    path: "/app/Complaints/",
     name: "Complaints",
     title: "Complaints",
     icon: "campaign",
   },
   {
-    path: "/investigations/",
+    path: "/app/investigations/",
     name: "Investigations",
     title: "Investigations",
     icon: "cases",
   },
 
   {
-    path: "/Destructions/",
+    path: "/app/Destructions/",
     name: "Destructions",
     title: "Destructions",
     icon: "delete",
   },
   {
-    path: "/Applications/",
+    path: "/app/Applications/",
     name: "Applications",
     title: "Applications",
     icon: "apps",
@@ -30,24 +30,24 @@ export const links = [
     title: "Samples",
     name: "Samples",
     icon: "sample",
-    path: "/Samples/",
+    path: "/app/Samples/",
   },
 
   {
     title: "Payments",
     name: "Payments",
     icon: "money",
-    path: "/Payments/",
+    path: "/app/Payments/",
   },
-  { path: "/Raids/", name: "Raids", title: "Raids", icon: "hub" },
+  { path: "/app/Raids/", name: "Raids", title: "Raids", icon: "hub" },
   {
     title: "Admin",
     icon: "engineering",
-    path: "/admin",
+    path: "/app/admin/",
     name: "Admin",
   },
   {
-    path: "/dashboard/",
+    path: "/app/dashboard/",
     name: "dashboard",
     title: "Dashboard",
     icon: "dashboard",
