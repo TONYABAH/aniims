@@ -46,10 +46,10 @@ function filter(val) {
   const needle = val?.toLocaleLowerCase() || "";
   const filtered = store.ipos.filter((v) => {
     return (
-      v.First?.toLocaleLowerCase().indexOf(needle) > -1 ||
-      v.Last?.toLocaleLowerCase().indexOf(needle) > -1 ||
-      (v.Phone?.toLocaleLowerCase().length > 5 &&
-        v.Phone?.toLocaleLowerCase().indexOf(needle) === 0)
+      v.first?.toLocaleLowerCase().indexOf(needle) > -1 ||
+      v.last?.toLocaleLowerCase().indexOf(needle) > -1 ||
+      (v.phone?.toLocaleLowerCase().length > 5 &&
+        v.phone?.toLocaleLowerCase().indexOf(needle) === 0)
     );
     // v.toLowerCase().indexOf(needle) > -1)
   });

@@ -3,6 +3,7 @@
   <head>
     <style>
       .header {
+<<<<<<< Updated upstream
         border-radius: 8px 8px 0 0;
         border-bottom: 1px solid #333;
       }
@@ -17,21 +18,51 @@
       body {
         padding-left: 16px;
         padding-right: 16px;
+=======
+        background-color: brown;
+        color: white;
+        padding: 16px;
+        margin: 16px;
+        border-radius: 25px;
+      }
+      .footer {
+        background-color: grey;
+        color: black;
+        font-size: 12px;
+        padding: 16px;
+        text-align: center;
+      }
+      p {
+        font-size: 14px;
+>>>>>>> Stashed changes
       }
     </style>
   </head>
   <body>
     <div class="header">
+<<<<<<< Updated upstream
       <h4>ANIIMS&trade; Investigation and Enforcement, NAFDAC</h4>
       <h3><b>{{title}}</b></h3>
+=======
+      <h3>ANIIMS&trade; Investigation and Enforcement, NAFDAC</h3>
+      <h5><b>{{title}}</b></h5>
+>>>>>>> Stashed changes
     </div>
     <h3>Subject: {{subject}}</h3>
     <b>Message</b>
     <p>{{message}}</p>
+<<<<<<< Updated upstream
     <p>Sincerely, {{senderName}}</p>
     <b>Contacts</b>
     <p>Phone: {{phone}}</p>
     <p>Email: {{to}}</p>
+=======
+    <p>{{message2||''}}</p>
+    <p>Sincerely, {{recepientName}}</p>
+    <b>Contacts</b>
+    <p>Phone: {{phone}}</p>
+    <p>Email: {{email}}</p>
+>>>>>>> Stashed changes
     <div class="footer">Copyright&copy;NAFDAC Investigation & Enforcement</div>
   </body>
 </html>

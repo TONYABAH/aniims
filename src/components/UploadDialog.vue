@@ -17,7 +17,7 @@
 
       <q-card-section class="items-center">
         <q-input
-          v-model="docTitle"
+          v-model="doc_title"
           name="docTitle"
           type="text"
           label="Document title"
@@ -61,7 +61,7 @@
           :percentage="progress"
           class="full-width"
           @click="handleUpload"
-          :disable="!fileModel || !docTitle"
+          :disable="!fileModel || !doc_title"
         >
           <template v-slot:loading>
             <q-spinner-hourglass class="on-left" />
@@ -152,7 +152,7 @@ function handleUpload() {
       });
     } else {
       emits("doc-uploaded", {
-        Title: docTitle.value,
+        Title: doc_title.value,
         Name: file.name,
         Type: file.type,
         id,
@@ -167,18 +167,7 @@ function handleUpload() {
     }
   });
 }
-/*function handleFileUploaded(info) {
-  if (info.xhr.status > 200) {
-    return;
-  }
-  const { id, title, mimetype } = JSON.parse(info.xhr.response);
-  documents.value.push({
-    docTitle,
-    id,
-    type: model.value.mimetype,
-  });
-  store.documentDialogModel = false;
-}*/
+
 onBeforeMount(() => {
   fileModel.value = null;
   //maxFileSize.value = props.maxSize

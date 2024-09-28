@@ -1,7 +1,7 @@
 <template>
   <q-form ref="form" class="q-gutter-md q-pt-md">
     <q-input
-      v-model="destruction.ApplicationNumber"
+      v-model="destruction.application_no"
       label="Application Number"
       type="number"
       color=""
@@ -12,17 +12,6 @@
       v-if="destruction.id"
     >
       <template v-slot:append>
-        <!-- <q-btn
-          flat
-          color=""
-          icon="search"
-          @click.stop="search"
-          :loading="loading"
-        >
-          <template v-slot:loading>
-            <q-spinner-hourglass class="on-left" />
-          </template>
-        </q-btn>-->
         <q-btn
           flat
           no-caps
@@ -30,7 +19,7 @@
           color=""
           id="copy_btn"
           icon="content_copy"
-          @click.stop="copyToClipboard(destruction.ApplicationNumber)"
+          @click.stop="copyToClipboard(destruction.application_no)"
         >
         </q-btn>
       </template>
@@ -39,17 +28,17 @@
     <q-input
       stack-label
       outlined
-      label="Application title*"
-      v-model="destruction.Title"
+      label="Subject*"
+      v-model="destruction.subject"
       type="text"
-      :rules="[(val) => !!val || 'Application title is required']"
+      :rules="[(val) => !!val || 'Subject is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
     />
 
     <q-select
       label="Type of destruction *"
-      v-model="destruction.Type"
+      v-model="destruction.type"
       :options="destructionOptions"
       options-dense
       :rules="[(val) => !!val || 'Type of destruction is required']"
@@ -59,13 +48,13 @@
       outlined
     />
     <template
-      v-if="destruction?.Type === 'Private' || destruction?.Type === 'Special'"
+      v-if="destruction?.type === 'Private' || destruction?.type === 'Special'"
     >
       <q-input
         label="Destruction site address*"
         stack-label
         outlined
-        v-model="destruction.Site"
+        v-model="destruction.site"
         type="text"
         :rules="[(val) => !!val || 'Type of destruction is required']"
         lazy-rules="ondemand"
@@ -74,7 +63,7 @@
 
       <StateInput
         label="State *"
-        v-model="destruction.State"
+        v-model="destruction.state"
         options-dense=""
         outlined
         stack-label
@@ -86,8 +75,8 @@
 
       <CityInput
         label="City"
-        v-model="destruction.City"
-        :state="destruction.State || ''"
+        v-model="destruction.city"
+        :state="destruction.state || ''"
         options-dense=""
         outlined
         stack-label
@@ -99,7 +88,7 @@
     </template>
 
     <q-select
-      v-model="destruction.Reasons"
+      v-model="destruction.reasons"
       label="Reason(s) for description *"
       options-dense=""
       :options="[
@@ -135,20 +124,20 @@
     <q-input
       stack-label
       outlined
-      v-model="destruction.OtherReasons"
+      v-model="destruction.other_reasons"
       type="text"
       :rules="[(val) => !!val || 'Reason for destruction is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
       label="Other reasons for destroying items *"
-      v-if="destruction?.Reasons?.includes('Other reasons')"
+      v-if="destruction?.reasons?.includes('Other reasons')"
     />
 
     <q-input
       label="Product location address *"
       stack-label
       outlined
-      v-model="destruction.ProductAddress"
+      v-model="destruction.product_address"
       type="text"
       :rules="[(val) => !!val || 'Reason for destruction is required']"
       lazy-rules="ondemand"
@@ -159,7 +148,7 @@
       label="Product types *"
       stack-label
       outlined=""
-      v-model="destruction.ProductCategories"
+      v-model="destruction.product_categories"
       :options="store.productCategories"
       :rules="[(val) => !!val || 'Product type is required']"
       lazy-rules="ondemand"
@@ -177,10 +166,6 @@
               @update:model-value="toggleOption(opt)"
               size="xs"
             />
-            <!--<q-toggle
-              :model-value="selected"
-              @update:model-value="toggleOption(opt)"
-            />-->
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ opt }}</q-item-label>
@@ -193,7 +178,7 @@
       label="Destruction methods *"
       stack-label
       outlined=""
-      v-model="destruction.Methods"
+      v-model="destruction.methods"
       :options="store.destructionMetods"
       options-dense
       multiple
@@ -208,10 +193,6 @@
               @update:model-value="toggleOption(opt)"
               size="xs"
             />
-            <!--<q-toggle
-              :model-value="selected"
-              @update:model-value="toggleOption(opt)"
-            />-->
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ opt }}</q-item-label>
@@ -224,7 +205,7 @@
       label="Proposed destruction date *"
       stack-label
       outlined
-      v-model="destruction.ProposedDate"
+      v-model="destruction.proposed_date"
       type="date"
       input-class="q-mt-sm"
       clearable=""
@@ -233,7 +214,7 @@
 
     <q-input
       label="Contact name *"
-      v-model="destruction.ContactName"
+      v-model="destruction.contact_name"
       type="text"
       name="contact-name"
       :rules="[(val) => !!val || 'Name is required']"
@@ -247,7 +228,7 @@
       label="Contact email *"
       stack-label
       outlined
-      v-model="destruction.ContactEmail"
+      v-model="destruction.contact_email"
       type="text"
       name="contact-email"
       :rules="[(val) => !!val || 'Email is required']"
@@ -259,7 +240,7 @@
       label="Contact phone *"
       stack-label
       outlined
-      v-model="destruction.ContactPhone"
+      v-model="destruction.contact_phone"
       type="text"
       name="contact-phone"
       :rules="[(val) => !!val || 'Phone number is required']"
@@ -270,7 +251,7 @@
       label="Company name *"
       stack-label
       outlined
-      v-model="destruction.CoyName"
+      v-model="destruction.coy_name"
       type="text"
       name="contact-phone"
       :rules="[(val) => !!val || 'Company name is required']"
@@ -281,7 +262,7 @@
       label="Company address *"
       stack-label
       outlined
-      v-model="destruction.CoyAddress"
+      v-model="destruction.coy_address"
       type="text"
       name="contact-phone"
       :rules="[(val) => !!val || 'Company address is required']"
@@ -294,14 +275,14 @@
         :color="$q.dark.isActive ? 'white' : store.theme.color.normal"
         class="q-mr-xs"
         @click="onPreviewMap"
-        v-if="destruction.CoyAddress"
+        v-if="destruction.coy_address"
       />
       <q-btn
         :color="$q.dark.isActive ? 'grey-8' : store.theme.color.light"
         unelevated=""
         label="Validate"
         :loading="loading"
-        v-if="destruction.CoyAddress"
+        v-if="destruction.coy_address"
         @click="onValidateAddress(destruction.CoyAddress)"
       >
         <template v-slot:loading>
@@ -339,7 +320,7 @@ const props = defineProps({
 const searchFields = ["Title", "CoyName"];
 const store = useDefaultStore();
 const destructionOptions = ["Private", "Special", "General"];
-const collection = "Destructions";
+//const collection = "Destructions";
 const form = ref(null);
 const newAttachments = ref([]);
 const loading = ref(false);
@@ -366,10 +347,10 @@ function reset() {
   newAttachments.value.forEach(async (d) => {
     await onDeleteAttachment("Complaints", destruction.value?.id, d)
       .then(() => {
-        const index = destruction.value.Attachments?.findIndex(
+        const index = destruction.value.attachments?.findIndex(
           (doc) => doc.id === d.id
         );
-        destruction.value.Attachments.splice(index, 1);
+        destruction.value.attachments.splice(index, 1);
         const index2 = newAttachments.value?.findIndex(
           (doc) => doc.id === d.id
         );
@@ -389,10 +370,10 @@ const validate = async () => await form.value?.validate(true);
 
 const onPreviewMap = () => {
   const data = {
-    name: destruction.value.CoyAddress,
+    name: destruction.value.coy_address,
     data: [
       ["lat", "lng"],
-      [destruction.value?.Lat, destruction.value?.Lng],
+      [destruction.value?.lat, destruction.value?.lng],
     ],
   };
   geoData.value = data;
@@ -402,8 +383,8 @@ const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
-    let _address = destruction.value.CoyName
-      ? destruction.value.CoyName + ", " + address
+    let _address = destruction.value.coy_name
+      ? destruction.value.coy_name + ", " + address
       : address;
     const { addr, lat, lng, comp, country, state, city } =
       await geo.getLocation(_address);
@@ -437,13 +418,13 @@ const onValidateAddress = async (address) => {
           destruction.value.Lng = lng;
         }
         if (data.includes("address")) {
-          destruction.value.CoyAddress = addr;
+          destruction.value.coy_address = addr;
         }
         //const country = Comp.find((c) => c.types?.includes("country"));
-        if (country) destruction.value.Country = country.long_name;
-        if (state) destruction.value.State = state.long_name;
+        if (country) destruction.value.country = country.long_name;
+        if (state) destruction.value.state = state.long_name;
         if (city) {
-          setTimeout(() => (destruction.value.City = city.long_name), 100);
+          setTimeout(() => (destruction.value.city = city.long_name), 100);
         }
       })
       .onCancel(() => {
@@ -465,31 +446,11 @@ const onValidateAddress = async (address) => {
 };
 //watch(destruction.value, (newValue) => {});
 watch(
-  () => destruction.value.State,
+  () => destruction.value.state,
   (val) => {
-    destruction.value.City = null;
+    destruction.value.city = null;
   }
 );
-/*const search = debounce(async () => {
-  const num = destruction.value.ApplicationNumber;
-  if (num) {
-    const whereFilters = [["ApplicationNumber", "==", Number(num)]];
-    loading.value = true;
-    simpleSearch("Destructions", { whereFilters })
-      .then((docs) => {
-        //console.log(docs);
-        if (docs.length > 0) {
-          destruction.value = docs[0];
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        loading.value = false;
-      });
-  }
-}, 500);*/
 defineExpose({
   reset,
   validate,
@@ -498,8 +459,8 @@ defineExpose({
   collection: "Destructions",
 });
 
-onMounted(() => {
-  /*destruction.value.ApplicationYear = new Date().getFullYear();
+/*onMounted(() => {
+  destruction.value.ApplicationYear = new Date().getFullYear();
   destruction.value.ContactName = store.user?.displayName;
   destruction.value.ContactPhone = store.user?.phoneNumber;
   destruction.value.ContactEmail = store.user?.email;
@@ -509,7 +470,6 @@ onMounted(() => {
   destruction.value.CoyEmail = store.company?.Email;
   destruction.value.CoyPhone = store.company?.Phone;
   destruction.value.CoyId = store.company?.id;
-  */
-});
+});*/
 // accept=".xls, .xlsx, .jpg, .png, .pdf, image/jpeg"
 </script>

@@ -13,11 +13,19 @@ exports.sendPasswordResetEmail = async function (accountEmail, receiverName) {
   const options = {
     title: "Recover password",
     subject: "Recover password",
+<<<<<<< Updated upstream
     receiverName,
     to: accountEmail,
     senderEmail: "noreply@aniims.net",
     message:
       "You have requested to reset your account password. Please confirm your action by visiting the following link below to complete password recovery.",
+=======
+    name: recipientName,
+    email: accountEmail,
+    message: "You have requested to reset your account password.",
+    message2:
+      "Please confirm your action by visiting the following link below to complete password recovery.",
+>>>>>>> Stashed changes
     link,
     button: "Reset my password",
     type: "password-reset",

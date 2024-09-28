@@ -18,7 +18,7 @@
 
     <q-form ref="form" class="q-pb-sm q-gutter-xs">
       <q-input
-        v-model="ipo.Name"
+        v-model="ipo.name"
         label="Full name *"
         type="text"
         input-class="text-input"
@@ -33,7 +33,7 @@
       </q-input>
 
       <q-input
-        v-model="ipo.Phone"
+        v-model="ipo.phone"
         label="Phone *"
         type="text"
         :rules="[validation.required, validation.isPhoneNumber]"
@@ -47,7 +47,7 @@
       </q-input>
 
       <q-input
-        v-model="ipo.Email"
+        v-model="ipo.email"
         label="Email *"
         type="email"
         :rules="[validation.required, validation.isEmail]"
@@ -68,7 +68,7 @@
         </template>
       </q-input>
       <q-select
-        v-model="ipo.Rank"
+        v-model="ipo.rank"
         label="Rank"
         :rules="[validation.required]"
         :options="RANK_OPTIONS"
@@ -89,7 +89,7 @@
         </template>
       </q-select>
       <q-select
-        v-model="ipo.Role"
+        v-model="ipo.role"
         label="Role *"
         :options="roleOptions"
         options-dense=""
@@ -104,7 +104,7 @@
       </q-select>
 
       <q-select
-        v-model="ipo.Location"
+        v-model="ipo.location"
         label="Location *"
         options-dense=""
         :options="store.locations"
@@ -127,7 +127,7 @@
       </q-select>
 
       <q-select
-        v-model="ipo.Unit"
+        v-model="ipo.unit"
         label="Unit *"
         :options="unitsOptions"
         options-dense=""
@@ -159,27 +159,6 @@
           <q-icon name="wifi" />
         </template>
       </q-select>
-      <!--<q-toolbar class="bg-transparent text- q-mt-md">
-        <q-toolbar-title></q-toolbar-title>
-        <q-btn
-          unelevated=""
-          class="q-mr-xs"
-          @click="save"
-          color="negative"
-          label="Save changes"
-          glossy
-          v-if="!!ipo.id"
-        />
-        <q-btn
-          unelevated=""
-          class="q-mr-xs"
-          @click="save"
-          color="secondary"
-          label="Create"
-          glossy
-          v-else
-        />
-      </q-toolbar>-->
     </q-form>
   </AdminViewer>
 </template>
@@ -237,13 +216,13 @@ function reset() {
 }
 const validate = async () => await form.value?.validate(true);
 const status = computed({
-  get: () => ipo.value.Status || "Active",
-  set: (v) => (ipo.value.Status = v),
+  get: () => ipo.value.status || "Active",
+  set: (v) => (ipo.value.status = v),
 });
 async function onLocationChanged() {
   if (!ipo.value.id) return;
   loading.value = true;
-  update(ipo.value.id, { Rank: ipo.value.Location }, "Users")
+  update(ipo.value.id, { rank: ipo.value.location }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -269,7 +248,7 @@ async function onLocationChanged() {
 async function onEmailChanged() {
   if (!ipo.value.id) return;
   loading.value = true;
-  update(ipo.value.id, { Rank: ipo.value.Email }, "Users")
+  update(ipo.value.id, { email: ipo.value.email }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -295,7 +274,7 @@ async function onEmailChanged() {
 async function onRankChanged() {
   if (!ipo.value.id) return;
   loading.value = true;
-  update(ipo.value.id, { Rank: ipo.value.Rank }, "Users")
+  update(ipo.value.id, { rank: ipo.value.rank }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -321,8 +300,8 @@ async function onRankChanged() {
 async function save() {
   if (!ipo.value?.id) return;
   loading.value = true;
-  delete ipo.value?.meta;
-  delete ipo.value?.Email;
+  //delete ipo.value?.meta;
+  //delete ipo.value?.Email;
   //console.log(ipo.value);
   update(ipo.value.id, { ...ipo.value }, "Users")
     .then(() => {
@@ -350,12 +329,12 @@ async function save() {
 async function create() {
   if (!(await validate())) return;
   loading.value = true;
-  const _fields = ["Name", "Rank"].map((f) => ipo.value[f]);
-  const meta = {
+  //const _fields = ["Name", "Rank"].map((f) => ipo.value[f]);
+  /*const meta = {
     search: addSearch(_fields),
-  };
+  };*/
   // unit.value.meta = meta;
-  addIPO({ ...ipo.value, meta })
+  addIPO({ ...ipo.value })
     .then((result) => {
       ipo.value = result.data;
       handleSearch("");

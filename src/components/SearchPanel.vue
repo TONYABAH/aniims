@@ -199,7 +199,6 @@ import { useRoute } from "vue-router";
 import {
   ref,
   computed,
-  reactive,
   watch,
   defineAsyncComponent,
   onMounted,
@@ -256,8 +255,6 @@ function onSearch(filter) {
     const dbRef = collection(
       db,
       "Meta"
-      //route.params.id && route.path.indexOf("Reports") > 0? `Investigations/${route.params.id}/Reports`:
-      //store.currentCollection
     );
     let searchPhrase = searchText.value?.trim();
     const data = wholeWord.value

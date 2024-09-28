@@ -148,9 +148,6 @@ const attachedImages = computed(() => {
 const attachedVideos = computed(() => {
   return Attachments.value?.filter((f) => f.Type.match(/video\//));
 });
-const document_columns = [
-  { name: "Title", field: "Title", label: "Title", align: "left" },
-];
 
 function setDialogModel(val) {
   dialogModel.value = val;
@@ -165,7 +162,7 @@ function deleteAttachment(d) {
   Dialog.create({
     noBackdropDismiss: true,
     title: "Delete file",
-    message: "Do you want to delete " + d.Title + "?",
+    message: "Do you want to delete " + d.title + "?",
 
     ok: "Yes Delete",
     cancel: true,

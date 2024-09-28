@@ -1,20 +1,17 @@
 <template>
   <q-card
-    :flat="$q.dark.isActive"
-    :class="$q.dark.isActive ? 'bg-grey-4' : 'shadow-1'"
+    :class="$q.dark.isActive ? 'bg-blue-grey-10' : 'shadow-1'"
+    class="shadow-1"
   >
-    <q-bar
-      class="bg-transparent"
-      :class="$q.dark.isActive ? 'text-grey-10' : ''"
-    >
-      <q-toolbar-title>{{ title }}</q-toolbar-title>
+    <q-bar class="bg-transparent">
+      <q-toolbar-title></q-toolbar-title>
       <q-btn flat dense icon="fullscreen" @click="zoomChart" />
     </q-bar>
     <q-card-section class="chart">
       <slot></slot>
     </q-card-section>
-    <q-dialog :maximized="$q.screen.lt.sm" v-model="zoom" persistent="">
-      <q-card flat class="no-scroll bg-grey-2" :class="$q.screen.gt.xs ? '' : ''">
+    <q-dialog full-width v-model="zoom" persistent="">
+      <q-card flat class="full-">
         <q-bar class="bg-transparent">
           <q-toolbar-title> {{ dialogTitle }}</q-toolbar-title>
           <q-btn flat dense icon="close" color="negative" @click="cancelZoom" />
@@ -27,15 +24,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref} from "vue";
 //import AnimateOnScroll from "src/components/AnimateOnScroll.vue";
-const props = defineProps({
-  title: {
-    type: String,
-    default: "Chart",
-  },
-  onZoom: Function,
-});
+//const chartref = ref(null);
 const chartContainer = ref(null);
 const dialogChartContainer = ref(null);
 const dialogTitle = ref("");
@@ -57,9 +48,6 @@ function zoomChart(e) {
     dialogTitle.value = card.firstElementChild.firstElementChild.textContent;
     el.appendChild(copy.firstElementChild);
     chartContainer.value = card;
-    setTimeout(() => {
-      props.onZoom();
-    }, 0);
   }, 100);
 }
 </script>

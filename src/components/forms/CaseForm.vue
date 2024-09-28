@@ -1,7 +1,7 @@
 <template>
   <q-form ref="form" class="q-gutter-sm">
     <q-input
-      v-model="Case.CaseNumber"
+      v-model="Case.case_number"
       label="Case Number"
       type="text"
       color=""
@@ -19,7 +19,7 @@
           color=""
           id="copy_btn"
           icon="content_copy"
-          @click="copyToClipboard(Case.CaseNumber)"
+          @click="copyToClipboard(Case.case_number)"
         >
         </q-btn>
       </template>
@@ -27,7 +27,7 @@
 
     <q-input
       label="Complaint ID"
-      v-model="Case.ComplaintId"
+      v-model="Case.complaint_id"
       outlined
       filled
       type="text"
@@ -36,12 +36,12 @@
         flat
         icon="visibility"
         :disable="!Case?.ComplaintId"
-        :to="'/Complaints/#' + Case.ComplaintId"
+        :to="'/Complaints/#' + Case.complaint_id"
       />
     </q-input>
 
     <q-input
-      v-model="Case.Title"
+      v-model="Case.title"
       outlined
       filled
       label="Title *"
@@ -52,7 +52,7 @@
     />
 
     <q-select
-      v-model="Case.Location"
+      v-model="Case.location"
       outlined
       filled
       label="Location *"
@@ -64,7 +64,7 @@
     />
 
     <q-select
-      v-model="Case.Unit"
+      v-model="Case.unit"
       outlined
       filled
       label="Division in charge *"
@@ -77,48 +77,17 @@
       option-label="Abbrev"
       emit-value=""
     />
-
-    <!--<q-select
-      v-model="Case.IPO"
-      label="Case IPO *"
-      :options="store.ipos"
-      :rules="[(val) => !!val || 'IPO is required']"
-      lazy-rules="ondemand"
-      hide-bottom-space=""
-
-      =""
-      options-dense=""
-      option-value="uid"
-      option-label="Name"
-    />-->
     <ipo-input
       outlined
       filled
       :model="ipo"
       :set-model="(v) => (ipo = v)"
-      :search-options="{ location: Case.Location }"
+      :search-options="{ location: Case.location }"
       :rules="[(val) => !!val || 'IPO is required']"
       hide-bottom-space=""
       lazy-rules="ondemand"
       label="IPO"
     />
-    <!--<q-input
-      v-model="Case.FileNumber"
-      label="File number (optional)"
-      type="text"
-      color=""
-      name="fileNumber"
-    >
-      <template v-slot:append>
-        <q-btn
-          v-if="update_fileNumber"
-          flat
-          color=""
-          label="Update"
-          @click.stop="updateFileNumber"
-        />
-      </template>
-    </q-input>-->
 
     <StatusInput
       outlined
@@ -139,8 +108,6 @@ import { getById } from "src/composables/remote";
 import Clipboard from "src/utils/clipboard.js";
 import IpoInput from "./IpoInput.vue";
 import StatusInput from "./StatusInput.vue";
-//import { Dialog as dialog } from "quasar";
-//import { useIpoList } from "src/composables/use-fn";
 
 const CASE_STATUS_OPTIONS = ["Open", "Police", "Legal", "Court", "Closed"];
 const store = useDefaultStore();
@@ -172,31 +139,18 @@ const nafdac_locations = computed(() => {
 });
 const units = computed(() => {
   return Case.value.Location
-    ? store.units.filter((u) => u.Location === Case.value?.Location)
+    ? store.units.filter((u) => u.location === Case.value?.location)
     : store.units;
 });
-//console.log(store.user);
-//Case.value.Location = store.user.Location;
-/*const suspectyQuery = computed(() =>
-  query(
-    collection(firestore, "Suspects"),
-    where("Cases", "array-contains", Case.value.CaseNumber || 0)
-  )
-);
-const raidQuery = computed(() =>
-  query(
-    collection(firestore, "Raids"),
-    where("CaseNumber", "==", Case.value.CaseNumber || 0)
-  )
-);*/
+
 watch(
-  () => Case.value.FileNumber,
+  () => Case.value.file_number,
   (newValue) => {
     update_fileNumber.value = newValue ? true : false;
   }
 );
 watch(
-  () => Case.value.Status,
+  () => Case.value.status,
   (newValue) => {
     //console.log(Case.value?.IPO);
     update_status.value = newValue ? true : false;
@@ -207,7 +161,7 @@ watch(ipo, (newValue, oldValue) => {
 });
 
 watch(
-  () => Case.value.IPO,
+  () => Case.value.ipo,
   async (newValue, oldValue) => {
     if (!oldValue) {
       //let ipos = useIpoList({ uid: Case.value?.IPO });

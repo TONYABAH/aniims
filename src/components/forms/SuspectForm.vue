@@ -19,7 +19,7 @@
     />
     <q-separator spaced inset vertical dark />
     <q-input
-      v-model="suspect.Name"
+      v-model="suspect.name"
       outlined
       stack-label
       label="Name"
@@ -29,7 +29,7 @@
     />
 
     <q-input
-      v-model="suspect.Phone"
+      v-model="suspect.phone"
       outlined
       stack-label
       label="Phone"
@@ -42,7 +42,7 @@
       label="Date of birth *"
       outlined
       stack-label
-      v-model="suspect.DOB"
+      v-model="suspect.date_of_birth"
       type="date"
       input-class="q-mt-sm"
       :rules="[(val) => !!val || 'This field is required']"
@@ -51,7 +51,7 @@
 
     <CountryInput
       label="Nationality *"
-      v-model="suspect.Nationality"
+      v-model="suspect.nationality"
       option-value=""
       option-label=""
       options-dense=""
@@ -60,9 +60,9 @@
       :rules="[(val) => !!val || 'This field is required']"
       lazy-rules="ondemand"
     />
-    <template v-if="suspect.Nationality?.name === 'Nigeria'">
+    <template v-if="suspect.nationality?.name === 'Nigeria'">
       <StateInput
-        v-model="suspect.StateOfOrigin"
+        v-model="suspect.state_of_origin"
         label="State of origin *"
         options-dense=""
         outlined
@@ -71,9 +71,9 @@
         lazy-rules="ondemand"
       />
       <LgaInput
-        v-model="suspect.LGA"
+        v-model="suspect.lga"
         label="LGA *"
-        :state="suspect.StateOfOrigin || ''"
+        :state="suspect.state_of_origin || ''"
         options-dense=""
         outlined
         stack-label
@@ -82,7 +82,7 @@
       />
     </template>
     <q-input
-      v-model="suspect.Address"
+      v-model="suspect.address"
       label="Residential address *"
       type="text"
       outlined
@@ -90,7 +90,7 @@
       :rules="[(val) => !!val || 'This field is required']"
       lazy-rules="ondemand"
     >
-      <template v-if="suspect.Address">
+      <template v-if="suspect.address">
         <q-btn
           flat
           unelevated
@@ -105,12 +105,12 @@
           glossy
           color="teal"
           :label="$q.screen.gt.xs ? 'Validate' : ''"
-          @click="onValidateAddress(suspect.Address)"
+          @click="onValidateAddress(suspect.address)"
         />
       </template>
     </q-input>
     <StateInput
-      v-model="suspect.State"
+      v-model="suspect.state"
       label="State *"
       options-dense=""
       outlined
@@ -118,27 +118,10 @@
       :rules="[(val) => !!val || 'This field is required']"
       lazy-rules="ondemand"
     />
-    <div class="row">
-      <div class="col col-xs-12 col-sm-12 col-md-12">
-        <!--<q-select
-          v-model="suspect.Nationality"
-          :options="countries"
-          option-value="name"
-          option-label="name"
-          options-dense=""
-          outlined stack-label
-          dense
-          =""
-          :rules="[(val) => !!val || 'This field is required']"
-          lazy-rules="ondemand"
-
-        />-->
-      </div>
-    </div>
     <CityInput
-      v-model="suspect.City"
+      v-model="suspect.city"
       label="City"
-      :state="suspect.State || ''"
+      :state="suspect.state || ''"
       options-dense=""
       outlined
       stack-label=""
@@ -147,7 +130,7 @@
     />
     <q-select
       label="Means of identification *"
-      v-model="suspect.IdentityCard"
+      v-model="suspect.id_card"
       :options="identityOptions"
       options-dense=""
       outlined
@@ -159,7 +142,7 @@
     />
     <q-input
       label="ID Number"
-      v-model="suspect.IdNumber"
+      v-model="suspect.id_number"
       type="text"
       outlined
       stack-label
@@ -167,7 +150,7 @@
     <div class="row">
       <div class="col col-xs-6 col-sm-5 col-md-4 q-pr-sm q-pt-md text-center">
         <q-img
-          :src="suspect.PhotoURL"
+          :src="suspect.photo_url"
           spinner-color="orange"
           spinner-size="32px"
           width="224px"
@@ -194,7 +177,7 @@
           color="blue-grey-8"
           class="q-py-xs q-ml-sm"
           style="width: 168px"
-          :label="suspect.PhotoURL ? 'Change photo' : 'Upload photo'"
+          :label="suspect.photo_url ? 'Change photo' : 'Upload photo'"
           @click="showUploadDialog"
         >
         </q-btn>
@@ -251,25 +234,17 @@ const suspect = computed({
 
 const search = ref();
 const dialogModel = ref(false);
-//const _suspect = ref({ id: "", Name: "" }, props.data);
 const suspects = useSuspects();
-/*const suspect = computed({
-  get: () => _suspect.value,
-  set: (v) => (_suspect.value = v),
-});*/
 const form = ref(null);
 const loading = ref(false);
 const previewMap = ref(false);
 const geoData = ref({});
 
-function setSuspect(v) {
-  suspect.value = v;
-}
 function filter(needle) {
   const filtered = suspects.value.filter((s) => {
     return (
-      s.Name.toLowerCase().indexOf(needle) === 0 ||
-      s.Name.toLowerCase().indexOf(" " + needle) > 0
+      s.name.toLowerCase().indexOf(needle) === 0 ||
+      s.name.toLowerCase().indexOf(" " + needle) > 0
     );
     // v.toLowerCase().indexOf(needle) > -1)
   });
@@ -292,20 +267,20 @@ function showUploadDialog() {
 async function onDocumentUploaded(doc) {
   dialogModel.value = false;
   let fileName = null;
-  if (suspect.value.PhotoURL) {
+  if (suspect.value.photo_url) {
     // remove photo
-    fileName = extractFileName(suspect.value.PhotoURL);
+    fileName = extractFileName(suspect.value.photo_url);
   }
-  suspect.value.PhotoURL = doc.downloadURL;
+  suspect.value.photo_url = doc.downloadURL;
   // Delete previous image for this suspect
   if (fileName) await deleteFile(fileName);
 }
 const onPreviewMap = () => {
   const data = {
-    name: suspect.value.Address,
+    name: suspect.value.address,
     data: [
       ["lat", "lng"],
-      [suspect.value?.Lat, suspect.value?.Lng],
+      [suspect.value?.lat, suspect.value?.lng],
     ],
   };
   geoData.value = data;
@@ -313,10 +288,10 @@ const onPreviewMap = () => {
 };
 const onValidateAddress = async (address) => {
   loading.value = true;
-  //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
+  //const address = `${location.value.address}, ${location.value.City}, ${location.value.state}, ${location.value.Country},`;
   try {
-    let _address = suspect.value.Name
-      ? suspect.value.Name + ", " + address
+    let _address = suspect.value.name
+      ? suspect.value.name + ", " + address
       : address;
     const { addr, lat, lng, comp, country, state, city } =
       await geo.getLocation(_address);
@@ -345,17 +320,16 @@ const onValidateAddress = async (address) => {
     })
       .onOk((data) => {
         if (data.includes("location")) {
-          suspect.value.Lat = lat;
-          suspect.value.Lng = lng;
+          suspect.value.lat = lat;
+          suspect.value.lng = lng;
         }
         if (data.includes("address")) {
-          suspect.value.Address = addr;
+          suspect.value.address = addr;
         }
-        //const country = Comp.find((c) => c.types?.includes("country"));
-        if (country) suspect.value.Country = country.long_name;
-        if (state) suspect.value.State = state.long_name;
+        if (country) suspect.value.country = country.long_name;
+        if (state) suspect.value.state = state.long_name;
         if (city) {
-          setTimeout(() => (suspect.value.City = city.long_name), 100);
+          setTimeout(() => (suspect.value.city = city.long_name), 100);
         }
       })
       .onCancel(() => {
@@ -376,16 +350,16 @@ const onValidateAddress = async (address) => {
   }
 };
 watch(
-  () => suspect.value.StateOfOrigin,
+  () => suspect.value.state_of_origin,
   (newVal, oldVal) => {
-    if (oldVal) suspect.value.LGA = null;
+    if (oldVal) suspect.value.lga = null;
   }
 );
 watch(
-  () => suspect.value.State,
+  () => suspect.value.state,
   (newVal, oldVal) => {
     // console.log(newVal, oldVal);
-    if (oldVal) suspect.value.City = null;
+    if (oldVal) suspect.value.city = null;
   }
 );
 watch(search, (newVal, oldVal) => {

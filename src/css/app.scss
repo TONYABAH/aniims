@@ -1,7 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap");
-
 @import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap");
-
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
 .modern-bg {
   background: url(../assets/modernbg.jpg);
 }
@@ -19,7 +22,7 @@
 .design-bg,
 .patterns-bg {
   background-repeat: no-repeat;
-  background-position-y: top;
+  background-position: center;
   background-size: cover;
   background-attachment: scroll;
 }
@@ -46,7 +49,4 @@
 .q-field__label {
   font-weight: 300;
   font-size: 20px;
-}
-.q-field__control {
-  
 }

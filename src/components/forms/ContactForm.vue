@@ -25,6 +25,10 @@
     autocomplete="off"
     spellcheck="false"
     class="q-gutter-sm"
+<<<<<<< Updated upstream
+=======
+    v-else
+>>>>>>> Stashed changes
   >
     <q-banner
       v-if="errorMessage"
@@ -49,7 +53,11 @@
     <q-input
       dense
       filled
+<<<<<<< Updated upstream
       v-model="Message.Name"
+=======
+      v-model="Form.name"
+>>>>>>> Stashed changes
       type="text"
       label="Full name"
       :rules="[required]"
@@ -59,7 +67,11 @@
     <q-input
       dense
       filled
+<<<<<<< Updated upstream
       v-model="Message.Email"
+=======
+      v-model="Form.email"
+>>>>>>> Stashed changes
       type="text"
       label="Email address"
       :rules="[required, isEmail]"
@@ -67,7 +79,11 @@
       hide-bottom-space=""
     />
     <q-input
+<<<<<<< Updated upstream
       v-model="Message.Phone"
+=======
+      v-model="Form.phone"
+>>>>>>> Stashed changes
       dense
       filled
       type="text"
@@ -79,7 +95,11 @@
     <q-input
       dense
       filled
+<<<<<<< Updated upstream
       v-model="Message.Subject"
+=======
+      v-model="Form.subject"
+>>>>>>> Stashed changes
       type="text"
       label="Subject"
       :rules="[required]"
@@ -97,7 +117,11 @@
         hide-bottom-space=""
         class="full-width qml-md"
         :class="$q.dark.isActive ? 'bg-grey-8 text-grey-2' : 'bg-grey-1'"
+<<<<<<< Updated upstream
         v-model="Message.Message"
+=======
+        v-model="Form.message"
+>>>>>>> Stashed changes
       />
     </div>
 
@@ -118,6 +142,7 @@
 import { ref } from "vue";
 import { submitForm } from "src/composables/remote";
 
+<<<<<<< Updated upstream
 const Message = ref({
   Title: "Form submission",
   To: "support@aniims.net",
@@ -126,6 +151,11 @@ const Message = ref({
   Name: "",
   Subject: "",
   Message: "",
+=======
+const Form = ref({
+  subject: "Form submission",
+  to: "admin@aniims.net",
+>>>>>>> Stashed changes
 });
 
 defineProps({
@@ -176,14 +206,22 @@ async function resetForm() {
   submitted.value = false;
   errorMessage.value = "";
   //await formRef.value?.reset();
+<<<<<<< Updated upstream
   formRef.value?.resetValidation();
+=======
+  formRef.value.resetValidation();
+>>>>>>> Stashed changes
 }
 async function submit() {
   const validated = await validate();
   //console.log({ validated });
   if (validated) {
     loading.value = true;
+<<<<<<< Updated upstream
     submitForm(Message.value)
+=======
+    submitForm(Form.value)
+>>>>>>> Stashed changes
       .then(async () => {
         submitted.value = true;
       })

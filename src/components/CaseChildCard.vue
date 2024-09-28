@@ -7,60 +7,7 @@
     :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-white'"
   >
     <div>
-      <!--<q-toolbar
-        class="q-pb-sm"
-        :class="
-          $q.dark.isActive
-            ? 'bg-grey-8'
-            : 'bg-' + store.settings.themeColor + '-2'
-        "
-      >
-        <q-tabs
-          v-model="tab"
-          narrow-indicator=""
-          indicator-color=""
-          inline-label=""
-          align="left"
-          no-caps=""
-          mobile-arrows=""
-          outside-arrows=""
-          class="q-pb-xs text-"
-        >
-          <q-tab
-            name="edit"
-            icon="edit"
-            title="Edit"
-            :label="$q.screen.lt.sm ? '' : 'Edit'"
-            style="border-radius: 4px 4px 0 0"
-          />
-
-          <q-tab
-            name="attachments"
-            icon="attachment"
-            title="attachments"
-            :label="$q.screen.lt.sm ? '' : 'Attach'"
-            style="border-radius: 4px 4px 0 0"
-            v-if="isDocumentSaved"
-          />
-          <q-tab
-            name="timeline"
-            icon="timer"
-            title="Timeline"
-            :label="$q.screen.lt.sm ? '' : 'Timeline'"
-            style="border-radius: 4px 4px 0 0"
-            v-if="isDocumentSaved"
-          />
-          <q-tab
-            name="minutes"
-            icon="comment"
-            title="Minute"
-            :label="$q.screen.lt.sm ? '' : 'Minutes'"
-            style="border-radius: 4px 4px 0 0"
-            v-if="isDocumentSaved && !hideTabs"
-          />
-        </q-tabs>
-      </q-toolbar>-->
-      <q-tab-panels
+    <q-tab-panels
         :keep-alive="true"
         ref="tabPanelsRef"
         v-model="tab"
@@ -137,27 +84,6 @@
             </q-toolbar>
           </q-card>
         </q-tab-panel>
-
-        <!--<q-tab-panel
-          name="attachments"
-          style="overflow: auto; padding-bottom: 120px"
-        >
-          <AttachmentTabCard />
-        </q-tab-panel>
-
-        <q-tab-panel
-          name="timeline"
-          style="overflow: auto; padding-bottom: 120px"
-        >
-          <HistoryTabCard />
-        </q-tab-panel>
-
-        <q-tab-panel
-          name="minutes"
-          style="overflow: auto; padding-bottom: 120px"
-        >
-          <MinutesTabCard :onMinuted="onMinuted" />
-        </q-tab-panel>-->
       </q-tab-panels>
     </div>
   </q-card>

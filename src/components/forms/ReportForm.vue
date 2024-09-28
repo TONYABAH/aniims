@@ -5,7 +5,7 @@
       <q-toolbar-title> {{ header || "Write a report" }} </q-toolbar-title>
     </q-toolbar>
     <q-input
-      v-model="report.Title"
+      v-model="report.subject"
       type="text"
       outlined
       label="Title"
@@ -35,7 +35,7 @@
 
     <TextEditor
       class="q-my-sm"
-      :Text="report.Text"
+      :Text="report.body"
       :setText="setReportText"
       max-height="10rem"
       placeholder="Enter report text..."
@@ -49,7 +49,7 @@
         unelevated=""
         class="q-mr-sm"
         @click="reset"
-        v-if="report?.id || report?.Text || report?.Title"
+        v-if="report?.id || report?.body || report?.subject"
       />
       <q-btn
         label="Submit report"
@@ -57,7 +57,7 @@
         unelevated=""
         :loading="loading"
         @click="addReport"
-        v-if="loading || (!report?.id && report?.Text && report?.Title)"
+        v-if="loading || (!report?.id && report?.body && report?.subject)"
       >
         <template v-slot:loading>
           <q-spinner-hourglass />
@@ -113,7 +113,7 @@ async function addReport() {
   const data = report.value;
   data.Date = new Date().toISOString();
 
-  addChildDocument("Investigations", props.caseId, "Reports", data)
+  addChildDocument("Investigations", props.case_id, "Reports", data)
     .then((id) => {
       report.value.id = id;
       onAddReport();

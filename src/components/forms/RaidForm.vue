@@ -1,7 +1,7 @@
 <template>
   <q-form ref="form" class="q-gutter-sm" lazy-rules>
     <q-input
-      v-model="raid.CaseNumber"
+      v-model="raid.case_no"
       label="Case Number *"
       type="number"
       :rules="[(val) => !!val || 'This field is required']"
@@ -10,7 +10,7 @@
       outlined
     />
     <q-select
-      v-model="raid.Type"
+      v-model="raid.type"
       label="Type of raid *"
       :options="RAID_OPTIONS"
       options-dense=""
@@ -20,7 +20,7 @@
       outlined
     />
     <q-input
-      v-model="raid.Date"
+      v-model="raid.date"
       label="Date of raid *"
       type="date"
       input-class="q-mt-md q-pb-md"
@@ -33,7 +33,7 @@
     />
 
     <q-input
-      v-model="raid.Title"
+      v-model="raid.subject"
       label="Nature of offence *"
       type="text"
       :rules="[(val) => !!val || 'Offence is required']"
@@ -43,7 +43,7 @@
     />
 
     <q-input
-      v-model="raid.Address"
+      v-model="raid.address"
       label="Raid location address *"
       type="text"
       outlined
@@ -58,19 +58,19 @@
         color="teal"
         icon="map"
         @click="onPreviewMap"
-        v-if="raid.Lat && raid.Lng"
+        v-if="raid.lat && raid.lng"
       />
       <q-btn
         unelevated
         glossy
         color="teal"
         :label="$q.screen.gt.xs ? 'Validate' : ''"
-        @click="onValidateAddress(raid.Address)"
+        @click="onValidateAddress(raid.address)"
         v-if="raid.Address"
       />
     </q-input>
     <q-select
-      v-model="raid.State"
+      v-model="raid.state"
       label="State *"
       :options="states"
       options-dense=""
@@ -80,7 +80,7 @@
       hide-bottom-space=""
     />
     <q-select
-      v-model="raid.City"
+      v-model="raid.city"
       label="City"
       :options="cities"
       :rules="[(val) => !!val || 'City is required']"
@@ -91,8 +91,8 @@
     />
     <UnitInput
       label="Division"
-      :model="raid.Unit"
-      :set-model="(v) => (raid.Unit = v)"
+      :model="raid.unit"
+      :set-model="(v) => (raid.unit = v)"
       :rules="[(val) => !!val || 'Division is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
@@ -102,8 +102,8 @@
     />
     <StaffInput
       multiple
-      :model="raid.Team"
-      :set-model="(v) => (raid.Team = v)"
+      :model="raid.team"
+      :set-model="(v) => (raid.team = v)"
       :rules="[(val) => !!val || 'Team is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
@@ -117,7 +117,7 @@
     <q-select
       outlined
       label="Team Leader *"
-      v-model="raid.TeamLead"
+      v-model="raid.team_lead"
       :options="raid.Team"
       :rules="[(val) => !!val || 'Team Leader is required']"
       lazy-rules="ondemand"
@@ -147,8 +147,8 @@
       </template>
     </q-select>
     <IpoInput
-      :model="raid.IPOs"
-      :set-model="(v) => (raid.IPOs = v)"
+      :model="raid.ipos"
+      :set-model="(v) => (raid.ipos = v)"
       :rules="[(val) => !!val || 'Team Leader is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
@@ -163,7 +163,7 @@
       label="Number of Mopols *"
       outlined
       mask="number"
-      v-model="raid.Mopols"
+      v-model="raid.mopols"
       type="number"
       :rules="[(val) => !!val || 'Number of Mopols is required']"
       lazy-rules="ondemand"
@@ -173,37 +173,16 @@
       collection-name="Raids"
       :options="['Pending', 'Treated', 'Closed']"
       :documentId="raid?.id"
-      :status="raid?.Status"
-      :set-status="(v) => (raid.Status = v)"
+      :status="raid?.status"
+      :set-status="(v) => (raid.status = v)"
       outlined
     />
-    <!--<template v-if="raid.Status === 'Treated'">
-      <q-separator spaced inset vertical dark />
-      <label class="text-"> Reports </label>
-      <q-input
-        label="Number of arrests *"
-        v-model="raid.Suspects"
-        type="number"
-        :rules="[(val) => !!val || 'Number of arrests is required']"
-        lazy-rules="ondemand"
-        hide-bottom-space=""
-        outlined=""
-      />
-      <q-separator spaced inset vertical dark />
-      <label>Brief</label>
-      <TextEditor
-        :Text="raid.Details"
-        :set-text="(v) => (raid.Details = v)"
-        style="border: 2px solid orange"
-        class="q-ml-xs"
-      />
-    </template>-->
     <template v-if="raid.id">
       <q-separator spaced inset vertical dark />
       <label class="text-"> Recommendations </label>
 
       <q-select
-        v-model="raid.HodApproval"
+        v-model="raid.hod_approval"
         type="checkbox"
         color="secondary"
         :options="['Recommended', 'Declined']"
@@ -214,16 +193,16 @@
       >
         <template v-slot:append>
           <q-btn
-            v-if="raid.HodApproval"
+            v-if="raid.hod_approval"
             flat
             color="primary"
-            :label="raid.HodApproval"
+            :label="raid.hod_approval"
             @click.stop="updateApproval('hod')"
           />
         </template>
       </q-select>
       <q-select
-        v-model="raid.LodApproval"
+        v-model="raid.lod_approval"
         type="checkbox"
         color="secondary"
         :options="['Recommended', 'Declined']"
@@ -234,16 +213,16 @@
       >
         <template v-slot:append>
           <q-btn
-            v-if="raid.LodApproval"
+            v-if="raid.lod_approval"
             flat
             color="primary"
-            :label="raid.LodApproval"
+            :label="raid.lod_approval"
             @click.stop="updateApproval('lod')"
           />
         </template>
       </q-select>
       <q-select
-        v-model="raid.DirApproval"
+        v-model="raid.dirctor_approval"
         type="checkbox"
         color="secondary"
         :options="['Approved', 'Declined']"
@@ -254,80 +233,16 @@
       >
         <template v-slot:append>
           <q-btn
-            v-if="raid.DirApproval"
+            v-if="raid.dirctor_approval"
             flat
             color="primary"
-            :label="raid.DirApproval"
+            :label="raid.dirctor_approval"
             @click.stop="updateApproval"
           />
         </template>
       </q-select>
     </template>
   </q-form>
-
-  <!--<q-dialog
-      v-model="productPopupModel"
-      class=""
-      full-height=""
-      style="height: 75%"
-    >
-      <q-card class="full-width" style="overflow: hidden">
-        <q-card-section class="row items-center bg-teal text-white">
-          <q-icon name="basket" color="white" />
-          <q-toolbar-title> Product</q-toolbar-title>
-          <q-btn flat round dense icon="close" v-close-popup @click="reset" />
-        </q-card-section>
-        <q-card-section style="overflow: auto; height: calc(100% - 7rem)">
-          <ProductForm
-            ref="productFormRef"
-            :data="product"
-            :setProduct="setProduct"
-          />
-        </q-card-section>
-        <q-card-actions align="center" class="bg-teal">
-          <q-btn flat label="Cancel" color="grey-1" v-close-popup />
-          <q-btn flat label="Add" color="grey-1" @click="addProduct(product)" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-    <q-dialog v-model="previewMap" class="full-width">
-      <q-card flat class="full-width">
-        <GoogleGeoViewer :data="geoData.data" />
-      </q-card>
-    </q-dialog>-->
-
-  <!--<TableView
-      :data="productsOnHold"
-      :columns="product_columns"
-      :onAddItem="() => showAddProduct(1)"
-      :onRemoveItem="(p, i) => removeProduct(p, i, 1)"
-      :onViewItem="(p, i) => showViewProduct(p, i, 1)"
-      :deletable="true"
-      :editable="false"
-      title="Products on HOLD"
-    />
-    <TableView
-      :data="productsEvacuated"
-      :columns="product_columns"
-      :onAddItem="() => showAddProduct(0)"
-      :onRemoveItem="(p, i) => removeProduct(p, i, 0)"
-      :onViewItem="(p, i) => showViewProduct(p, i, 0)"
-      :deletable="true"
-      :editable="false"
-      title="Products Evacuated"
-    />-->
-
-  <!--<q-select
-        label="Division filter"
-        options-dense=""
-        v-model="unitFilter"
-        :options="store.units"
-        option-label="Abbrev"
-        option-value="Abbrev"
-        outlined
-        :clearable="true"
-        clear-icon="close"
-      />-->
 </template>
 
 <script setup>
@@ -338,7 +253,7 @@ import { useStates, useCities, useGeolocation } from "src/composables/use-fn";
 import { Dialog, Notify } from "quasar";
 import { simpleSearch } from "src/composables/searchProvider";
 import StatusInput from "./StatusInput.vue";
-import { update, getById } from "src/composables/remote";
+import { update } from "src/composables/remote";
 import StaffInput from "./StaffInput.vue";
 import IpoInput from "./IpoInput.vue";
 import UnitInput from "./UnitInput.vue";
@@ -364,13 +279,13 @@ const raid = computed({
   get: () => props.model || {},
   set: (v) => props.setModel(v || {}),
 });
-const location = ref(raid.value.Location);
+const location = ref(raid.value.location);
 const states = useStates("Nigeria");
-const cities = computed(() => useCities(raid.value.State));
+const cities = computed(() => useCities(raid.value.state));
 
 const staffList = computed(() => {
   return store.staffList.filter((s) =>
-    unitFilter.value ? s.Units?.includes(unitFilter.value.Abbrev) : s
+    unitFilter.value ? s.Units?.includes(unitFilter.value.abbrev) : s
   );
 });
 
@@ -382,10 +297,10 @@ const validate = async () => await form.value?.validate(true);
 
 const onPreviewMap = () => {
   const data = {
-    name: raid.value.Address,
+    name: raid.value.address,
     data: [
       ["lat", "lng"],
-      [raid.value?.Lat, raid.value?.Lng],
+      [raid.value?.lat, raid.value?.lng],
     ],
   };
   geoData.value = data;
@@ -395,7 +310,7 @@ const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
-    let _address = raid.value.Name ? raid.value.Name + ", " + address : address;
+    let _address = raid.value.name ? raid.value.name + ", " + address : address;
     const { addr, lat, lng, comp, country, state, city } =
       await geo.getLocation(_address);
     //console.log(Comp);
@@ -423,17 +338,17 @@ const onValidateAddress = async (address) => {
     })
       .onOk((data) => {
         if (data.includes("location")) {
-          raid.value.Lat = lat;
-          raid.value.Lng = lng;
+          raid.value.lat = lat;
+          raid.value.lng = lng;
         }
         if (data.includes("address")) {
           raid.value.Address = addr;
         }
         //const country = Comp.find((c) => c.types?.includes("country"));
-        if (country) raid.value.Country = country.long_name;
-        if (state) raid.value.State = state.long_name;
+        if (country) raid.value.country = country.long_name;
+        if (state) raid.value.state = state.long_name;
         if (city) {
-          setTimeout(() => (raid.value.City = city.long_name), 100);
+          setTimeout(() => (raid.value.city = city.long_name), 100);
         }
       })
       .onCancel(() => {
@@ -454,13 +369,14 @@ const onValidateAddress = async (address) => {
   }
 };
 function updateApproval(level) {
-  let data = { DirApproval: raid.value.DirApproval };
+  let data = { dirctor_approval: raid.value.dirctor_approval };
   if (level === "hod") {
-    data = { HodApproval: raid.value.HodApproval };
+    data = { hod_approval: raid.value.hod_approval };
   } else if (level === "lod") {
-    data = { LodApproval: raid.value.LodApproval };
+    data = { lod_approval: raid.value.lod_approval };
   }
   store.loading = true;
+
   update(raid.value.id, data, "Raids")
     .then((d) => {
       Notify.create({
@@ -496,9 +412,9 @@ watch(
 );
 
 watch(
-  () => raid.value?.CaseNumber,
+  () => raid.value?.case_no,
   (newValue) => {
-    if (newValue && !raid.value.CaseId) {
+    if (newValue && !raid.value.case_id) {
       simpleSearch("Investigations", {
         whereFilters: [["CaseNumber", "==", Number(newValue)]],
       })
@@ -522,10 +438,10 @@ provide("suspect", {});
 provide("product", product);
 provide("location", location);
 provide("iconName", "hub");
-provide("titleField", "title");
+provide("titleField", "subject");
 provide("secondTitle", "date");
 provide("collection", "Raids");
-provide("searchFields", ["Title", "Location"]);
+provide("searchFields", ["subject", "location"]);
 
 defineExpose({
   reset,
@@ -533,11 +449,11 @@ defineExpose({
 });
 
 onMounted(async () => {
-  if (!raid.value.ProductsEvacuated) {
-    raid.value.ProductsEvacuated = [];
+  if (!raid.value.products_evacuated) {
+    raid.value.products_evacuated = [];
   }
-  if (!raid.value.ProductsOnHold) {
-    raid.value.ProductsOnHold = [];
+  if (!raid.value.products_hold) {
+    raid.value.products_hold = [];
   }
   provide("product", product);
   //console.log(store.user.claims);

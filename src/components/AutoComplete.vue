@@ -29,7 +29,7 @@
         </q-item-section>
         <q-item-section>
           <q-item-label
-            >{{ opt.Name || opt }} {{ opt.Rank || "" }}</q-item-label
+            >{{ opt.name || opt }} {{ opt.rank || "" }}</q-item-label
           >
         </q-item-section>
       </q-item>

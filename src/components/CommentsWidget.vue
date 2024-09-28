@@ -12,13 +12,17 @@
           $q.dark.isActive ? 'bg-grey-8 text-white' : 'bg-blue-2 text-grey-10'
         "
         :style="
+<<<<<<< Updated upstream
           store.user.uid === item.From?.uid
+=======
+          store.user.uid === item.from?.uid
+>>>>>>> Stashed changes
             ? 'border-radius: 6px 6px 0 8px;'
             : 'border-radius: 6px 6px 8px 0'
         "
       >
         <q-icon name="person" class="q-mr-sm" />
-        <label>{{ item.From?.Name }}</label>
+        <label>{{ item.from?.Name }}</label>
         <q-icon name="comment" class="q-mx-sm" />
         <div rows="" type="text" dark readonly class="transparent text-teal">
           <q-editor
@@ -46,15 +50,19 @@
     <q-chat-message
       v-for="(item, i) of comments"
       :key="i"
-      :name="item.From?.Name"
+      :name="item.from?.Name"
       :text-html="true"
       :text="[item.Comment]"
       :stamp="new Date(item.Date).toLocaleString('en-GB')"
-      :sent="store.user?.uid === item.From?.uid"
-      :bg-color="store.user?.uid === item.From?.uid ? 'blue-3' : 'yellow-3'"
-      :text-color="store.user?.uid === item.From?.uid ? 'black' : 'grey-10'"
+      :sent="store.user?.uid === item.from?.uid"
+      :bg-color="store.user?.uid === item.from?.uid ? 'blue-3' : 'yellow-3'"
+      :text-color="store.user?.uid === item.from?.uid ? 'black' : 'grey-10'"
       :avatar="
+<<<<<<< Updated upstream
         store.user?.uid === item.From?.uid
+=======
+        store.user?.uid === item.from?.uid
+>>>>>>> Stashed changes
           ? '/assets/avatar1.jpg'
           : '/assets/avatar2.jpg'
       "

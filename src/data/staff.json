@@ -1,0 +1,20 @@
+[
+  {
+    "name":"Anthony Abah",
+    "snumber": "ss/1056",
+    "rank":"AD",
+    "email":"abah.a@nafdac.gov.ng",
+    "phone": "08051169979",
+    "unit": "wrd",
+    "hou": true
+  },
+  {
+    "name": "John Bull",
+    "snumber": "ss/1009",
+    "rank": "CRO",
+    "email": "abah.a@nafdac.gov.ng",
+    "phone": "08051169979",
+    "unit": "wrd",
+    "hou": false
+  }
+]

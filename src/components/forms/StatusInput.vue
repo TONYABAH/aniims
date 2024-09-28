@@ -45,7 +45,7 @@ const loading = ref(false);
 
 async function updateStatus() {
   loading.value = true;
-  let data = { Status: _status.value };
+  let data = { status: _status.value };
   update(props.documentId, data, props.collectionName)
     .then(() => {
       Notify.create({

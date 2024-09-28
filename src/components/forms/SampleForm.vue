@@ -4,7 +4,7 @@
       label="Case number *"
       outlined
       stack-label
-      v-model="sample.CaseNumber"
+      v-model="sample.case_number"
       type="number"
       :rules="[required]"
       lazy-rules="ondemand"
@@ -14,7 +14,7 @@
       label="Product name *"
       outlined
       stack-label
-      v-model="sample.Name"
+      v-model="sample.name"
       type="text"
       :rules="[required]"
       lazy-rules="ondemand"
@@ -24,7 +24,7 @@
       label="Manufacturer *"
       outlined
       stack-label
-      v-model="sample.Manufacturer"
+      v-model="sample.manufacturer"
       type="text"
       :rules="[required]"
       lazy-rules="ondemand"
@@ -34,7 +34,7 @@
       label="Manufacturer address *"
       outlined
       stack-label
-      v-model="sample.ManAddress"
+      v-model="sample.man_address"
       type="text"
       :rules="[required]"
       lazy-rules="ondemand"
@@ -44,7 +44,7 @@
       label="Country of origin"
       outlined
       stack-label=""
-      v-model="sample.Country"
+      v-model="sample.country"
       :options="countries"
       options-dense=""
       clear-icon="clear"
@@ -54,7 +54,7 @@
       label="Category *"
       outlined
       stack-label
-      v-model="sample.Category"
+      v-model="sample.category"
       :options="categories"
       clear-icon="clear"
       options-dense
@@ -65,7 +65,7 @@
     <q-select
       v-if="sample.Category === 'Pharmaceuticals'"
       label="Pharmacological class"
-      v-model="sample.PharmClass"
+      v-model="sample.pharm_class"
       :options="pharm_class"
       options-dense=""
       outlined
@@ -77,21 +77,21 @@
       label="NAFDAC Number"
       outlined
       stack-label
-      v-model="sample.NAFDACNumber"
+      v-model="sample.nafdac_no"
       type="text"
     />
     <q-input
       label="Batch"
       outlined
       stack-label
-      v-model="sample.Batch"
+      v-model="sample.batch"
       type="text"
     />
     <q-input
       label="Pack size"
       outlined
       stack-label
-      v-model="sample.PackSize"
+      v-model="sample.pack_size"
       type="text"
     />
 
@@ -99,7 +99,7 @@
       label="Quantity"
       outlined
       stack-label
-      v-model="sample.Quantity"
+      v-model="sample.quantity"
       type="text"
       :rules="[(val) => !!val || 'Quantity is required']"
       lazy-rules="ondemand"
@@ -109,14 +109,14 @@
       label="Manufaturing date"
       outlined
       stack-label
-      v-model="sample.ManDate"
+      v-model="sample.man_date"
       type="date"
     />
     <q-input
       label="Expiry date (Best Before date)"
       outlined
       stack-label
-      v-model="sample.ExpiryDate"
+      v-model="sample.expiry_date"
       type="date"
     />
     <q-input
@@ -124,7 +124,7 @@
       outlined
       stack-label
       name="sentDate"
-      v-model="sample.SentDate"
+      v-model="sample.sent_date"
       type="date"
       :rules="[required]"
       lazy-rules="ondemand"
@@ -134,7 +134,7 @@
     >
       <template v-slot:append>
         <q-btn
-          v-if="sample.SentDate"
+          v-if="sample.sent_date"
           flat
           color="primary"
           label="Update"
@@ -143,19 +143,20 @@
         />
       </template>
     </q-input>
+
     <q-input
       label="Date report received from Lab *"
       outlined
       stack-label=""
       name="reportDate"
-      v-model="sample.ReceiveDate"
+      v-model="sample.receive_date"
       type="date"
       clearable=""
       clear-icon="close"
     >
       <template v-slot:append>
         <q-btn
-          v-if="sample.ReceiveDate"
+          v-if="sample.receive_date"
           flat
           color="primary"
           label="Update"
@@ -165,9 +166,9 @@
       </template>
     </q-input>
     <q-select
-      v-if="sample.ReportDate"
+      v-if="sample.report_date"
       label="Lab result"
-      v-model="sample.Result"
+      v-model="sample.result"
       options-dense
       :options="LAB_REPORT_OPTIONS"
       outlined
@@ -175,7 +176,7 @@
     >
       <template v-slot:append>
         <q-btn
-          v-if="sample.ReportDate"
+          v-if="sample.report_date"
           flat
           color="primary"
           label="Update"
@@ -184,20 +185,12 @@
         />
       </template>
     </q-select>
-    <!--<q-input
-      label="Exhibit Officer"
-      v-model="sample.Sender"
-      type="text"
-      :rules="[(val) => !!val || 'Submitting officer is required']"
-      lazy-rules="ondemand"
-      outlined
-      stack-label=""
-    />-->
+
     <StatusInput
       collection-name="Samples"
       :documentId="sample?.id"
-      :status="sample?.Status"
-      :set-status="(v) => (sample.Status = v)"
+      :status="sample?.status"
+      :set-status="(v) => (sample.status = v)"
       outlined
     />
   </q-form>
@@ -259,9 +252,9 @@ function updateReport(param) {
     Result: sample.value.Result,
   };
   if (param === "receive-date") {
-    data = { ReceiveDate: sample.value.ReceiveDate };
+    data = { ReceiveDate: sample.value.receive_date };
   } else if (param === "sent-date") {
-    data = { sentDate: sample.value.SentDate };
+    data = { sentDate: sample.value.sent_date };
   }
   update(sample.value.id, data, "Samples")
     .then((d) => {
@@ -290,22 +283,22 @@ function required(val) {
   return (val && val.length > 0) || "Required field";
 }
 watch(
-  () => sample.value?.CaseNumber,
+  () => sample.value?.case_number,
   (newValue) => {
-    if (newValue && !sample.value.CaseId) {
+    if (newValue && !sample.value.case_id) {
       simpleSearch("Investigations", {
         whereFilters: [["CaseNumber", "==", Number(newValue)]],
       })
         .then((list) => {
           if (list.length > 0) {
-            sample.value.CaseId = list[0].id;
+            sample.value.case_id = list[0].id;
           } else {
-            sample.value.CaseId = null;
+            sample.value.case_id = null;
           }
         })
         .catch((e) => {});
     } else {
-      sample.value.CaseId = null;
+      sample.value.case_id = null;
     }
     //update_fileNumber.value = newValue ? true : false;
   },

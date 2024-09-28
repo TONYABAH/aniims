@@ -3,7 +3,7 @@
     <q-input
       dense
 
-      v-model="product.Name"
+      v-model="product.name"
       type="text"
       label="Product name"
       :readonly="readOnly"
@@ -16,7 +16,7 @@
     <q-input
       dense
 
-      v-model="product.Manufacturer"
+      v-model="product.manufacturer"
       type="text"
       label="Manufacturer"
     />
@@ -24,7 +24,7 @@
     <q-input
       dense
 
-      v-model="product.ManAddress"
+      v-model="product.man_address"
       type="text"
       label="Manufacturer address"
     />
@@ -32,7 +32,7 @@
     <q-select
       dense
 
-      v-model="product.Country"
+      v-model="product.country"
       :options="countries"
       options-dense=""
       label="Country of origin"
@@ -41,14 +41,14 @@
     <q-select
       dense
 
-      v-model="product.Category"
+      v-model="product.category"
       :options="categories"
       options-dense
       label="Category"
     />
     <q-separator spaced inset vertical dark />
     <q-select
-      v-if="product.Category === 'Pharmaceuticals'"
+      v-if="product.category === 'Pharmaceuticals'"
       v-model="product.Class"
       :options="pharm_class"
       options-dense=""
@@ -59,7 +59,7 @@
     <q-input
       dense
 
-      v-model="product.Batch"
+      v-model="product.batch"
       type="text"
       label="Batch"
       :readonly="readOnly"
@@ -67,7 +67,7 @@
     <q-input
       dense
 
-      v-model="product.PackSize"
+      v-model="product.pack_size"
       type="text"
       label="Pack Size"
       :readonly="readOnly"
@@ -76,7 +76,7 @@
     <q-input
       dense
 
-      v-model="product.NAFDACNumber"
+      v-model="product.nafdac_no"
       type="text"
       label="NAFDAC number"
       :readonly="readOnly"
@@ -85,7 +85,7 @@
     <q-input
       dense
 
-      v-model="product.Quantity"
+      v-model="product.quantity"
       type="text"
       label="Quantity"
       :readonly="readOnly"
@@ -95,23 +95,13 @@
     <q-input
       dense
 
-      v-model="product.ManufactureDate"
+      v-model="product.man_date"
       type="date"
       label=""
     />
     <q-separator spaced inset vertical dark />
     <label>Expiry date (Best Before)</label>
-    <q-input dense  v-model="product.ExpiryDate" type="date" label="" />
-    <!--
-    <div class="row q-mt-xs">
-      <label class="q-ml-sm"><i>Action on product</i></label>
-      <div class="col col-xs-12">
-        <q-radio v-model="product.Status" val="onhold" label="On Hold" />
-        <q-radio v-model="product.Status" val="evacuated" label="Evacuated" />
-        <q-radio v-model="product.Status" val="sampled" label="Sampled" />
-      </div>
-    </div>
-    <hr />-->
+    <q-input dense  v-model="product.expiry_date" type="date" label="" />
   </q-form>
 </template>
 

@@ -3,11 +3,8 @@
 </template>
 
 <script setup>
-//import { Dark } from "quasar";
-import { onBeforeMount } from "vue";
+import { Dark } from "quasar";
 import { watch } from "vue";
-import { useCollection } from "vuefire";
-import { collection, query, where } from "firebase/firestore";
 import { firestore } from "./composables/firebase";
 import { useDefaultStore } from "./stores/store";
 import { onAuthStateChanged } from "firebase/auth";
@@ -36,10 +33,17 @@ function getParameterByName(param, level) {
 onAuthStateChanged(auth, async (user) => {
   //Check for user status
   if (user) {
+<<<<<<< Updated upstream
     const unitDataSource = collection(db, "Units");
     const userCollection = collection(db, "Users");
     const staffDataSource = query(userCollection, where("Level", "==", 3));
     const policeDataSource = query(userCollection, where("Level", "==", 2));
+=======
+    //const unitDataSource = collection(db, "Units");
+    //const userCollection = collection(db, "Users");
+    //const staffDataSource = query(userCollection, where("Level", "==", 3));
+    //const policeDataSource = query(userCollection, where("Level", "==", 2));
+>>>>>>> Stashed changes
 
     const d = Object.assign({}, user);
     const idTokenResult = await user.getIdTokenResult();
@@ -54,13 +58,10 @@ onAuthStateChanged(auth, async (user) => {
       .catch((e) => {
         console.log(e);
       });
-
-    store.units = useCollection(unitDataSource);
-    store.ipos = useCollection(policeDataSource);
-    store.staffList = useCollection(staffDataSource);
-
+    //store.units = useCollection(unitDataSource);
+    //store.ipos = useCollection(policeDataSource);
+    //store.staffList = useCollection(staffDataSource);
     const fullpath = getParameterByName("redirect", d.claims?.level || 0);
-
     if (fullpath) router.replace(fullpath);
     if (!!idTokenResult.claims.admin) {
       // Show admin UI. // console.log(user, idTokenResult.claims);
@@ -82,12 +83,8 @@ watch(
   },
   { immediate: true }
 );
-onBeforeMount(async () => {
-  //nextTick(())
-  //setTimeout(async () => {
-  //}, 0);
-});
-//Dark.set("auto");
+
+Dark.set("auto");
 /**
 Mongo Relm Connection Sample
 const { MongoClient, ServerApiVersion } = require('mongodb');

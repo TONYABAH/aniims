@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col col-xs-6 col-sm-6 col-md-6 col-lg-6">
         <q-select
-          v-model="location.Country"
+          v-model="location.country"
           :options="[]"
           model-value="Nigeria"
           option-value="name"
@@ -18,7 +18,7 @@
     </div>
     <q-separator spaced inset vertical dark />
     <q-input
-      v-model="location.Name"
+      v-model="location.name"
       label="Location name *"
       type="text"
       outlined=""
@@ -30,7 +30,7 @@
     />
     <q-separator spaced inset vertical dark />
     <q-input
-      v-model="location.Address"
+      v-model="location.address"
       label="Location street address *"
       type="text"
       :rules="[(val) => !!val || 'Address is required']"
@@ -51,7 +51,7 @@
         hide-bottom-space=""
         name="locationAddress"
         :loading="loading"
-        @click="onValidateAddress(location.Address)"
+        @click="onValidateAddress(location.address)"
         v-if="location.Address"
       >
         <template v-slot:loading>
@@ -61,7 +61,7 @@
     </q-input>
     <q-separator spaced inset vertical dark />
     <q-select
-      v-model="location.State"
+      v-model="location.state"
       label="Location State *"
       :options="states"
       options-dense=""
@@ -74,7 +74,7 @@
     <q-separator spaced inset vertical dark />
 
     <q-select
-      v-model="location.City"
+      v-model="location.city"
       label="Location City *"
       :options="cities"
       options-dense=""
@@ -88,7 +88,7 @@
       <div class="col col-xs-12 col-sm-6 col-md-6 q-pr-xs">
         <q-input
           label="Latitude"
-          v-model="location.Lat"
+          v-model="location.lat"
           type="text"
           outlined=""
           stack-label=""
@@ -97,7 +97,7 @@
       <div class="col col-xs-12 col-sm-6 col-md-6">
         <q-input
           label="Longitude"
-          v-model="location.Lng"
+          v-model="location.lng"
           type="text"
           outlined=""
           stack-label=""
@@ -110,7 +110,7 @@
       expand-separator
       icon="map"
       label="View Map"
-      :caption="location.Address"
+      :caption="location.address"
     >
       <GoogleGeoViewer :data="mapData" />
     </q-expansion-item>
@@ -129,7 +129,7 @@ import {
 import GoogleGeoViewer from "../dashboard/GoogleGeoViewer.vue";
 //import { useGeolocation } from "src/composables/use-geocation";
 import { Dialog, Notify } from "quasar";
-import CircularProgress from "src/components/CircularProgress.vue";
+//import CircularProgress from "src/components/CircularProgress.vue";
 
 const geo = useGeolocation();
 
@@ -150,7 +150,7 @@ const props = defineProps({
 });
 
 const states = useStates("Nigeria");
-const cities = computed(() => useCities(location.value.State));
+const cities = computed(() => useCities(location.value.state));
 const country_options = useCountries();
 const form = ref(null);
 const loading = ref(false);
@@ -162,7 +162,7 @@ const location = computed({
 const mapData = computed(() => {
   return [
     ["Lat", "Long"],
-    [location.value?.Lat, location.value?.Lng],
+    [location.value?.Lat, location.value?.lng],
   ];
 });
 const validate = async () => await form.value?.validate(true);
@@ -171,7 +171,7 @@ function reset() {
 }
 
 const onValidateAddress = async (address) => {
-  if (!location.value.Name || !location.value.Address) {
+  if (!location.value.Name || !location.value.address) {
     Notify.create({
       title: "Validation error",
       message:
@@ -186,7 +186,7 @@ const onValidateAddress = async (address) => {
   loading.value = true;
   //const address = `${location.value.Address}, ${location.value.City}, ${location.value.State}, ${location.value.Country},`;
   try {
-    let _address = location.value.Name
+    let _address = location.value.name
       ? location.value.Name + ", " + address
       : address;
     const { addr, lat, lng, comp, country, state, city } =
@@ -220,7 +220,7 @@ const onValidateAddress = async (address) => {
           location.value.Lng = lng;
         }
         if (data.includes("address")) {
-          location.value.Address = addr;
+          location.value.address = addr;
         }
         //const country = Comp.find((c) => c.types?.includes("country"));
         if (country) location.value.Country = country.long_name;
@@ -247,9 +247,9 @@ const onValidateAddress = async (address) => {
   }
 };
 watch(
-  () => location.value.State,
+  () => location.value.state,
   () => {
-    if (location.value.City) location.value.City = null;
+    if (location.value.city) location.value.city = null;
   }
 );
 

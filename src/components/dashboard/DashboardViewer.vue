@@ -148,48 +148,6 @@ async function init() {
     i++;
   }
 }
-function getData() {
-  return {
-    labels: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ],
-    data: [
-      {
-        category: "Admin charges",
-        type: "line",
-        data: [45, 60, 75, 67, 90, 80, 45, 60, 75, 67, 90, 80].map(
-          (d) => d * 100000
-        ),
-      },
-      {
-        category: "Lab charges",
-        type: "line",
-        data: [75, 67, 90, 80, 75, 67, 90, 80, 45, 60, 45, 60].map(
-          (d) => d * 100000
-        ),
-      },
-
-      {
-        category: "Revenue",
-        type: "bar",
-        data: [45, 60, 75, 67, 90, 80, 45, 60, 75, 67, 90, 80].map(
-          (d) => d * 100000 * 1.5
-        ),
-      },
-    ],
-  };
-}
 init();
 
 //import ScatterChartViewer from "./ScatterChartViewer.vue";

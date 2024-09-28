@@ -255,6 +255,7 @@ exports.sendcustumemail = onDocumentCreated("Forms/{id}", async (event) => {
   const options = {
     title: data.Title,
     subject: data.Subject,
+<<<<<<< Updated upstream
     receiverName: "Aniims Team",
     senderName: data.Name,
     message: data.Message || "",
@@ -267,6 +268,20 @@ exports.sendcustumemail = onDocumentCreated("Forms/{id}", async (event) => {
     const info = await sendEmail("support@aniims.net", options);
     console.log(info);
     //return info;
+=======
+    recipientName: "Abah",
+    senderName: data.Name,
+    message: data.Message || "",
+    message2: ``,
+    phone: data.Phone,
+    email: data.Email,
+    type: "verify-email",
+  };
+  try {
+    const info = await sendEmail("admin@aniims.net", options);
+    //console.log(info);
+    return info;
+>>>>>>> Stashed changes
   } catch (e) {
     console.log(e);
   }

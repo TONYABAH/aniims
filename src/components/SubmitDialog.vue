@@ -28,7 +28,7 @@
           label="Unit"
           options-dense=""
           option-label="Abbrev"
-          option-value="Abbrev"
+          option-value="abbrev"
           clearable=""
           clear-icon="close"
           dense
@@ -41,7 +41,7 @@
           label="Staff"
           options-dense=""
           option-label="Name"
-          option-value="Email"
+          option-value="email"
           clearable=""
           clear-icon="close"
           dense
@@ -105,12 +105,12 @@ const props = defineProps({
 
 const units = computed(() => {
   return location.value
-    ? store.units.filter((u) => u.Location === location.value)
+    ? store.units.filter((u) => u.location === location.value)
     : store.units;
 });
 const staffList = computed(() => {
   return unit.value
-    ? store.staffList.filter((s) => s.Units?.includes(unit.value.Abbrev))
+    ? store.staffList.filter((s) => s.units?.includes(unit.value.abbrev))
     : store.staffList;
 });
 
@@ -120,7 +120,7 @@ async function submitDocument() {
     await onSubmit(
       props.comment,
       assigned.value,
-      unit.value.Abbrev,
+      unit.value.abbrev,
       store.currentDocument.id
     );
     reset();

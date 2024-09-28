@@ -33,7 +33,7 @@
             <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pr-xs">
               <q-separator spaced inset vertical dark />
               <q-input
-                v-model="file.FileNumber"
+                v-model="file.file_number"
                 label="File number *"
                 type="text"
                 :rules="[(val) => !!val || 'File number is required']"
@@ -51,7 +51,7 @@
                     unelevated
                     color="secondary"
                     id="copy_btn"
-                    @click="copyToClipboard(file.FileNumber)"
+                    @click="copyToClipboard(file.File_number)"
                   >
                     <svg
                       width="24px"
@@ -74,7 +74,7 @@
             <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
               <q-separator spaced inset vertical dark />
               <q-input
-                v-model="file.Volume"
+                v-model="file.volume"
                 label="Volume number *"
                 type="number"
                 :rules="[(val) => !!val || 'Volume is required']"
@@ -88,7 +88,7 @@
           </div>
           <q-separator spaced inset vertical dark />
           <q-input
-            v-model="file.Title"
+            v-model="file.subject"
             label="Subject *"
             type="text"
             :rules="[(val) => !!val || 'Subject is required']"
@@ -103,7 +103,7 @@
               <q-select
                 label="Location *"
                 options-dense=""
-                v-model="file.Location"
+                v-model="file.location"
                 :options="options"
                 :rules="[(val) => !!val || 'I&E Location is required']"
                 lazy-rules="ondemand"
@@ -117,8 +117,8 @@
               <StatusInput
                 collection-name="Files"
                 :documentId="file?.id"
-                :status="file?.Status"
-                :set-status="(v) => (file.Status = v)"
+                :status="file?.status"
+                :set-status="(v) => (file.status = v)"
                 :rules="[(val) => !!val || 'Status is required']"
                 outlined
               />
@@ -225,8 +225,8 @@ const validate = async () => await form.value?.validate(true);
 const mailsDataSource = computed(() =>
   query(
     collection(db, "Mails"),
-    where("FileNumber", "==", file.value.FileNumber),
-    where("Location", "==", file.value.Location)
+    where("FileNumber", "==", file.value.file_number),
+    where("Location", "==", file.value.location)
   )
 );
 //var cases = useCollection(filesDataSource);
@@ -236,10 +236,10 @@ function showMail(e, data) {
 }
 watch(file, (f) => {
   if (!f) return;
-  file_number.value = `NAFDAC/ENFD/${file.value.Location?.toUpperCase()}/${
-    file.value.FileNumber
-  }/VOL${file.value.Volume || 1}`;
-  if (!f.FileNumber) return;
+  file_number.value = `NAFDAC/ENFD/${file.value.location?.toUpperCase()}/${
+    file.value.file_number
+  }/VOL${file.value.volume || 1}`;
+  if (!f.file_number) return;
   mails = useCollection(mailsDataSource);
 });
 provide("iconName", "folder");

@@ -5,7 +5,7 @@
         <q-item-section thumbnail="" class="q-pl-sm">
           <i>{{ startAt + i }}</i>
         </q-item-section>
-        <q-item-section>{{ item?.Title }}</q-item-section>
+        <q-item-section>{{ item?.subject }}</q-item-section>
       </q-item>
     </q-list>
     <q-toolbar class="bg-primary text-white">

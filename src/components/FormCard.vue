@@ -173,15 +173,6 @@ import {
   defineAsyncComponent,
 } from "vue";
 import { update, create } from "src/composables/remote";
-/*const MinutesTabCard = defineAsyncComponent(() =>
-  import("src/components/MinutesTabCard.vue")
-);
-const HistoryTabCard = defineAsyncComponent(() =>
-  import("src/components/HistoryTabCard.vue")
-);
-const AttachmentTabCard = defineAsyncComponent(() =>
-  import("src/components/AttachmentTabCard.vue")
-);*/
 
 const $q = useQuasar();
 const store = useDefaultStore();
@@ -255,8 +246,8 @@ const editable = computed(() => {
   return (
     currentDocument.value?.id === undefined ||
     (currentDocument.value?.id && store.user?.claims?.admin) ||
-    (currentDocument.value?.meta?.Status === "Created" &&
-      store.user?.uid === currentDocument.value?.meta?.CreatedBy)
+    (currentDocument.value?.status === "Created" &&
+      store.user?.uid === currentDocument.value?.Created_by)
   );
 });
 const isDocumentSaved = computed(() => {

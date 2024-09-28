@@ -23,14 +23,9 @@
 </template>
 
 <script setup>
-//import { useBackend } from "src/composables/backend.js";
-//import { Dialog, Notify } from "quasar";
-//import { useDefaultStore } from "src/stores/store";
 import { onMounted, ref, watch, computed } from "vue";
 import { lifeSearch } from "src/composables/searchProvider";
 
-//import { api } from "src/boot/axios";
-// const store = useDefaultStore();
 const props = defineProps({
   model: {
     type: String,
@@ -56,10 +51,6 @@ const props = defineProps({
     type: String,
     required: false,
   },
-  /*loadFunction: {
-    type: Function,
-    default: () => [],
-  },*/
 });
 
 const options = ref([]);
@@ -91,11 +82,5 @@ function filterFunction(val, update, abort) {
     });
   }, 0);
 }
-onMounted(async () => {
-  //const res = await api.get('units')
-  //units.value = res.data
-  //console.log(mail.value);
-});
 
-// defineExpose({ onResetForm, onRemoveData, onSave });
 </script>

@@ -11,17 +11,6 @@
       :readonly="true"
     >
       <template v-slot:append>
-        <!-- <q-btn
-          flat
-          color=""
-          icon="search"
-          @click.stop="search"
-          :loading="loading"
-        >
-          <template v-slot:loading>
-            <q-spinner-hourglass class="on-left" />
-          </template>
-        </q-btn>-->
         <q-btn
           flat
           dense
@@ -30,7 +19,7 @@
           color=""
           id="copy_btn"
           icon="content_copy"
-          @click.stop="copyToClipboard(destruction.ApplicationNumber)"
+          @click.stop="copyToClipboard(destruction.application_no)"
         >
         </q-btn>
       </template>
@@ -41,7 +30,7 @@
       outlined
       stack-label
       options-dense=""
-      v-model="destruction.Type"
+      v-model="destruction.type"
       :options="destructionOptions"
       :rules="[(val) => !!val || 'Type of destruction is required']"
       lazy-rules="ondemand"
@@ -50,7 +39,7 @@
 
     <q-input
       label="Destruction site address*"
-      v-model="destruction.Site"
+      v-model="destruction.site"
       type="text"
       :rules="[(val) => !!val || 'Type of destruction is required']"
       lazy-rules="ondemand"
@@ -61,7 +50,7 @@
 
     <StateInput
       label="State *"
-      v-model="destruction.State"
+      v-model="destruction.state"
       options-dense=""
       outlined
       stack-label
@@ -72,8 +61,8 @@
 
     <CityInput
       label="City *"
-      v-model="destruction.City"
-      :state="destruction.State || ''"
+      v-model="destruction.city"
+      :state="destruction.state || ''"
       options-dense=""
       outlined
       stack-label
@@ -84,7 +73,7 @@
 
     <q-select
       label="Reason(s) for description *"
-      v-model="destruction.Reasons"
+      v-model="destruction.reasons"
       options-dense=""
       :options="[
         'Expired items',
@@ -117,18 +106,18 @@
       </template>
     </q-select>
     <q-input
-      v-model="destruction.OtherReasons"
+      v-model="destruction.other_reasons"
       type="text"
       :rules="[(val) => !!val || 'Reason for destruction is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
       label="Other reasons for destroying items *"
-      v-if="destruction?.Reasons?.includes('Other reasons')"
+      v-if="destruction?.reasons?.includes('Other reasons')"
     />
 
     <q-select
       label="Product types *"
-      v-model="destruction.ProductCategories"
+      v-model="destruction.product_categories"
       :options="store.productCategories"
       :rules="[(val) => !!val || 'Product type is required']"
       lazy-rules="ondemand"
@@ -150,10 +139,6 @@
               @update:model-value="toggleOption(opt)"
               size="xs"
             />
-            <!--<q-toggle
-              :model-value="selected"
-              @update:model-value="toggleOption(opt)"
-            />-->
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ opt }}</q-item-label>
@@ -164,7 +149,7 @@
 
     <q-select
       label="Destruction methods *"
-      v-model="destruction.Methods"
+      v-model="destruction.methods"
       :options="store.destructionMetods"
       multiple
       emit-value
@@ -184,10 +169,6 @@
               @update:model-value="toggleOption(opt)"
               size="xs"
             />
-            <!--<q-toggle
-              :model-value="selected"
-              @update:model-value="toggleOption(opt)"
-            />-->
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ opt }}</q-item-label>
@@ -198,7 +179,7 @@
 
     <q-input
       label="Destruction date *"
-      v-model="destruction.ProposedDate"
+      v-model="destruction.proposed_date"
       type="date"
       input-class="q-mt-sm"
       clearable=""
@@ -247,9 +228,9 @@ function reset() {
 const validate = async () => await form.value?.validate(true);
 
 watch(
-  () => destruction.value.State,
+  () => destruction.value.state,
   (val) => {
-    destruction.value.City = null;
+    destruction.value.city = null;
   }
 );
 

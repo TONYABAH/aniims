@@ -31,6 +31,7 @@ function getTemplate(template) {
   switch (template) {
     case "password-reset":
       link = "password.html";
+<<<<<<< Updated upstream
     //break;
     case "verify-email":
       link = "form.html";
@@ -43,6 +44,20 @@ function getTemplate(template) {
     //break;
     case "destruction":
       link = "lean.html";
+=======
+      break;
+    case "verify-email":
+      link = "form.html";
+      break;
+    case "login":
+      link = "action.html";
+      break;
+    case "complaint":
+      link = "action.html";
+      break;
+    case "destruction":
+      link = "action.html";
+>>>>>>> Stashed changes
       break;
     default:
       link = "form.html";
@@ -64,6 +79,7 @@ exports.sendEmail = async function (to, data) {
   let htmlToSend = getTemplate(data.type || "")(data);
   //console.log(htmlToSend);
   const { sendMail } = require("./zeptomail");
+<<<<<<< Updated upstream
   //try {
   var info = await sendMail(
     to,
@@ -87,4 +103,25 @@ exports.sendEmail = async function (to, data) {
   /*} catch (e) {
     console.log(JSON.stringify(e));
   }*/
+=======
+  try {
+    var info = await sendMail(
+      {
+        fromAddress: data.from || "support@aniims.net",
+        fromName: data.senderName || "Aniims Team",
+        toAddress: to,
+        toName: data.recipientName,
+        subject: data.subject,
+        text: data.message + " " + data.message2,
+        html: htmlToSend,
+        //headers: { "x-myheader": "test header" },
+      },
+      false
+    );
+    //console.log(info);
+    return info;
+  } catch (e) {
+    console.log(e);
+  }
+>>>>>>> Stashed changes
 };

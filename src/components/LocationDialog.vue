@@ -71,10 +71,5 @@ const location = computed({
   get: () => loc.value || {},
   set: (v) => (loc.value = v),
 });
-function setLocation(l) {
-  location.value = l;
-}
-function onCancel() {
-  location.value = {};
-}
+
 </script>

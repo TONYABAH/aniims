@@ -16,7 +16,7 @@
   >
     <q-form ref="form" class="q-gutter-xs">
       <q-input
-        v-model="unit.Name"
+        v-model="unit.name"
         label="Name *"
         type="text"
         outlined
@@ -30,7 +30,7 @@
       </q-input>
 
       <q-input
-        v-model="unit.Abbrev"
+        v-model="unit.abbrev"
         label="Abbreviation *"
         outlined
         type="text"
@@ -40,7 +40,7 @@
       />
 
       <q-select
-        v-model="unit.Location"
+        v-model="unit.location"
         label="Location *"
         outlined
         options-dense=""
@@ -72,19 +72,6 @@
           ></q-btn>
         </template>
       </q-select>
-      <!--<q-toolbar class="bg-transparent text- q-mt-md">
-        <q-space />
-        <q-btn
-          unelevated=""
-          icon-right="check"
-          class="q-mr-xs"
-          @click="save"
-          color="secondary"
-          label="Create"
-          glossy
-          :disable="!!unit.id"
-        />
-      </q-toolbar>-->
     </q-form>
   </AdminViewer>
 </template>
@@ -120,8 +107,8 @@ const unit = computed({
 });
 
 const status = computed({
-  get: () => unit.value.Status || "Active",
-  set: (v) => (unit.value.Status = v),
+  get: () => unit.value.status || "Active",
+  set: (v) => (unit.value.status = v),
 });
 function setModel(m) {
   unit.value = m;
@@ -167,7 +154,7 @@ async function save() {
 async function saveStatus() {
   if (!unit.value.id) return;
   loading.value = true;
-  update(unit.value.id, { Status: status.value }, "Units")
+  update(unit.value.id, { status: status.value }, "Units")
     .then(() => {
       updateBtn.value = false;
       Notify.create({
@@ -196,10 +183,10 @@ async function create() {
   if (!(await validate())) return;
   loading.value = true;
   try {
-    const _fields = ["Name", "Abbrev"].map((f) => unit.value[f]);
+    /*const _fields = ["Name", "Abbrev"].map((f) => unit.value[f]);
     const meta = {
       search: addSearch(_fields),
-    };
+    };*/
     unit.value.meta = meta;
     const result = await addUnit(unit.value);
     unit.value.id = result.data;
@@ -236,9 +223,9 @@ const handleSearch = debounce((searchTerm, active) => {
       let searchTerms = d.split(" ");
       for (let x of searchTerms) {
         return (
-          s.Name?.toLowerCase().indexOf(x) >= 0 ||
-          s.Abbrev?.toLowerCase().indexOf(x) === 0 ||
-          s.Location?.toLowerCase().indexOf(x) >= 0
+          s.name?.toLowerCase().indexOf(x) >= 0 ||
+          s.abbrev?.toLowerCase().indexOf(x) === 0 ||
+          s.location?.toLowerCase().indexOf(x) >= 0
           //s.Unit?.toLowerCase().indexOf(x) >= 0
         );
       }

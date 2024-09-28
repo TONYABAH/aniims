@@ -29,12 +29,12 @@
     >
       <q-input
         label="Mail ID"
-        v-model="complaint.MailId"
+        v-model="complaint.mail_id"
         type="text"
         outlined
         stack-label
       >
-        <template v-if="complaint.id && complaint.MailId">
+        <template v-if="complaint.id && complaint.mail_id">
           <q-btn
             :loading="loadingMailId"
             flat
@@ -53,12 +53,12 @@
     </template>
 
     <q-input
-      label="Title *"
+      label="Subject *"
       outlined
       stack-label
-      v-model="complaint.Title"
+      v-model="complaint.subject"
       type="text"
-      :rules="[(val) => !!val || 'Title is required']"
+      :rules="[(val) => !!val || 'Subject is required']"
       lazy-rules="ondemand"
       hide-bottom-space=""
     >
@@ -67,7 +67,7 @@
       label="Company name"
       outlined
       stack-label
-      v-model="complaint.CoyName"
+      v-model="complaint.coy_name"
       type="text"
     />
 
@@ -78,27 +78,9 @@
       v-model="complaint.Address"
       type="text"
     >
-      <!--<q-btn
-        flat
-        dense
-        unelevated
-        glossy
-        color="teal"
-        icon="map"
-        @click="onPreviewMap"
-        v-if="complaint.Lat && complaint.Lng"
-      />
-      <q-btn
-        unelevated
-        glossy
-        color="teal"
-        :label="$q.screen.gt.xs ? 'Validate' : ''"
-        @click="onValidateAddress(complaint.Address)"
-        v-if="complaint.Address"
-      />-->
     </q-input>
     <q-input
-      v-model="complaint.Source"
+      v-model="complaint.source"
       label="Contact name *"
       type="text"
       :rules="[(val) => !!val || 'Source is required']"
@@ -108,7 +90,7 @@
       stack-label
     />
     <q-input
-      v-model="complaint.Phone"
+      v-model="complaint.phone"
       label="Phone"
       type="text"
       outlined
@@ -117,7 +99,7 @@
       hide-bottom-space=""
     />
     <q-input
-      v-model="complaint.Email"
+      v-model="complaint.email"
       label="Email"
       type="email"
       hide-bottom-space=""
@@ -131,7 +113,7 @@
         >Give short details of your complaint
         <q-space />
         <textarea
-          v-model="complaint.Details"
+          v-model="complaint.details"
           rows="5"
           style="border: 4px solid orange"
           class="full-width"
@@ -142,8 +124,8 @@
     <StatusInput
       collection-name="Complaints"
       :documentId="complaint?.id"
-      :status="complaint?.Status"
-      :set-status="(v) => (complaint.Status = v)"
+      :status="complaint?.status"
+      :set-status="(v) => (complaint.status = v)"
       :rules="[(val) => !!val || 'Status is required']"
       outlined
     />
@@ -153,19 +135,17 @@
 <script setup>
 import { Notify, Dialog as dialog } from "quasar";
 //import { useDefaultStore } from "src/stores/store";
-import { computed, onMounted, onBeforeUnmount, provide, ref, watch } from "vue";
+import { computed, onMounted, provide, ref, watch } from "vue";
 import { getById } from "src/composables/remote";
 import Clipboard from "src/utils/clipboard.js";
 import StatusInput from "./StatusInput.vue";
 
-const searchFields = ["Title", "CoyName"];
+const searchFields = ["Title", "coy_name"];
 const props = defineProps({
   data: Object,
   setData: Function,
 });
 const uploadDialogModel = ref(false);
-//const loading = ref(false);
-//const store = useDefaultStore();
 const fileTypes = ref("");
 const form = ref(null);
 const clipboard_show = ref(false);
@@ -176,7 +156,6 @@ const complaint = computed({
   get: () => props.data || {},
   set: (val) => props.setData(val),
 });
-//const newAttachments = ref([]);
 
 function reset() {
   form.value?.resetValidation();
@@ -184,7 +163,7 @@ function reset() {
 const validate = async () => await form.value?.validate(true);
 function updateMailId() {
   loadingMailId.value = true;
-  update(complaint.value.id, { MailId: complaint.value.MailId }, "Complaints")
+  update(complaint.value.id, { MailId: complaint.value.mail_id }, "Complaints")
     .then(() => {
       Notify.create({
         textColor: "teal",
@@ -220,13 +199,13 @@ function copyToClipboard(e, val) {
   }, 1000);
 }
 watch(
-  () => complaint.value?.MailId,
+  () => complaint.value?.mail_id,
   (newValue) => {
     if (newValue) {
       getById(newValue, "Mails")
         .then((doc) => {
-          if (doc && !complaint.value?.Title) {
-            complaint.value.Title = doc.Title;
+          if (doc && !complaint.value?.subject) {
+            complaint.value.Title = doc.subject;
           }
         })
         .catch((e) => {});

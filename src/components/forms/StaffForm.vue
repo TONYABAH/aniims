@@ -16,7 +16,7 @@
   >
     <q-form class="q-pb-sm q-gutter-sm" ref="form">
       <q-select
-        v-model="staff.Title"
+        v-model="staff.title"
         label="Title *"
         :options="TITLE_OPTIONS"
         options-dense=""
@@ -30,11 +30,11 @@
           field="Title"
           collection="Users"
           :id="staff.id"
-          :value="staff.Title"
+          :value="staff.title"
         />
       </q-select>
       <q-input
-        v-model="staff.Name"
+        v-model="staff.name"
         label="Full name *"
         type="text"
         input-class="text-input"
@@ -50,7 +50,7 @@
             flat
             color="secondary"
             label="Update"
-            @click="() => onFieldChanged('Name', 'staff.Name', 'Users')"
+            @click="() => onFieldChanged('Name', 'staff.name', 'Users')"
           />
           <q-icon name="person" />
         </template>
@@ -59,7 +59,7 @@
       <q-input
         label="Phone *"
         outlined
-        v-model="staff.Phone"
+        v-model="staff.phone"
         type="text"
         name="phone"
         :rules="[validation.required, validation.isPhoneNumber]"
@@ -74,7 +74,7 @@
       <q-input
         label="Email *"
         outlined
-        v-model="staff.Email"
+        v-model="staff.email"
         type="email"
         name="email"
         :rules="[validation.required, validation.isEmail]"
@@ -104,7 +104,7 @@
       <q-input
         label="Rank *"
         outlined
-        v-model="staff.Rank"
+        v-model="staff.rank"
         type="text"
         name="rank"
         :rules="[validation.required]"
@@ -126,7 +126,7 @@
       <q-select
         label="Role *"
         outlined
-        v-model="staff.Role"
+        v-model="staff.role"
         :options="roleOptions"
         options-dense=""
         name="role"
@@ -141,7 +141,7 @@
 
       <q-select
         label="Location *"
-        v-model="staff.Location"
+        v-model="staff.location"
         options-dense=""
         :options="store.locations"
         outlined
@@ -162,9 +162,9 @@
           <q-icon name="location_on" />
         </template>
       </q-select>
-      <template v-if="staff.Role !== 'Director'">
+      <template v-if="staff.role !== 'Director'">
         <q-select
-          v-model="staff.Unit"
+          v-model="staff.unit"
           :options="store.units"
           options-dense
           emit-value
@@ -264,16 +264,16 @@ const userList = computed({
   },
 });
 const StaffId = computed({
-  get: () => staff.value?.StaffId?.toUpperCase(),
-  set: (v) => (staff.value.StaffId = v.toUpperCase()),
+  get: () => staff.value?.staff_id?.toUpperCase(),
+  set: (v) => (staff.value.staff_id = v.toUpperCase()),
 });
 const status = computed({
-  get: () => staff.value.Status || "Active",
-  set: (v) => (staff.value.Status = v),
+  get: () => staff.value.status || "Active",
+  set: (v) => (staff.value.status = v),
 });
 const isAdmin = computed({
-  get: () => staff.value.IsAdmin || undefined,
-  set: (v) => (staff.value.IsAdmin = v),
+  get: () => staff.value.is_admin || undefined,
+  set: (v) => (staff.value.is_admin = v),
 });
 async function onFieldChanged(field, value, collection) {
   if (!staff.value.id) return;
@@ -305,9 +305,9 @@ async function onFieldChanged(field, value, collection) {
     });
 }
 async function onLocationChanged() {
-  if (!ipo.value.id) return;
+  if (!staff.value.id) return;
   loading.value = true;
-  update(ipo.value.id, { Rank: staff.value.Location }, "Users")
+  update(staff.value.id, { location: staff.value.location }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -333,7 +333,7 @@ async function onLocationChanged() {
 async function onRankChanged() {
   if (!staff.value.id) return;
   loading.value = true;
-  update(staff.value.id, { Rank: staff.value.Rank }, "Users")
+  update(staff.value.id, { rank: staff.value.rank }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -360,7 +360,7 @@ async function onRankChanged() {
 async function onUnitChanged() {
   if (!staff.value.id) return;
   loading.value = true;
-  update(staff.value.id, { Unit: staff.value.Unit }, "Users")
+  update(staff.value.id, { unit: staff.value.unit }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -387,7 +387,7 @@ async function onUnitChanged() {
 async function onStatusChanged() {
   if (!staff.value.id) return;
   loading.value = true;
-  update(staff.value.id, { Status: status.value }, "Users")
+  update(staff.value.id, { status: status.value }, "Users")
     .then(() => {
       Notify.create({
         timeout: 800,
@@ -416,14 +416,14 @@ async function save() {
   update(
     staff.value.id,
     {
-      Status: status.value,
-      Rank: staff.value.Rank,
-      Role: staff.value.Role,
-      Heads: staff.value.Heads || [],
-      Unit: staff.value.Unit || null,
-      Location: staff.value.Location,
-      Name: staff.value.Name,
-      Title: staff.value.Title,
+      status: status.value,
+      rank: staff.value.rank,
+      role: staff.value.role,
+      //heads: staff.value.heads || [],
+      unit: staff.value.unit || null,
+      location: staff.value.location,
+      name: staff.value.name,
+      title: staff.value.title,
       //Admin: isAdmin.value,
       //CanEditPayment: staff.value.CanEditPayment || false,
       //CanConfirmPayment: staff.value.CanConfirmPayment || false,
@@ -456,11 +456,11 @@ async function save() {
 async function create() {
   if (!(await validate())) return;
   loading.value = true;
-  const _fields = ["Name", "StaffId", "Rank"].map((f) => staff.value[f]);
+  /*const _fields = ["Name", "StaffId", "Rank"].map((f) => staff.value[f]);
   const meta = {
     search: addSearch(_fields),
-  };
-  createUser({ ...staff.value, meta })
+  };*/
+  createUser({ ...staff.value /*meta */ })
     .then((result) => {
       staff.value.id = result.data;
       handleSearch("");
@@ -493,56 +493,35 @@ function reset() {
 const validate = async () => await form.value?.validate(true);
 
 const handleSearch = debounce((searchTerm, active) => {
-  const whereFilters = [];
-  //if (active) whereFilters.push(["Status", "==", "Active"]);
+
   const list = store.staffList;
-  //listStaff(whereFilters).then((list) => {
+
   users.value = list
     .filter((s) => {
-      //let pattern = `${s.Name}|| ${s.Rank} || ${s.Location} || ${s.Unit}`
       let d = searchTerm?.toLowerCase() || "";
       let searchTerms = d.split(" ");
       for (let x of searchTerms) {
         return (
-          s.Name?.toLowerCase().indexOf(x) >= 0 ||
-          s.Rank?.toLowerCase().indexOf(x) === 0 ||
-          s.Location?.toLowerCase().indexOf(x) >= 0 ||
-          s.Unit?.toLowerCase().indexOf(x) >= 0
+          s.name?.toLowerCase().indexOf(x) >= 0 ||
+          s.rank?.toLowerCase().indexOf(x) === 0 ||
+          s.location?.toLowerCase().indexOf(x) >= 0 ||
+          s.unit?.toLowerCase().indexOf(x) >= 0
         );
       }
     })
     .sort(sortByName);
 }, 5);
 
-/*const handleSearch = debounce(async (d, active) => {
-  users.value = [];
-  if (!d || d.length === 0) return;
-  let searchTerms = d.split(" ");
-  allUsers.value.filter((u) => {
-    for (let x of searchTerms) {
-      let m = u.Name.toLowerCase().search(x.toLowerCase());
-      if (m > -1) {
-        users.value.push(u);
-        break;
-      }
-    }
-  });
-});
-
-const dbRef = collection(firestore, collectionId);
-const dataSource = query(dbRef, where("Status", "==", "Active"));
-allUsers = useCollection(dataSource);*/
-
 defineExpose({
   reset,
   validate,
 });
 onMounted(async () => {
-  if (staff.value.Status === undefined) {
-    staff.value.Status = "Active";
+  if (staff.value.status === undefined) {
+    staff.value.status = "Active";
   }
-  if (staff.value.IsAdmin === undefined) {
-    staff.value.IsAdmin = false;
+  if (staff.value.is_admin === undefined) {
+    staff.value.is_admin = false;
   }
 });
 </script>

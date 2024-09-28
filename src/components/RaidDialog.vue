@@ -3,7 +3,7 @@
     <q-card dark class="bg-blue-grey-9">
       <q-card-section class="row items-center bg-blue-grey-8 text-white">
         <q-icon name="shopping_cart" />
-        <span class="q-ml-sm">{{ raid?.Title || "Add new" }}</span>
+        <span class="q-ml-sm">{{ raid?.subject || "Add new" }}</span>
       </q-card-section>
       <q-card-section>
         <RaidForm ref="raidFormRef" :data="raid" />

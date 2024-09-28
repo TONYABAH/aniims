@@ -43,6 +43,7 @@
               Wait...
             </template>
           </q-btn>
+<<<<<<< Updated upstream
           <!--<q-btn
             no-caps=""
             unelevated=""
@@ -57,6 +58,8 @@
               Wait...
             </template>
           </q-btn>-->
+=======
+>>>>>>> Stashed changes
         </div>
         <q-toolbar-title v-else class="text-uppercase">
           User account</q-toolbar-title
@@ -255,9 +258,7 @@ import { sortByName } from "src/composables/searchProvider";
 import { useCollection } from "vuefire";
 import { query, collection, where } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
-//import LoadingButton from "../LoadingButton.vue";
-//import { deleteDoc } from "firebase/firestore";
-//const store = useDefaultStore();
+
 const model = ref();
 const form = ref(null);
 const disabled = ref(false);
@@ -359,6 +360,7 @@ async function sendPasswordResetEmail(user) {
           color: "green",
           position: "center",
           html: true,
+<<<<<<< Updated upstream
         });
         /*Dialog.create({
           message: "Success <br/>" + info,
@@ -367,6 +369,9 @@ async function sendPasswordResetEmail(user) {
           position: "center",
           html: true,
         });*/
+=======
+        })
+>>>>>>> Stashed changes
       })
       .catch((e) => {
         console.log(e);

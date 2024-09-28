@@ -114,15 +114,8 @@ const loadDocument = debounce(async (docId) => {
   const docSource = doc(collection(firestore, store.currentCollection), docId);
   //currentDocument will always be in sync with the data source
   store.currentDocument = useDocument(docSource);
-  //store.currentDocumentId = docId;
   store.loading = false;
-  //tabPanelsRef.value="edit";
   store.tabModel = "edit";
 }, 500);
 
-/*async function onLoad(doc, i) {
-  window.location.hash = "#" + doc.id;
-  //loadDocument(doc.id);
-}*/
-//onMounted(() => {});
 </script>

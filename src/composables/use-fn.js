@@ -1,8 +1,10 @@
 import { useDefaultStore } from "src/stores/store";
 import { computed } from "vue";
+
 import { useCollection, useDocument } from "vuefire";
 import { collection, query, where, or, and, orderBy } from "firebase/firestore";
 import { firestore } from "src/composables/firebase";
+
 import states from "../data/states.json";
 import cities from "../data/cities.json";
 import countries from "../data/countries.json";

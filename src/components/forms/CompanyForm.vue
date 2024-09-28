@@ -2,7 +2,7 @@
   <q-form ref="formRef" class="q-gutter-sm q-mb-md">
     <q-input
       filled
-      v-model="company.RegNumber"
+      v-model="company.reg_number"
       type="text"
       label="CAC registration number *"
       :rules="[(val) => !!val || 'Title is required']"
@@ -10,7 +10,7 @@
     />
     <q-input
       filled
-      v-model="company.Name"
+      v-model="company.name"
       type="text"
       label="Company name *"
       :rules="[(val) => !!val || 'Title is required']"
@@ -19,7 +19,7 @@
 
     <q-input
       filled
-      v-model="company.Email"
+      v-model="company.email"
       type="text"
       label="Company email *"
       :rules="[isEmail]"
@@ -27,7 +27,7 @@
     />
     <q-input
       filled
-      v-model="company.Phone"
+      v-model="company.phone"
       type="text"
       label="Company phone *"
       :rules="[isPhoneNumber]"
@@ -35,7 +35,7 @@
     />
     <q-input
       filled
-      v-model="company.Address"
+      v-model="company.address"
       type="text"
       label="Company address *"
       :rules="[(val) => !!val || 'Title is required']"
@@ -44,7 +44,7 @@
 
     <q-select
       optionsDense=""
-      v-model="company.State"
+      v-model="company.state"
       :options="states"
       label="State *"
       filled
@@ -53,7 +53,7 @@
     />
     <q-select
       optionsDense=""
-      v-model="company.City"
+      v-model="company.city"
       :options="cities"
       label="City *"
       filled
@@ -69,7 +69,7 @@ import { useStates, useCities } from "src/composables/use-fn";
 
 const formRef = ref(null);
 const states = useStates("Nigeria");
-const cities = computed(() => useCities(company.value.State));
+const cities = computed(() => useCities(company.value.state));
 const company = ref(Object.assign({}, props.data || {}));
 const props = defineProps({
   data: Object,

@@ -10,8 +10,8 @@
 </template>
 
 <script setup>
-import { Notify, Dialog, debounce } from "quasar";
-import { computed, onMounted, ref, watch } from "vue";
+import { Notify, Dialog } from "quasar";
+import { ref} from "vue";
 import { update } from "src/composables/remote";
 const loading = ref(false);
 

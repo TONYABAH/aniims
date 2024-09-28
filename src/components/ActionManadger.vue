@@ -1,3 +1,75 @@
+
+<template>
+  <div v-if="uiMode === 'verifyEmail'">
+    <q-banner class="bg-secondary text-white">
+      Email address has been verified, Please create new password using the
+      button below
+      <template v-slot:action>
+        <q-btn
+          flat
+          color="white"
+          label="Reset password"
+          @click="sendPasswordResetEmail(auth, email)"
+        />
+        <q-space />
+        <q-btn
+          v-if="continueUrl"
+          color="primary"
+          icon="check"
+          label="Enter"
+          :to="continueUrl"
+        />
+      </template>
+    </q-banner>
+  </div>
+  <div v-else-if="uiMode === 'recoverEmail'">
+    <q-banner class="bg-secondary text-white">
+      You have successively verified your account email, Please create new
+      password using the button below
+      <template v-slot:action>
+        <q-btn
+          flat
+          color="white"
+          label="Reset password"
+          @click="sendPasswordResetEmail(auth, email)"
+        />
+      </template>
+    </q-banner>
+  </div>
+  <div v-else-if="uiMode === 'resetPassword'">
+    <q-card class="my-card">
+      <q-card-section>
+        <div class="text-h6">Reset password</div>
+      </q-card-section>
+      <q-card-section>
+        You have successively verified your account email, Please create new
+        password using the button below.
+      </q-card-section>
+      <q-card-section>
+        <form action="">
+          <q-input v-model="newPassword" type="text" label="New password" />
+        </form>
+      </q-card-section>
+      <q-card-actions vertical align="center">
+        <q-btn
+          flat
+          color="white"
+          label="Reset password"
+          @click="resetUserPassword"
+        />
+      </q-card-actions>
+    </q-card>
+  </div>
+  <div v-else>
+    <q-banner class="bg-negative text-white">
+      Unknown action.
+      <template v-slot:action>
+        <q-btn flat color="white" label="Login" />
+      </template>
+    </q-banner>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from "vue";
 import { auth } from "../composables/firebase";
@@ -147,74 +219,3 @@ document.addEventListener(
   false
 );
 </script>
-
-<template>
-  <div v-if="uiMode === 'verifyEmail'">
-    <q-banner class="bg-secondary text-white">
-      Email address has been verified, Please create new password using the
-      button below
-      <template v-slot:action>
-        <q-btn
-          flat
-          color="white"
-          label="Reset password"
-          @click="sendPasswordResetEmail(auth, email)"
-        />
-        <q-space />
-        <q-btn
-          v-if="continueUrl"
-          color="primary"
-          icon="check"
-          label="Enter"
-          :to="continueUrl"
-        />
-      </template>
-    </q-banner>
-  </div>
-  <div v-else-if="uiMode === 'recoverEmail'">
-    <q-banner class="bg-secondary text-white">
-      You have successively verified your account email, Please create new
-      password using the button below
-      <template v-slot:action>
-        <q-btn
-          flat
-          color="white"
-          label="Reset password"
-          @click="sendPasswordResetEmail(auth, email)"
-        />
-      </template>
-    </q-banner>
-  </div>
-  <div v-else-if="uiMode === 'resetPassword'">
-    <q-card class="my-card">
-      <q-card-section>
-        <div class="text-h6">Reset password</div>
-      </q-card-section>
-      <q-card-section>
-        You have successively verified your account email, Please create new
-        password using the button below.
-      </q-card-section>
-      <q-card-section>
-        <form action="">
-          <q-input v-model="newPassword" type="text" label="New password" />
-        </form>
-      </q-card-section>
-      <q-card-actions vertical align="center">
-        <q-btn
-          flat
-          color="white"
-          label="Reset password"
-          @click="resetUserPassword"
-        />
-      </q-card-actions>
-    </q-card>
-  </div>
-  <div v-else>
-    <q-banner class="bg-negative text-white">
-      Unknown action.
-      <template v-slot:action>
-        <q-btn flat color="white" label="Login" />
-      </template>
-    </q-banner>
-  </div>
-</template>

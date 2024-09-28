@@ -112,10 +112,7 @@ import UploadDialog from "src/components/UploadDialog.vue";
 import { onAddAttachment, onDeleteAttachment } from "src/composables/remote";
 
 const store = useDefaultStore();
-const document_columns = [
-  { name: "name", field: "Name", label: "Name", align: "left" },
-  { name: "title", field: "Title", label: "Caption", align: "left" },
-];
+
 const fileTypes = ref("");
 const docTitle = ref("");
 const fileSource = ref("");

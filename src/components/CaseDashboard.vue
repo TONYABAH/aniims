@@ -1,15 +1,15 @@
 <template>
   <q-page :style-fn="void 0">
     <q-toolbar class="bg-primary text-white">
-      <q-toolbar-title> Case No: {{ Case.CaseId }} </q-toolbar-title>
+      <q-toolbar-title> Case No: {{ Case.case_id }} </q-toolbar-title>
       <q-btn unelevated="" color="" icon="edit" label="Edit" @click="onClick" />
       <q-btn unelevated="" color="" icon="add" label="New" @click="onClick" />
       <q-btn flat round dense icon="more_vert" />
     </q-toolbar>
     <q-card class="my-card">
       <q-card-section>
-        <div class="text-h6">{{ Case.Title }}</div>
-        <div class="text-subtitle2">{{ Case.Status }}</div>
+        <div class="text-h6">{{ Case.subject }}</div>
+        <div class="text-subtitle2">{{ Case.status }}</div>
       </q-card-section>
       <q-card-section>
         <q-list bordered>
@@ -66,7 +66,7 @@
       </q-card-section>
     </q-card>
     <q-toolbar class="bg-primary text-white" style="border-top: 1px solid #bbb">
-      <q-toolbar-title> Case No: {{ Case.CaseId }} </q-toolbar-title>
+      <q-toolbar-title> Case No: {{ Case.case_id }} </q-toolbar-title>
       <q-btn unelevated="" color="" icon="edit" label="Edit" @click="onClick" />
       <q-btn unelevated="" color="" icon="add" label="New" @click="onClick" />
       <q-btn flat round dense icon="more_vert" />
@@ -92,45 +92,12 @@
 </template>
 <script setup>
 import { useDefaultStore } from "src/stores/store";
-import { computed, ref, onMounted, watch } from "vue";
-//import { useRouter } from "vue-router";
-/*import TableView from "./TableView.vue";
-import { useCollection, useDocument } from "vuefire";
-import { collection, query, where, orderBy } from "firebase/firestore";
-import { firestore } from "../composables/firebase";
-import SurveillanceForm from "./SurveillanceForm.vue";*/
+import { computed, ref, onMounted } from "vue";
 import RaidForm from "src/components/forms/RaidForm.vue";
-// https://github.com/naver/billboard.js/wiki/CHANGELOG-v2#modularization-by-its-functionality
-//import { bb, area, bar, zoom, line, spline } from "billboard.js";
-// 2) import css if your dev-env supports. If don't, include them via <link>
-//import "billboard.js/dist/billboard.css";
-// or theme style. Find more themes from 'theme' folder
-//import "billboard.js/dist/theme/dark.css";
-//import VueChartkick from "vue-chartkick";
-//import "chartkick/chart.js";
-
-//const router = useRouter();
 const store = useDefaultStore();
-//const form = ref(null);
-//const surveillanceDialog = ref(false);
-//const raidDialog = ref(false);
+
 const showRaidPanel = ref(true);
 const showRaidDialog = ref(false);
-
-const history_columns = [
-  { name: "Date", field: "Date", label: "Date", align: "left" },
-  { name: "Author", field: "Author", label: "Author", align: "left" },
-];
-const surveillance_columns = [
-  { name: "Date", field: "Date", label: "Date", align: "left" },
-  { name: "Title", field: "Title", label: "Title", align: "left" },
-  // { name: "Address", field: "address", label: "Address", align: "left" },
-];
-const raid_columns = [
-  { name: "Date", field: "Date", label: "Date", align: "left" },
-  { name: "Title", field: "Title", label: "Title", align: "left" },
-  // { name: "Address", field: "address", label: "Address", align: "left" },
-];
 const Case = computed({
   get: () => store.currentDocument,
   set: (v) => (store.currentDocument = v),

@@ -133,14 +133,14 @@ const getUser = (uid) => {
 
 const isDocumentAssignedToUser = computed(() => {
   return (
-    store.currentDocument?.meta?.To === store.user.uid &&
-    store.currentDocument?.meta?.From !== undefined
+    store.currentDocument.to === store.user.uid &&
+    store.currentDocument.from !== undefined
   );
 });
 const isDocumentUnassignedByUser = computed(() => {
   return (
-    store.currentDocument?.meta?.Status === "Created" &&
-    store.currentDocument?.meta?.CreatedBy === store.user.uid
+    store.currentDocument.status === "Created" &&
+    store.currentDocument.created_by === store.user.uid
   );
 });
 
@@ -163,9 +163,8 @@ async function submit(assigned) {
   loading.value = true;
   let action = dialogAction.value;
   let title =
-    store.currentDocument.Title ||
-    store.currentDocument.Subject ||
-    store.currentDocument.Name ||
+    store.currentDocument.subject ||
+    store.currentDocument.name ||
     store.currentDocument.displayName;
   onSubmit(title, comment.value, assigned, store.currentDocument.id, action)
     .then(() => {
@@ -194,13 +193,13 @@ async function submit(assigned) {
 async function returnDocument() {
   dialogAction.value = "Return";
   const doc = store.currentDocument;
-  const unit = doc.meta.unit || null;
-  const user = store.staffList.find((s) => s.uid === doc.meta.From);
+  //const unit = doc.unit || null;
+  const user = store.staffList.find((s) => s.uid === doc.from);
   if (!user) {
     Notify.create({
       timeout: 3000,
       textColor: "white",
-      message: "User not found: " + doc.meta.From,
+      message: "User not found: " + doc.From,
       icon: "error",
       iconColor: "white",
       color: "red",
@@ -214,45 +213,6 @@ function showSubmitDialog() {
   dialogAction.value = "Submit";
   iconName.value = "check";
   assignDialogModel.value = true;
-  /*if (isHod.value) {
-    let dir = store.staffList.find((s) => s.Role === "Director");
-    if (dir) {
-      // Submit to director
-      submit(dir, store.currentDocument?.meta?.unit || null);
-    } else {
-      Notify.create({
-        timeout: 3000,
-        textColor: "white",
-        message: "Director is not assigned",
-        icon: "error",
-        iconColor: "white",
-        color: "red",
-        position: "right",
-      });
-    }
-  } else if (store.currentDocument.meta.From) {
-    let oldUser = store.staffList.find(
-      (s) => s.uid === store.currentDocument?.meta?.From
-    );
-    if (oldUser) {
-      // submit to old user (HOU or HOD or Director)
-      submit(oldUser, store.currentDocument?.meta?.unit || null);
-    } else {
-      Notify.create({
-        timeout: 3000,
-        textColor: "white",
-        message: "User not found: " + store.currentDocument.meta.From,
-        icon: "error",
-        iconColor: "white",
-        color: "red",
-        position: "right",
-      });
-      assignDialogModel.value = true;
-    }
-  } else {
-    // Show dialog
-    assignDialogModel.value = true;
-  }*/
 }
 function showAssignDialog() {
   dialogAction.value = "Assign";
@@ -268,8 +228,8 @@ const currentDocument = computed({
 });
 const returnable = computed(() => {
   return (
-    currentDocument.value?.meta?.From !== undefined &&
-    store.user?.uid === currentDocument.value?.meta?.To
+    currentDocument.value.From !== undefined &&
+    store.user?.uid === currentDocument.value.to
   );
 });
 const assignable = computed(() => {
@@ -279,8 +239,8 @@ const submitable = computed(() => {
   return !isDirector.value; // && !isFromHead.value;
 });
 const ressignable = computed(() => {
-  let fromUid = currentDocument.value?.meta?.From;
-  let toUid = currentDocument.value?.meta?.To;
+  let fromUid = currentDocument.value.from;
+  let toUid = currentDocument.value.to;
   let fromUser = getUser(fromUid);
   let toUser = getUser(toUid);
 
@@ -289,12 +249,12 @@ const ressignable = computed(() => {
     (fromUid === store.user.uid &&
       (isDirector.value ||
         (isHod.value &&
-          (toUser.Unit === fromUser.Unit ||
-            toUser.Location === fromUser.Location)) ||
+          (toUser.unit === fromUser.unit ||
+            toUser.location === fromUser.location)) ||
         (isHou.value &&
-          toUser.Unit === fromUser.Unit &&
-          toUser.Role !== "Head Location" &&
-          toUser.Role !== "Head Division")))
+          toUser.unit === fromUser.unit &&
+          toUser.role !== "Head Location" &&
+          toUser.role !== "Head Division")))
   );
 });
 </script>

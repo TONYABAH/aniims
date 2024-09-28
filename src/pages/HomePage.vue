@@ -1,5 +1,9 @@
 <template>
+<<<<<<< Updated upstream
   <q-layout view="hhh lPr fff" @scroll="onScroll">
+=======
+  <q-layout view="lhh LpR fFf" @scroll="onScroll">
+>>>>>>> Stashed changes
     <q-header class="home-toolbar transparent">
       <transition
         appear
@@ -165,6 +169,7 @@
                     :key="i"
                     class="col col-xs-12 col-sm-6 col-md-4 col-lg-3"
                   >
+<<<<<<< Updated upstream
                     <q-card
                       class="full-width full-height"
                       :class="$q.dark.isActive ? 'bg-pink-10' : 'bg-grey-3'"
@@ -198,13 +203,98 @@
                       </q-card-section>
                     </q-card>
                   </div>
+=======
+                    <AnimateOnScroll>
+                      <q-card
+                        class="full-width full-height"
+                        :class="$q.dark.isActive ? 'bg-pink-10' : 'bg-grey-3'"
+                        style="min-height: 280px; vertical-align: middle"
+                      >
+                        <q-card-section>
+                          <q-item
+                            clickable=""
+                            stretch=""
+                            class="full-height"
+                            :to="item.link"
+                            @click="item.action"
+                          >
+                            <q-item-section>
+                              <div>
+                                <q-avatar
+                                  color=""
+                                  text-color=""
+                                  :icon="item.icon"
+                                  size="98px"
+                                />
+                              </div>
+
+                              <div class="q-py-xl text-h4 small-caps">
+                                <label style="font-weight: 300">{{
+                                  item.name
+                                }}</label>
+                              </div>
+                            </q-item-section>
+                          </q-item>
+                        </q-card-section>
+                      </q-card>
+                    </AnimateOnScroll>
+                  </div>
+                  <!--<div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                    <AnimateOnScroll>
+                      <q-card
+                        padding="lg"
+                        class="full-width full-height"
+                        style="background: linear-gradient(45deg, red, red)"
+                        @click="goToForm"
+                      >
+                        <q-card-section>
+                          <q-btn
+                            unelevated=""
+                            padding="lg"
+                            color=""
+                            icon="campaign"
+                            label="Complaint"
+                            class="full-width full-height"
+                            to="/petition"
+                          />
+                        </q-card-section>
+                      </q-card>
+                    </AnimateOnScroll>
+                  </div>
+                  <div class="col col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                    <AnimateOnScroll>
+                      <q-card
+                        class="full-width full-height"
+                        style="background: linear-gradient(45deg, red, red)"
+                        @click="goToForm"
+                      >
+                        <q-card-section>
+                          <q-btn
+                            unelevated=""
+                            padding="lg"
+                            color=""
+                            icon="mail"
+                            label="Contact us"
+                            class="full-width full-height"
+                            to="#contact"
+                          />
+                        </q-card-section>
+                      </q-card>
+                    </AnimateOnScroll>
+                  </div>-->
+>>>>>>> Stashed changes
                 </div>
               </q-card-section>
             </q-card>
           </div>
         </div>
+<<<<<<< Updated upstream
 
         <a href="about" name="about" id="about"></a>
+=======
+        <a href="about" name="about" id="about"></a>
+
+>>>>>>> Stashed changes
         <div
           style="
             font-variant: small-caps;
@@ -258,6 +348,10 @@
           </q-card>
         </div>
 
+<<<<<<< Updated upstream
+=======
+        <div name="form" id="form"></div>
+>>>>>>> Stashed changes
         <q-card
           square
           flat
@@ -268,9 +362,13 @@
             background: linear-gradient(-45deg, red, #009);
           "
         >
+<<<<<<< Updated upstream
           <div class="q-py-xl">
             <div name="form" id="form"></div>
           </div>
+=======
+          <div class="q-py-xl"></div>
+>>>>>>> Stashed changes
 
           <div class="q-pb-md" :style="myTweak($q.screen)">
             <div
@@ -330,6 +428,10 @@
             </div>
           </div>
         </q-card>
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         <div
           class="row bg-blue-grey-"
           style="background: linear-gradient(90deg, #008, #009, #00a)"
@@ -356,7 +458,11 @@
         >
           <!-- Wrapping only one DOM element, defined by QBtn -->
           <q-page-sticky
+<<<<<<< Updated upstream
             v-if="scrollInfo?.position > 22"
+=======
+            v-if="scrollInfo?.position > 62"
+>>>>>>> Stashed changes
             position="top"
             :offset="[0, 0]"
             expand
@@ -424,6 +530,7 @@
             </q-toolbar>
           </q-page-sticky>
         </transition>
+<<<<<<< Updated upstream
         <q-page-scroller
           position="bottom-left"
           :scroll-offset="150"
@@ -442,6 +549,24 @@
         >
       </div>
     </q-footer>
+=======
+      </q-page>
+    </q-page-container>
+
+    <q-page-scroller
+      position="bottom-left"
+      :scroll-offset="150"
+      :offset="[18, 18]"
+    >
+      <q-btn fab-mini icon="keyboard_arrow_up" color="accent" />
+    </q-page-scroller>
+    <div class="bg-blue-grey- q-pa-md text-grey-1 footer">
+      Copyright &copy; {{ new Date().getFullYear() }}
+      <span style="font-variant: small-caps"
+        >Nafdac Investigation and Enforcement Directorate</span
+      >
+    </div>
+>>>>>>> Stashed changes
   </q-layout>
 </template>
 

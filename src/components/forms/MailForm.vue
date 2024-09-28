@@ -48,7 +48,7 @@
       <q-select
         label="Location *"
         options-dense=""
-        v-model="mail.Location"
+        v-model="mail.location"
         :options="store.locations"
         :rules="[(val) => !!val || 'I&E Location is required']"
         lazy-rules="ondemand"
@@ -58,7 +58,7 @@
         square=""
       />
       <q-input
-        v-model="mail.FileNumber"
+        v-model="mail.file_number"
         label="File number"
         type="text"
         color=""
@@ -68,13 +68,13 @@
       >
         <template v-slot:append v-if="mail?.id">
           <q-btn
-            v-if="mail?.FileNumber"
+            v-if="mail?.file_number"
             no-caps=""
             unelevated=""
             color="secondary"
             icon-right="campaign"
             label="View complaint"
-            :to="'/files/#' + mail?.FileNumber"
+            :to="'/files/#' + mail?.file_number"
           />
           <q-btn
             v-if="update_fileNumber"
@@ -87,7 +87,7 @@
       </q-input>
 
       <q-input
-        v-model="mail.Title"
+        v-model="mail.subject"
         label="Subject *"
         type="text"
         color=""
@@ -104,7 +104,7 @@
       />
 
       <q-input
-        v-model="mail.Source"
+        v-model="mail.source"
         label="Source name *"
         type="text"
         color=""
@@ -117,7 +117,7 @@
       />
 
       <q-input
-        v-model="mail.Address"
+        v-model="mail.address"
         label="Source address *"
         type="text"
         color=""
@@ -132,7 +132,7 @@
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
           <q-input
             name="inDate"
-            v-model="mail.InDate"
+            v-model="mail.in_date"
             label="Incoming date *"
             type="date"
             clear-icon="clear"
@@ -146,7 +146,7 @@
         <div class="col col-xs-12 col-sm-6 col-md-6 col-lg-6">
           <q-input
             name="outDate"
-            v-model="mail.OutDate"
+            v-model="mail.out_date"
             label="Outgoing date"
             type="date"
             clear-icon="clear"
@@ -169,7 +169,7 @@
         collection-name="Mails"
         :documentId="mail?.id"
         :status="mail?.Status"
-        :set-status="(v) => (mail.Status = v)"
+        :set-status="(v) => (mail.status = v)"
         :options="statusOptions"
         outlined
         dense
@@ -177,13 +177,13 @@
     </q-form>
     <q-separator spaced inset vertical dark />
     <q-btn
-      v-if="mail?.ComplaintId"
+      v-if="mail?.complaint_id"
       no-caps=""
       unelevated=""
       color="secondary"
       icon-right="campaign"
       label="View complaint"
-      :to="'/complaints/#' + mail?.ComplaintId"
+      :to="'/complaints/#' + mail?.complaint_id"
     />
     <q-btn
       v-else
@@ -195,7 +195,7 @@
       @click="() => generateComplaint()"
     />
     <q-btn
-      v-if="mail?.id && mail.Status === 'Created'"
+      v-if="mail?.id && mail.status === 'Created'"
       no-caps=""
       unelevated=""
       color="purple"
@@ -287,9 +287,9 @@ async function sendToDirector() {
   let action = "Submit";
   let comment = "Sir, please find this mail for your attention. Thank you.";
   if (mail.value?.Location === "Lagos") {
-    assigned = store.staffList.find((s) => s.Role === "Director");
+    assigned = store.staffList.find((s) => s.role === "Director");
   } else {
-    assigned = store.staffList.find((s) => s.Role === "Head Location");
+    assigned = store.staffList.find((s) => s.role === "Head Location");
   }
   //console.log(mail);
   //if (true) return;
@@ -321,7 +321,7 @@ async function sendToDirector() {
 
 function updateFileNumber() {
   store.loading = true;
-  update(mail.value.id, { FileNumber: mail.value.FileNumber }, "Mails")
+  update(mail.value.id, { file_number: mail.value.file_number }, "Mails")
     .then((d) => {
       Notify.create({
         title: "File number",
@@ -343,7 +343,7 @@ function updateFileNumber() {
 function updateOutDate() {
   // send update file number field
   store.loading = true;
-  update(mail.value.id, { OutDate: mail.value.OutDate }, "Mails")
+  update(mail.value.id, { out_date: mail.value.out_date }, "Mails")
     .then(() => {
       Notify.create({
         title: "Outgoing date",
@@ -379,7 +379,7 @@ async function generateComplaint(data) {
             complaintDialog.value = false;
             update(
               mail.value.id,
-              { ComplaintId: id, IsComplaint: true },
+              { complaint_id: id, IsComplaint: true },
               "Mails"
             )
               .then(() => {})
@@ -411,36 +411,36 @@ async function generateComplaint(data) {
       });
   } else {
     let _mail = Object.assign({}, mail.value);
-    complaint.value.Title = _mail.Title;
-    complaint.value.MailId = _mail.id;
-    complaint.value.Source = _mail.Source;
-    complaint.value.Address = _mail.Address;
-    complaint.value.Status = "Open";
+    complaint.value.subject = _mail.subject;
+    complaint.value.mail_id = _mail.id;
+    complaint.value.source = _mail.source;
+    complaint.value.address = _mail.sddress;
+    complaint.value.status = "Open";
     complaintDialog.value = true;
   }
 }
 
 watch(
-  () => mail.value?.FileNumber,
+  () => mail.value?.file_number,
   (newValue) => {
     if (newValue) {
       simpleSearch("Files", { whereFilters: [["FileNumber", "==", newValue]] })
         .then((list) => {
           if (list.length > 0) {
             const file = list[0];
-            mail.value.FileId = file.id;
+            mail.value.file_id = file.id;
           }
         })
         .catch((e) => {});
     } else {
-      mail.value.FileId = null;
+      mail.value.file_id = null;
     }
     update_fileNumber.value = newValue ? true : false;
   },
   { immediate: true }
 );
 watch(
-  () => mail.value?.OutDate,
+  () => mail.value?.out_date,
   (newValue) => {
     //console.log(newValue);
     update_outdate.value = newValue ? true : false;
@@ -451,22 +451,7 @@ watch(
   async (newValue) => {
     if (newValue) {
       // Load complaint
-      if (mail.value?.ComplaintId) commentable.value = false;
-      /*getMailComplaints(newValue)
-        .then((_complaints) => {
-          if (_complaints.length > 0) {
-            complaint.value = _complaints[0];
-            complaints.value.push(..._complaints);
-            commentable.value = false;
-          } else {
-            complaint.value = {};
-            complaints.value = [];
-            if (mail.value.id) commentable.value = true;
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });*/
+      if (mail.value?.complaint_id) commentable.value = false;
     }
   },
   { immediate: true }

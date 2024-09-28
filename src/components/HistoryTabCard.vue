@@ -1,9 +1,5 @@
 <template>
   <q-card flat class="my-card">
-    <!--<q-bar class="transparent">
-      <q-icon name="history" size="sm" class="q-mr-md" />
-      <span class="text-bold"> {{ store.currentCollection }} / History</span>
-    </q-bar>-->
     <q-card-section>
       <q-timeline
         color="secondary"
@@ -36,10 +32,8 @@ watch(
   () => store.currentDocument,
   async (doc) => {
     if (doc?.id) {
-      //console.log(store.currentCollection + "/" + doc.id + "/History");
       const histSource = query(
         collection(firestore, /*store.currentCollection, doc.id,*/ "History"),
-        //where("CollId", "==", store.currentCollection),
         where("DocId", "==", doc.id),
         orderBy("Date", "asc")
       );
